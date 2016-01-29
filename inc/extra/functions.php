@@ -69,3 +69,6 @@ function resultadoArray($consulta){
     }
     return $array;
 }
+
+//eliminamos la variable $db por seguridad
+unset($db);
