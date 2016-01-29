@@ -88,6 +88,45 @@ class psCore{
     }
     
     /**
+     * @funcionalidad obtenemos el dominio de nuestro script
+     * @return string devolvemos el nombre del dominio
+     */
+    public function getDomain(){
+        $dominio = explode('/',str_replace('http://','',$this->settings['url']));
+        if(is_array($dominio)){
+            $dominio = explode('.',$dominio[0]);
+        }else{
+            $dominio = explode('.',$dominio);
+        }
+        $nuevo = count($dominio);
+        $dominio = $dominio[$nuevo - 2].'.'.$dominio[$nuevo - 1];
+        return $dominio;
+    }
+    
+    /**
+     * @funcionalidad obtenemos los datos de la url actual
+     * @return type devolvemos el valor de la url actual
+     */
+    public function currentUrl(){
+        $domain = $_SERVER['HTTP_POST'];
+        $path = $_SERVER['REQUEST_URI'];
+        $querystring = $_SERVER['QUERY_STRING'];
+        $currentUrl = "http://".$domain.$path;
+        $currentUrl = urlencode($currentUrl);
+        return $currentUrl;
+    }
+    
+    /**
+     * @funcionalidad obtendremos la ruta del directorio al que queremos redireccionar
+     * @param type $psDir pasamos por parametro la ruta
+     */
+    public function redirectTo($psDir){
+        $dir = urldecode($psDir);
+        header("Location: $dir");
+        exit();
+    }
+    
+    /**
      * @funcionalidad comprobamos el nivel de acceso del usuario
      * @global type $psUser obtenemos el usuario
      * @param type $psLevel obtenemos el nivel de acceso
@@ -171,5 +210,83 @@ class psCore{
         //guardamos el mensaje del instalador y de los post pendientes de moderacion
         $this->settings['instalador'] = $this->existInstall();
         $this->settings['novemods'] = $this->getNovemodera();
+    }
+    
+    /**
+     * @funcionalidad creamos el servicio json para guardar o cargar datos
+     * @param type $datos pasamos los datos por parametro
+     * @param type $type pasamos el tipo de accion a realizar
+     * @return type devolvemos los datos codificados en json
+     */
+    public function setJson($datos, $type="encode"){
+        //incluimos el archivo json.php
+        require_once(PS_EXTRA.'json.php');
+        //creamos el servicio json
+        $json = new Services_JSON;
+        if($type == "encode"){
+            return $json->encode($datos);
+        }else if($type == "decode"){
+            return $json->decode($datos);
+        }
+    }
+    
+    /**
+     * @funcionalidad actualizamos el limite de paginas
+     * @param type $psLimit limite de paginas
+     * @param type $start primera pagina
+     * @param type $psMax ultima pagina
+     * @return type devolvemos un string con comienzo, final
+     */
+    public function setPagLimite($psLimit,$start=false,$psMax=0){
+        if($start == false){
+            $psStart = empty($_GET['page']) ? 0 : (int) (($_GET['page'] - 1) * $psLimit);
+        }else{
+            $psStart = $_GET['s'];
+            $continua = $this->setMax($psLimit, $psMax);
+            if($continua == true){
+                $psStart = 0;
+            }
+        }
+        return $psStart.','.$psLimit;
+    }
+    
+    /**
+     * @funcionalidad establecemos el numero maximo de paginas para no excederlo
+     * @param type $psLimit pasamos el limite actual
+     * @param type $psMax pasamos el maximo actual
+     * @return boolean si es correcto devolvemos true
+     */
+    public function setMax($psLimit, $psMax){
+        //establecemos un maximo para no exceder el numero de paginas
+        $var = ($_GET['page'] * $psLimit);
+        if($psMax < $var){
+            $var2 = $var - $psLimit;
+            if($psMax < $var2){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * @funcionalidad obtener las paginas
+     * @param type $psTotal total de paginas
+     * @param type $psLimit limite de paginas
+     * @return type devolvemos un array con los valores de las paginas
+     */
+    public function getPages($psTotal, $psLimit){
+        $psPages = ceil($psTotal / $psLimit);
+        //obtenemos la pagina
+        $psPage = empty($_GET['page']) ? 1 : $_GET['page'];
+        //guardamos las paginas en un array
+        $page['current'] = $psPage;
+        $page['pages'] = $psPages;
+        $page['section'] = $psPages + 1;
+        $page['prev'] = $psPage - 1;
+        $page['next'] = $psPage + 1;
+        $page['max'] = $this->setMax($psLimit, $psTotal);
+        //devolvemos el array page
+        return $page;
+        
     }
 }
