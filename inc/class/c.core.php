@@ -219,9 +219,9 @@ class psCore{
      * @return type devolvemos los datos codificados en json
      */
     public function setJson($datos, $type="encode"){
-        //incluimos el archivo json.php
-        require_once(PS_EXTRA.'json.php');
-        //creamos el servicio json
+        //incluimos el archivo JSON.php
+        require_once(PS_EXTRA.'JSON.php');
+        //creamos el servicio JSON
         $json = new Services_JSON;
         if($type == "encode"){
             return $json->encode($datos);
