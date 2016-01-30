@@ -11,4 +11,8 @@
 include 'header.php';
 
 //si estamos logueados mostramos la seccion portal/mi
-//sino mostramos el home
+if($psCore->settings['c_allow_portal'] == 1 && $psUser->is_member == true && $_GET['do'] == 'portal'){
+    include('inc/php/portal.php');
+}else{//sino mostramos el home
+    include('inc/php/posts.php');
+}

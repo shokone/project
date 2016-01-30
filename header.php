@@ -25,7 +25,7 @@ set_include_path(get_include_path().PATH_SEPARATOR.realpath('./'));
  * agregamos los archivos globales
  */
 //incluimos el archivo de configuración principal
-include 'config.inc.php';
+include_once 'config.inc.php';
 
 //si no hemos instalado el script lo instalamos
 if($db['host'] == 'host'){
@@ -33,7 +33,7 @@ if($db['host'] == 'host'){
 }
 
 //incluimos el archivo de funciones
-include PS_EXTRA.'function.php';
+include PS_EXTRA.'functions.php';
 
 //incluimos el archivo del nucleo del script
 include PS_CLASS.'c.core.php';
