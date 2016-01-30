@@ -49,10 +49,10 @@ if($psLevelVer != 1){
  */
 if($psContinue){
     //incluimos la clase tops
-    include("../class/c.tops.php");
+    include(PS_CLASS."c.tops.php");
     $psTops =& psTops::getInstance();
     //comprobamos la fecha
-    $fecha = empty(filter_input(INPUT_GET['fecha'])) || filter_input(INPUT_GET['fecha']) >5 ? 5: (int)filter_input(INPUT_GET['fecha']);
+    $fecha = empty(filter_input(INPUT_GET['fecha'])) || filter_input(INPUT_GET['fecha']) > 5 ? 5: (int)filter_input(INPUT_GET['fecha']);
     //agregamos a smarty
     $smarty->assign("psFecha", $fecha);
     //categoria

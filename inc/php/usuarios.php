@@ -50,7 +50,7 @@ if($psLevelVer != 1){
  */
 if($psContinue){
     //paises
-    include('../ext/datos.php');
+    include(PS_EXTRA.'datos.php');
     //asignamos los paises a smarty
     $smarty->assign("psPaises",$psPaises);
     
