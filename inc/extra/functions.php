@@ -38,16 +38,16 @@ function db_execute($sql, $valores=null,$type = ''){
     }
     $con=$this->conexion;
     try{
-    $consulta = $con->prepare($sql);
-    $consulta->execute($valores);
-    switch($type){
-        case 'rowCount':
-            return $consulta->rowCount();
-        case 'fetch_num':
-            return $consulta->fetch(PDO::FETCH_NUM);
-        case 'fetch_assoc':
-            return $consulta->fetch(PDO::FETCH_ASSOC);
-    }
+        $consulta = $con->prepare($sql);
+        $consulta->execute($valores);
+        switch($type){
+            case 'rowCount':
+                return $consulta->rowCount();
+            case 'fetch_num':
+                return $consulta->fetch(PDO::FETCH_NUM);
+            case 'fetch_assoc':
+                return $consulta->fetch(PDO::FETCH_ASSOC);
+        }
     }catch(PDOException $e){
         die("Error al realizar la consulta, error: ".$e.getMessage());
     }
