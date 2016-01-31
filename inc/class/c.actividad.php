@@ -14,15 +14,21 @@ class psActividad{
     private $actividad = [];
 
     /**
-     * constructor
+     * @funcionalidad instanciar la clase
+     * @staticvar psActividad $instance
+     * @return \psActividad
      */
     public static function &getInstance(){
         static $instance;
         if(is_null($instance)){
-                $instance = new tsActividad;
+                $instance = new psActividad;
         }
         return $instance;
     }
+    
+    /**
+     * constructor
+     */
     /*public function __construct(){
         //no es necesario hacer nada en el constructor
     }*/
