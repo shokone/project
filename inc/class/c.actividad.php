@@ -100,19 +100,42 @@ class psActividad{
     private function obtenerConsulta($datos){
         switch($datos['ac_type']){
             case 1:case 2:case 3:case 4:case 5:case 6:case 7:
-                return "SELECT p.post_id, p.post_title, c.c_seo FROM p_posts AS p LEFT JOIN p_categorias AS c ON p.post_category = c.cid WHERE p.post_id = \'".$datos['obj_uno']."\' LIMIT 1";
+                $valores = ['obj_uno' => $datos['obj_uno']];
+                $array = [
+                    0 => "SELECT p.post_id, p.post_title, c.c_seo FROM p_posts AS p LEFT JOIN p_categorias AS c ON p.post_category = c.cid WHERE p.post_id = :obj_uno LIMIT 1",
+                    1 => $valores
+                ];
+                return $array;
             case 8:
                 //el usuario está siguiendo a
-                return "SELECT user_id AS avatar, user_name FROM u_miembros WHERE user_id = \'".$datos['obj_uno']."\' LIMIT 1";
+                $valores = ['obj_uno' => $datos['obj_uno']];
+                $array = [
+                    0 => "SELECT user_id AS avatar, user_name FROM u_miembros WHERE user_id = :obj_uno LIMIT 1",
+                    1 => $valores
+                ];
+                return $array;
             case 9:
                 //el usuario subió una foto
-                return "SELECT f.foto_id, f.f_title, u.user_name FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.foto_id = \'".$datos['obj_uno']."\' LIMIT 1";
+                $valores = ['obj_uno' => $datos['obj_uno']];
+                $array = [
+                    "SELECT f.foto_id, f.f_title, u.user_name FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.foto_id = :obj_uno LIMIT 1",
+                    $valores
+                ];
             case 10:case 11:
                 //publicaciones en el muro y likes
+                $valores = ['obj_uno' => $datos['obj_uno']];
                 if($datos['obj_dos'] == 0 || $datos['obj_dos'] == 2){
-                    return "SELECT p.pub_id, u.user_name FROM u_muro AS p LEFT JOIN u_miembros AS u ON p.p_user = u.user_id WHERE p.pub_id =\'".$datos['obj_uno']."\' LIMIT 1";    
+                    $array = [
+                        "SELECT p.pub_id, u.user_name FROM u_muro AS p LEFT JOIN u_miembros AS u ON p.p_user = u.user_id WHERE p.pub_id = :obj_uno LIMIT 1",
+                        $valores
+                    ];
+                    return $array;    
                 }else{
-                    return "SELECT c.pub_id, c.c_body, u.user_name FROM u_muro_comentarios AS c LEFT JOIN u_muro AS p ON c.pub_id = p.pub_id LEFT JOIN u_miembros AS u ON p.p_user = u.user_id WHERE cid = \'".$datos['obj_uno']."\' LIMIT 1";
+                    $array = [
+                        "SELECT c.pub_id, c.c_body, u.user_name FROM u_muro_comentarios AS c LEFT JOIN u_muro AS p ON c.pub_id = p.pub_id LEFT JOIN u_miembros AS u ON p.p_user = u.user_id WHERE cid = :obj_uno LIMIT 1",
+                        $valores
+                    ];
+                    return $array;
                 }
         }
     }
@@ -132,7 +155,10 @@ class psActividad{
         //creamos la variable local de tiempo
         $actividad_fecha = time();
         //buscamos las actividades en la base de datos
-        $consulta = db_execute("SELECT ac_id FROM u_actividad WHERE user_ id = \'".$psUser->uid."\' ORDER BY ac_date DESC");
+        $valores = [
+            'user_id' => $psUser->uid
+        ];
+        $consulta = db_execute("SELECT ac_id FROM u_actividad WHERE user_ id = :user_id ORDER BY ac_date DESC",$valores);
         $resultado = resultadoArray($consulta);
         
         //obtenemos el total de notificaciones de actividad en curso
@@ -145,8 +171,15 @@ class psActividad{
         if($acTotal >= $psCore->settings['c_max_acts']){
             db_execute("DELETE FROM u_actividad WHERE ac_id = ".$lastNot);
         }
+        $valores = [
+            'user_id' => $psUser->uid,
+            'obj_uno' => $var1,
+            'obj_dos' => $var2,
+            'ac_type' => $type,
+            'ac_date' => $actividad_fecha
+        ];
         //insertamos los datos
-        $consulta2 = db_execute("INSERT INTO u_actividad (user_id, obj_uno, obj_dos, ac_type, ac_date) VALUES(".$psUser->uid.", ".$var1.", ".$var2.", ".$type.", ".$actividad_fecha.")");
+        $consulta2 = db_execute("INSERT INTO u_actividad (user_id, obj_uno, obj_dos, ac_type, ac_date) VALUES(:user_id, :obj_uno, :obj_doc, :ac_type, :ac_date)",$valores);
         //comprobamos si la consulta se ha ejecutado correctamente
         if($consulta2){
             return true;
@@ -266,26 +299,11 @@ class psActividad{
         $actividad = [
             'total' => count($datos),
             'datos' => [
-                'hoy' => [
-                    'title' => 'Hoy',
-                    'datos' => []
-                ],
-                'ayer' => [
-                    'title' => 'Ayer',
-                    'datos' => []
-                ],
-                'semana' => [
-                    'title' => 'D&iacute;as anteriores',
-                    'datos' => []
-                ],
-                'mes' => [
-                    'title' => 'Semanas anteriores',
-                    'datos' => []
-                ],
-                'historico' => [
-                    'title' => 'Actividad m&aacute;s antigua',
-                    'datos' => []
-                ]
+                'hoy' => ['title' => 'Hoy','datos' => []],
+                'ayer' => ['title' => 'Ayer','datos' => []],
+                'semana' => ['title' => 'D&iacute;as anteriores','datos' => []],
+                'mes' => ['title' => 'Semanas anteriores','datos' => []],
+                'historico' => ['title' => 'Actividad m&aacute;s antigua','datos' => []]
             ]
         ];
         //creamos una consulta para cada valor obtenido
@@ -293,8 +311,7 @@ class psActividad{
             //creamos la consulta
             $consulta1 = $this->obtenerConsulta($valor);
             //consultamos con la base de datos
-            $consulta2 = db_execute($consulta1);
-            $resultado = db_execute($consulta2, null, 'fetch_assoc');
+            $resultado = db_execute($consulta1[0], $consulta1[1], 'fetch_assoc');
             //comprobamos
             if(!empty($resultado)){
                 //agregamos los datos al array original
@@ -322,17 +339,49 @@ class psActividad{
         $this->crearActividad();
         //obtenemos el tipo de actividad
         if($type != 0){
-            $type = " AND ac_type = \'".$type."\'";
+            $type2 = "AND ac_type = :type2";
+            $valores = [
+                'user_id' => $u_id,
+                'type' => $type2,
+                'type2' => $type,
+                'comienzo' => $comienzo
+            ];
         }else{
             $type = "";
+            $valores = [
+                'user_id' => $u_id,
+                'type' => $type,
+                'comienzo' => $comienzo
+            ];
         }
         //realizamos la consulta en la base de datos
-        $consulta = db_execute("SELECT ac_id, user_id, obj_uno, obj_dos, ac_type, ac_date FROM u_actividad WHERE user_id = ".$u_id." ".$type." ORDER BY ac_date DESC LIMIT ".$comienzo.", 25");
+        $consulta = db_execute("SELECT ac_id, user_id, obj_uno, obj_dos, ac_type, ac_date FROM u_actividad WHERE user_id = :user_id :type ORDER BY ac_date DESC LIMIT :comienzo, 25", $valores);
         $resultado = resultadoArray($consulta);
         
         //montamos y devolvemos la actividad
         return $this->montarActividad($resultado);
     }
     
-    
+    /**
+     * @funcionalidad esee metodo se encargará de eliminar la noticia de actividad seleccionada
+     * @global type $psUser variable global de la clase psUser
+     * @return string devolvemos un string dependiendo si la consulta se ha realizado correctamente
+     */
+    public function borrarActividad(){
+        global $psUser;
+        $acid = filter_input(INPUT_POST,'acid');
+        //ejecutamos la consulta
+        $valores = [
+            'ac_id' => (intval($acid))
+        ];
+        $consulta = db_execute("SELECT user_id FROM u_actividad WHERE ac_id = :ac_id", $valores);
+        $resultado = db_execute($consulta,$valores,'fetch_assoc');
+        //comprobamos que es correcto
+        if($datos['user_id'] == $psUser->uid){
+            if($consulta){
+                return "1: Actividad eliminada";
+            }
+        }
+        return "0: La actividad seleccionada no puede eliminarse.";
+    }
 }
