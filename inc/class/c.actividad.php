@@ -384,4 +384,42 @@ class psActividad{
         }
         return "0: La actividad seleccionada no puede eliminarse.";
     }
+    
+    /**
+     * @funcionalidad obtenemos la actividad relacionada con el seguimiento de usuarios
+     * @global type $psUser variable global de la clase psUser
+     * @param type $com obtenemos por parametro a partir de que actividad empezamos
+     * @return string devolvemos la actividad creada
+     */
+    public function obtenerActividadSeguida($com = 0){
+        global $psUser;
+        $this->crearActividad();
+        //mostraremos solo las últimas 90 actividades
+        if($com > 90){
+            return array('total' => -1);
+        }
+        $valores = ['user_id' => $psUser->uid];
+        $consulta = db_execute("SELECT f_id FROM u_follows WHERE f_user = :user_id AND f_type = 1",$valores);
+        $resultado = resultadoArray($consulta);
+        
+        //ordenamos el array de datos obtenido
+        foreach($resultado as $indice => $valor){
+            $seguidores[] = "'".$valor['f_id']."'";
+        }
+        //agregado en lista de seguidores
+        $seguidores[] = $psUser->uid;
+        //obtenemos un string mediante la conversión del array
+        $seguidores = implode(', '.$seguidores);
+        //consultamos a la bd por las últimas publicaciones
+        $valores2 = ['seguidores' => $seguidores, 'start' => $com];
+        $consulta2 = db_execute("SELECT ua.*, u.user_name AS usuario FROM u_actividad AS ua LEFT JOIN u_miembros AS u ON ua.user_id = u.user_id WHERE ua.user_id IN :seguidores ORDER BY ua.ac_date DESC LIMIT :start, 25", $valores2);
+        $resultado2 = resultadoArray($consulta2);
+        
+        //montamos la actividad resultante
+        if(empty($resultado2)){
+            return "No hay actividad o no est&aacute;s siguiendo a ning&uacute;n usuario.";
+        }
+        $actividad = $this->montarActividad($resultado2);
+        return $actividad;
+    }
 }
