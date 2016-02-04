@@ -150,6 +150,7 @@ class psActividad{
      * @return boolean devolvemos un booleano con el resultado de la consulta
      */
     public function setActividad($type, $var1, $var2 = 0){
+        global $psDb;
         //creamos las variables globales
         global $psUser, $psCore;
         //creamos la variable local de tiempo
@@ -158,8 +159,8 @@ class psActividad{
         $valores = [
             'user_id' => $psUser->uid
         ];
-        $consulta = db_execute("SELECT ac_id FROM u_actividad WHERE user_ id = :user_id ORDER BY ac_date DESC",$valores);
-        $resultado = resultadoArray($consulta);
+        $consulta = $psDb->db_execute("SELECT ac_id FROM u_actividad WHERE user_ id = :user_id ORDER BY ac_date DESC",$valores);
+        $resultado = $psDb->resultadoArray($consulta);
         
         //obtenemos el total de notificaciones de actividad en curso
         $acTotal = count($resultado);
@@ -169,7 +170,7 @@ class psActividad{
         //comprobamos si hemos llegado al límite de notificaciones de actividad
         //si es así borramos la última
         if($acTotal >= $psCore->settings['c_max_acts']){
-            db_execute("DELETE FROM u_actividad WHERE ac_id = ".$lastNot);
+            $psDb->db_execute("DELETE FROM u_actividad WHERE ac_id = ".$lastNot);
         }
         $valores = [
             'user_id' => $psUser->uid,
@@ -179,7 +180,7 @@ class psActividad{
             'ac_date' => $actividad_fecha
         ];
         //insertamos los datos
-        $consulta2 = db_execute("INSERT INTO u_actividad (user_id, obj_uno, obj_dos, ac_type, ac_date) VALUES(:user_id, :obj_uno, :obj_doc, :ac_type, :ac_date)",$valores);
+        $consulta2 = $psDb->db_execute("INSERT INTO u_actividad (user_id, obj_uno, obj_dos, ac_type, ac_date) VALUES(:user_id, :obj_uno, :obj_doc, :ac_type, :ac_date)",$valores);
         //comprobamos si la consulta se ha ejecutado correctamente
         if($consulta2){
             return true;
@@ -296,6 +297,7 @@ class psActividad{
      * @return type devolvemos un array con la actividad montada
      */
     private function montarActividad($datos){
+        global $psDb;
         $actividad = [
             'total' => count($datos),
             'datos' => [
@@ -311,7 +313,7 @@ class psActividad{
             //creamos la consulta
             $consulta1 = $this->obtenerConsulta($valor);
             //consultamos con la base de datos
-            $resultado = db_execute($consulta1[0], $consulta1[1], 'fetch_assoc');
+            $resultado = $psDb->db_execute($consulta1[0], $consulta1[1], 'fetch_assoc');
             //comprobamos
             if(!empty($resultado)){
                 //agregamos los datos al array original
@@ -335,6 +337,7 @@ class psActividad{
      * @return type devolvemos la actividad montada
      */
     public function getActividad($u_id, $type = 0, $comienzo = 0){
+        global $psDb;
         //primero creamos la actividad
         $this->crearActividad();
         //obtenemos el tipo de actividad
@@ -355,8 +358,8 @@ class psActividad{
             ];
         }
         //realizamos la consulta en la base de datos
-        $consulta = db_execute("SELECT ac_id, user_id, obj_uno, obj_dos, ac_type, ac_date FROM u_actividad WHERE user_id = :user_id :type ORDER BY ac_date DESC LIMIT :comienzo, 25", $valores);
-        $resultado = resultadoArray($consulta);
+        $consulta = $psDb->db_execute("SELECT ac_id, user_id, obj_uno, obj_dos, ac_type, ac_date FROM u_actividad WHERE user_id = :user_id :type ORDER BY ac_date DESC LIMIT :comienzo, 25", $valores);
+        $resultado = $psDb->resultadoArray($consulta);
         
         //montamos y devolvemos la actividad
         return $this->montarActividad($resultado);
@@ -368,14 +371,14 @@ class psActividad{
      * @return string devolvemos un string dependiendo si la consulta se ha realizado correctamente
      */
     public function borrarActividad(){
-        global $psUser;
+        global $psUser,$psDb;
         $acid = filter_input(INPUT_POST,'acid');
         //ejecutamos la consulta
         $valores = [
             'ac_id' => (intval($acid))
         ];
-        $consulta = db_execute("SELECT user_id FROM u_actividad WHERE ac_id = :ac_id", $valores);
-        $resultado = db_execute($consulta,$valores,'fetch_assoc');
+        $consulta = "SELECT user_id FROM u_actividad WHERE ac_id = :ac_id";
+        $resultado = $psDb->db_execute($consulta,$valores,'fetch_assoc');
         //comprobamos que es correcto
         if($datos['user_id'] == $psUser->uid){
             if($consulta){
@@ -392,15 +395,15 @@ class psActividad{
      * @return string devolvemos la actividad creada
      */
     public function obtenerActividadSeguida($com = 0){
-        global $psUser;
+        global $psUser,$psDb;
         $this->crearActividad();
         //mostraremos solo las últimas 90 actividades
         if($com > 90){
             return array('total' => -1);
         }
         $valores = ['user_id' => $psUser->uid];
-        $consulta = db_execute("SELECT f_id FROM u_follows WHERE f_user = :user_id AND f_type = 1",$valores);
-        $resultado = resultadoArray($consulta);
+        $consulta = $psDb->db_execute("SELECT f_id FROM u_follows WHERE f_user = :user_id AND f_type = 1",$valores);
+        $resultado = $psDb->resultadoArray($consulta);
         
         //ordenamos el array de datos obtenido
         foreach($resultado as $indice => $valor){
@@ -412,8 +415,8 @@ class psActividad{
         $seguidores = implode(', '.$seguidores);
         //consultamos a la bd por las últimas publicaciones
         $valores2 = ['seguidores' => $seguidores, 'start' => $com];
-        $consulta2 = db_execute("SELECT ua.*, u.user_name AS usuario FROM u_actividad AS ua LEFT JOIN u_miembros AS u ON ua.user_id = u.user_id WHERE ua.user_id IN :seguidores ORDER BY ua.ac_date DESC LIMIT :start, 25", $valores2);
-        $resultado2 = resultadoArray($consulta2);
+        $consulta2 = $psDb->db_execute("SELECT ua.*, u.user_name AS usuario FROM u_actividad AS ua LEFT JOIN u_miembros AS u ON ua.user_id = u.user_id WHERE ua.user_id IN :seguidores ORDER BY ua.ac_date DESC LIMIT :start, 25", $valores2);
+        $resultado2 = $psDb->resultadoArray($consulta2);
         
         //montamos la actividad resultante
         if(empty($resultado2)){

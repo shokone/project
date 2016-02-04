@@ -66,6 +66,7 @@ class psSesion{
      * @return boolean obtenemos true o false si ha salido todo bien o no
      */
     public function leerSesion(){
+        global $psDb;
         $this->id_sesion = $_COOKIE[$this->cookie_nombre];
         //comprobamos si el id es válido
         if(strlen($this->id_sesion) > 32){
@@ -75,7 +76,7 @@ class psSesion{
         //obtenemos los datos de la sesión de la base de datos
         $valores = ['id' => $this->id_sesion];
         $consulta = "SELECT * FROM u_sessions WHERE session_id = :id";
-        $resultado = db_execute($consulta, $valores, 'fetch_assoc');
+        $resultado = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
         
         //comprobamos si existe en la base de datos y la destruimos
         if(!isset($resultado['session_id'])){
@@ -106,9 +107,10 @@ class psSesion{
      * reseteamos la cookie
      */
     public function destruir_sesion(){
+        global $psDb;
         //eliminamos la sesión de la base de datos
         $valores = ['id' => $this->id_sesion];
-        db_execute("DELETE FROM u_sessions WHERE session_id = :id",$valores);
+        $psDb->db_execute("DELETE FROM u_sessions WHERE session_id = :id",$valores);
         //reseteamos la cookie
         $this->set_cookie('cookproyecto', '', -604800);
     }
@@ -128,6 +130,7 @@ class psSesion{
     }
     
     public function anadirSesion($uid = 0, $autologin = false, $forzarUpdate = false){
+        global $psDb;
         //comprobamos si el tiempo de sesión es superior al actual y si no ha sido forzada la actualización
         if(($this->userinfo['session_time'] + $this->ses_time_online) >= $this->time && $forzarUpdate == false){
             //si todo bien, no añadimos nada y devolvemos un return vacío
@@ -146,7 +149,7 @@ class psSesion{
        
         //ahora actualizamos en la base de datos
         $valores = ['suid' => $this->userinfo['session_user_id'],'sesip' => $this->userinfo['session_ip'],'stime' => $this->userinfo['session_time'],'sesauto' => $this->userinfo['session_autologin'],'id' => $this->id_sesion];
-        db_execute("UPDATE u_sessions SET session_user_id = :suid, session_ip = :sesip, session_time = :stime, session_autologin = :sesauto WHERE session_id = :id",$valores);
+        $psDb->db_execute("UPDATE u_sessions SET session_user_id = :suid, session_ip = :sesip, session_time = :stime, session_autologin = :sesauto WHERE session_id = :id",$valores);
         
         //ahora actualizamos la cookie
         if(!empty($this->userinfo['session_autologin'])){
@@ -176,11 +179,12 @@ class psSesion{
      * @funcionalidad añadimos la sesión a la base de datos y creamos la cookie con los valores de la sesión
      */
     public function createSesion(){
+        global $psDb;
         //primero tenemos que generar un id para la sesión
         $this->id_sesion = $this->generar_sid();
         //guardamos los datos en la bd, si se inicia sesión se actualizarán estos datos
         $valores = ['id_sesion' => $this->id_sesion,'ip' => $this->ip,'time' => $this->time];
-        db_execute("INSERT INTO u_sessions (session_id, session_user_id, session_ip, session_time) VALUES (:id_sesion, 0, :ip, :time)",$valores);
+        $psDb->db_execute("INSERT INTO u_sessions (session_id, session_user_id, session_ip, session_time) VALUES (:id_sesion, 0, :ip, :time)",$valores);
         //después creamos la cookie
         $this->setCookie('cookproyecto', $this->id_sesion, $this->ses_expira);
     }

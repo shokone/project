@@ -16,7 +16,7 @@
 */
 define('PS_ROOT', realpath(__DIR__));
 define('PS_HEADER', true);
-define('PS_CLASS', 'inc/class');
+define('PS_CLASS', PS_ROOT.'/inc/class/');
 define('PS_EXTRA', PS_ROOT.'/inc/extra/');
 define('PS_FILES', PS_ROOT.'/files/');
 set_include_path(get_include_path().PATH_SEPARATOR.realpath('./'));
@@ -32,8 +32,9 @@ if($db['host'] == 'host'){
     header("Location: ./install/index.php");
 }
 
+
 //incluimos el archivo de funciones
-include PS_EXTRA.'functions.php';
+include_once PS_CLASS.'c.db.php';
 
 //incluimos el archivo del nucleo del script
 include PS_CLASS.'c.core.php';
@@ -42,13 +43,13 @@ include PS_CLASS.'c.core.php';
 include PS_CLASS.'c.user.php';
 
 //incluimos el archivo del monitor del usuario
-include PS_CLASS.'c.monitor.php';
+//include PS_CLASS.'c.monitor.php';
 
 //incluimos el archivo de actividad del usuario
 include PS_CLASS.'c.actividad.php';
 
 //incluimos el archivo de mensajes del usuario
-include PS_CLASS.'c.mensajes.php';
+//include PS_CLASS.'c.mensajes.php';
 
 //incluimos el arvchivo de smarty
 include PS_CLASS.'c.smarty.php';
@@ -59,20 +60,22 @@ include PS_CLASS.'c.smarty.php';
  * inicializamos los objetos principales de nuestra pagina
  */
 //limpiamos variables
-
-
+echo "antes de cargar db <br>";
+//cargamos la clase base de datos
+$psDb =& psDb::getInstance($db);
+echo "cargada db<br>";
 //cargamos el nucleo
 $psCore =& psCore::getInstance();
-
+echo "cargada core<br>";
 //cargamos los usuarios
 $psUser =& psUser::getInstance();
-
+echo "cargada clase user<br>";
 //monitor de usuario
 $psMonitor =& psMonitor::getInstance();
-
+echo "cargada clase monitor<br>";
 // actividad del usuario
 $psActividad =& psActividad::getInstance();
-
+echo "cargada clase actividad<br>";
 // mensajes de usuarios
 $psMensaje = new psMensajes();
 

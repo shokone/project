@@ -74,18 +74,25 @@ class psTops{
      * @return type devolvemos los datos en el array $top
      */
     public function getTopUsers($fecha, $cat){
+        global $psDb;
         //obtenemos la categoria de post escogida
         $datos = $this->setTime($fecha);
         $categoria = empty($cat) ? '' : 'AND post_category = '.$cat;
+        
         //top de usuarios por puntos
-        $consulta1 = db_execute("SELECT SUM(p.post_puntos) AS total, u.user_id, u.user_name FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE p.post_status = 0 AND p.post_date BETWEEN ".$datos['start']." AND ".$datos['end']." ".$categoria." GROUP BY p.post_user ORDER BY total DESC LIMIT 10");
-        $top['puntos'] = resultadoArray($consulta1);
+        $valores = ['start' => $datos['start'],'end' => $datos['end'],'categoria' => $categoria];
+        $consulta1 = $psDb->db_execute("SELECT SUM(p.post_puntos) AS total, u.user_id, u.user_name FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE p.post_status = 0 AND p.post_date BETWEEN :start AND :end :categoria GROUP BY p.post_user ORDER BY total DESC LIMIT 10", $valores);
+        $top['puntos'] = $psDb->resultadoArray($consulta1);
+        
         //top de usuarios por seguidores
-        $consulta2 = db_execute("SELECT COUNT(f.follow_id) AS total, u.user_id, u.user_name FROM u_follows AS f LEFT JOIN u_miembros AS u ON f.f_id = u.user_id WHERE f.f_type = 1 AND f.f_date BEWEEN ".$datos['start']." AND ".$datos['end']." GROUP BY f.f_id ORDER BY total DESC LIMIT 10");
-        $top['seguidores'] = resultadoArray($consulta2);
+        $valores2 = ['start' => $datos['start'],'end' => $datos['end']];
+        $consulta2 = $psDb->db_execute("SELECT COUNT(f.follow_id) AS total, u.user_id, u.user_name FROM u_follows AS f LEFT JOIN u_miembros AS u ON f.f_id = u.user_id WHERE f.f_type = 1 AND f.f_date BEWEEN :start AND :end GROUP BY f.f_id ORDER BY total DESC LIMIT 10", $valores2);
+        $top['seguidores'] = $psDb->resultadoArray($consulta2);
+        
         //top de usuarios por medallas
-        $consulta3 = db_execute("SELECT COUNT(m.medal_for) AS total, u.user_id, u.user_name, wm.medal_id FROM w_medallas_assign AS m LEFT JOIN u_miembros AS u ON m.medal_for = u.user_id LEFT JOIN w_medallas AS wm ON wm.medal_id = m.medal_id WHERE wm.m_type = \'1\' AND m.medal_date BETWEEN ".$datos['start']." AND ".$datos['end']." GROUP BY m.medal_for ORDER BY total DESC LIMIT 10");
-        $top['medallas'] = resultadoArray($consulta3);
+        $valores3 = ['start' => $datos['start'],'end' => $datos['end']];
+        $consulta3 = $psDb->db_execute("SELECT COUNT(m.medal_for) AS total, u.user_id, u.user_name, wm.medal_id FROM w_medallas_assign AS m LEFT JOIN u_miembros AS u ON m.medal_for = u.user_id LEFT JOIN w_medallas AS wm ON wm.medal_id = m.medal_id WHERE wm.m_type = \'1\' AND m.medal_date BETWEEN :start AND :end GROUP BY m.medal_for ORDER BY total DESC LIMIT 10", $valores3);
+        $top['medallas'] = $psDb->resultadoArray($consulta3);
         return $top;
     }
     
@@ -129,8 +136,10 @@ class psTops{
      * @return type devolvemos el array $resultado
      */
     public function getTopPostsConsulta($datos){
-        $consulta = db_execute("SELECT p.post_id, p.post_category,".$datos['type'].", p.post_puntos, p.post_title, c.c_seo, c.c_img FROM p_posts AS p LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = \'0\' AND p.post_date BETWEEN ".$datos['start']." AND ".$datos['end']." ".$datos['scat']." ORDER BY ".$datos['type']." DESC LIMIT 10");
-        $resultado = resultadoArray($consulta);
+        global $psDb;
+        $valores = ['type' => $datos['type'], 'start' => $datos['start'], 'end' => $datos['end'], 'scat' => $datos['scat'], 'type2' => $datos['type']];
+        $consulta = $psDb->db_execute("SELECT p.post_id, p.post_category, :type, p.post_puntos, p.post_title, c.c_seo, c.c_img FROM p_posts AS p LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = \'0\' AND p.post_date BETWEEN :start AND :end :scat ORDER BY :type2 DESC LIMIT 10",$valores);
+        $resultado = $psDb->resultadoArray($consulta);
         return $resultado;
     }
     
@@ -140,8 +149,10 @@ class psTops{
      * @return type devolvemos el array $resultado
      */
     public function getHomeTopPostsConsulta($datos){
-        $consulta = db_execute("SELECT p.post_id, p.post_category, p.post_title, p.post_puntos, c.c_seo FROM p_post AS p LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = 0 AND p.post_date BETWEEN \'".$datos['datos']."\' AND \'".$datos['end']."\' ORDER BY p.post_puntos DESC LIMIT 15");
-        $resultado = resultadoArray($consulta);
+        global $psDb;
+        $valores = ['datos' => $datos['datos'], 'end' => $datos['end']];
+        $consulta = $psDb->db_execute("SELECT p.post_id, p.post_category, p.post_title, p.post_puntos, c.c_seo FROM p_post AS p LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = 0 AND p.post_date BETWEEN :datos AND :end ORDER BY p.post_puntos DESC LIMIT 15", $valores);
+        $resultado = $psDb->resultadoArray($consulta);
         return $resultado;
     }
     
@@ -151,8 +162,10 @@ class psTops{
      * @return type devolvemos el array $resultado
      */
     public function getHomeTopUsersConsulta($datos){
-        $consulta = db_execute("SELECT SUM(p.post_puntos) AS total, u.user_id, u.user_name FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE p.post_status = 0 AND p.post_date BETWEEN \'".$datos['start']."\' AND ".$datos['end']."\' GROUP BY p.post_user ORDER BY total DESC LIMIT 10");
-        $resultado = resultadoArray($consulta);
+        global $psDb;
+        $valores = ['start' => $datos['start'], 'end' => $datos['end']];
+        $consulta = $psDb->db_execute("SELECT SUM(p.post_puntos) AS total, u.user_id, u.user_name FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE p.post_status = 0 AND p.post_date BETWEEN :start AND :end GROUP BY p.post_user ORDER BY total DESC LIMIT 10", $valores);
+        $resultado = $psDb->resultadoArray($consulta);
         return $resultado;
     }
     
