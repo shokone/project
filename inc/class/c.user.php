@@ -134,7 +134,7 @@ class psUser{
                     return true;
                 }
             }else{
-                return '0: Tu cuenta todav&iacute;a no ha sido activada. Por favor revisa tu correo para poder acceder a la nuestra comunidad.';
+                return '0: Tu cuenta todav&iacute;a no ha sido activada. Por favor revisa tu correo para poder acceder a la comunidad.';
             }
         }
     }
@@ -168,6 +168,110 @@ class psUser{
             $psCore->redirectTo($redirectTo);
         }else{
             return true;
+        }
+    }
+
+    /**
+     * @funcionalidad cargamos el usuario mediante su id
+     * @param  boolean $login [description] si ha iniciado sesión, por defecto no (false)
+     * @return [type]         [description]
+     */
+    function load($login = false){
+        global $psDb;
+        //cargamos los datos de la base de datos
+        $consulta = "SELECT u.*, s.* FROM u_miembros u, u_sessions s WHERE s.session_id = :id AND u.user_id = s.session_user_id";
+        $valores = [
+            'id' => $this->sesion->id,
+        ];
+        $query = $psDb->db_execute($consulta, $valores);
+        //comprobamos si el usuario existe
+        if(!isset($this->info['user_id'])){
+            return false;
+        }
+        //realizamos las consultas necesarias para cargar los permisos del usuario
+        $consulta2 = "SELECT r_name, r_color, r_image, r_allows FROM u_rangos WHERE rango_id = :uid";
+        $valores2 = [
+            'uid' => $this->info['user_id'],
+        ];
+        $this->info['rango'] = $pdDb->db_execute($consulta2, $valores2, 'fetch_assoc');
+
+        $consulta3 = "SELECT r_allows FROM u_rangos WHERE rango_id = :u_rango";
+        $valores3 = [
+            'u_rango' => $this->info['user_rango'],
+        ];
+        $query3 = $psDb->db_execute($consulta3, $valores3);
+        $this->permisos = unserialize($query3['r_allows']);
+        //actualizamos la variable booleana member
+        $this->member = 1;
+        //comprobamos el rango del usuario
+        if($this->permisos['sumo'] == false && $this->permisos['suad'] == true){
+            $this->admod = 1;
+        }else if($this->permisos['sumo'] == true && $this->permisos['suad'] == false){
+            $this->admod = 2;
+        }else if($this->permisos['sumo'] || $this->permisos['suad']){
+            $this->admod = true;
+        }else{
+            $this->admod = 0;//no es admin
+        }
+
+        //obtenemos el nombre y nick y si esta baneado
+        $this->nick = $this->info['user_name'];
+        $this->user_id = $this->info['user_id'];
+        $this->baneado = $this->info['user_baneado'];
+        //actualizamos en la db el ultimo acceso
+        $consulta4 = "UPDATE u_miembros SET user_lastactive = :tiempo WHERE user_id = :uid";
+        $valores4 = [
+            'tiempo' => time(),
+            'uid' => $this->user_id,
+        ];
+        $psDb->db_execute($consulta4, $valores4);
+        //comprobamos si el usuario ha iniciado sesión
+        if($login){
+            //actualizamos ultimo logeo
+            $consulta5 = "UPDATE u_miembros SET user_lastlogin = :time_now WHERE user_id = :uid";
+            $valores5 = [
+                'time_now' => $this->sesion->time,
+                'uid' => $this->user_id,
+            ];
+            $psDb->db_execute($consulta5, $valores5);
+            //registramos la ip del usuario
+            $consulta6 = "UPDATE u_miembros SET user_last_ip = :ip WHERE user_id = :uid";
+            $valores6 = [
+                'ip' => $this->sesion->ip,
+                'uid' => $this->user_id,
+            ];
+            $psDb->db_execute($consulta6, $valores6);
+        }
+        //borramos la variable sesion por seguridad
+        unset($this->sesion);
+    }
+
+    /**
+     * @funcionalidad activamos la cuenta del usuario
+     * @param  [type] $uid [description] id del usuario
+     * @return [type]      [description]
+     */
+    function activate($uid){
+        global $psDb;
+        if(empty($uid)) $uid = (int)$_GET['uid'];
+        //ejecutamos la consulta en la base de datos
+        $consulta = "SELECT user_name, user_password, user_registro FROM u_miembros WHERE user_id = :uid";
+        $valores = [
+            'uid' => $uid,
+        ];
+        $query = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+        if($psDb->db_execute($consulta, $valores, 'rowCount') == 0){
+            return false;
+        }else{
+            $consulta2 = "UPDATE u_miembros SET user_active = 1 WHERE user_id = :uid";
+            $valores2 = [
+                'uid' => $uid,
+            ];
+            if($psDb->db_execute($consulta2, $valores2)){
+                return $query;
+            }else{
+                return false;
+            }
         }
     }
 }

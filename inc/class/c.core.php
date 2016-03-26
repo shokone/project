@@ -6,7 +6,7 @@ if(!defined('PS_HEADER')){
 /**
  * clase psCore
  * clase destinada al control de las funciones del script
- * 
+ *
  * @name c.core.php
  * @author Iván Martínez Tutor
  */
@@ -14,7 +14,7 @@ class psCore{
     //declaramos las variables de la clase
     protected $settings; //configuraciones del sitio
     protected $consultas;//consultas del sitio
-    
+
     /**
      * @funcionalidad instanciamos la clase y la guardamos en una variable estática
      * @staticvar psCore $instancia instancia de la clase
@@ -27,7 +27,7 @@ class psCore{
         }
         return $instancia;
     }
-    
+
     /**
      * @funcionalidad cargamos los datos de los ajustes guardados en la base de datos
      * @return type devolvemos el array de datos generado
@@ -37,7 +37,7 @@ class psCore{
         $consulta = "SELECT * FROM w_configuracion";
         return $psDb->db_execute($consulta, null, 'fetch_assoc');
     }
-    
+
     /**
      * @funcionalidad comprobamos que elementos se encuentran en moderacion
      * realizamos una suma del total de datos (post, comentarios, users, fotos)
@@ -50,7 +50,7 @@ class psCore{
         $datos['total'] = $datos['repposts'] + $datos['repfotos'] + $datos['repmps'] + $datos['repusers'] + $datos['revposts'] + $datos['revcomentarios'];
         return $datos;
     }
-    
+
     /**
      * @funcionalidad obtenemos las categorias de la base de datos
      * @return type devolvemos un array con los datos generados
@@ -61,7 +61,7 @@ class psCore{
         $resultado = $psDb->resultadoArray($consulta);
         return $resultado;
     }
-    
+
     /**
      * @funcionalidad obtenemos los temas de la base de datos
      * @return string devolvemos un array con los datos generados
@@ -75,7 +75,7 @@ class psCore{
         $datos['t_url'] = $this->settings['url']."/themes/".$datos['t_path'];
         return $datos;
     }
-    
+
     /**
      * @funcionalidad obtenemos las noticias de la base de datos
      * @return type devolvemos un array con los datos generados
@@ -89,7 +89,7 @@ class psCore{
         }
         return $datos;
     }
-    
+
     /**
      * @funcionalidad comprobamos si extiste la carpeta del instalador
      */
@@ -99,7 +99,7 @@ class psCore{
             return "<div id='message_install'>Debe eliminar la carpeta <strong>install</strong></div>";
         }
     }
-    
+
     /**
      * @funcionalidad obtenemos el dominio de nuestro script
      * @return string devolvemos el nombre del dominio
@@ -115,7 +115,7 @@ class psCore{
         $dominio = $dominio[$nuevo - 2].'.'.$dominio[$nuevo - 1];
         return $dominio;
     }
-    
+
     /**
      * @funcionalidad obtenemos los datos de la url actual
      * @return type devolvemos el valor de la url actual
@@ -128,7 +128,7 @@ class psCore{
         $currentUrl = urlencode($currentUrl);
         return $currentUrl;
     }
-    
+
     /**
      * @funcionalidad obtendremos la ruta del directorio al que queremos redireccionar
      * @param type $psDir pasamos por parametro la ruta
@@ -138,7 +138,7 @@ class psCore{
         header("Location: $dir");
         exit();
     }
-    
+
     /**
      * @funcionalidad comprobamos el nivel de acceso del usuario
      * @global type $psUser obtenemos el usuario
@@ -198,7 +198,7 @@ class psCore{
         }
         return array('titulo' => 'Error', 'mensaje' => $mensaje);
     }
-    
+
     /**
      * @funcionalidad cargamos las configuraciones del nucleo del script
      */
@@ -228,7 +228,7 @@ class psCore{
         $this->settings['novemods'] = $this->getNovemodera();
         echo "novedades moderacion<br>";
     }
-    
+
     /**
      * @funcionalidad creamos el servicio json para guardar o cargar datos
      * @param type $datos pasamos los datos por parametro
@@ -246,7 +246,7 @@ class psCore{
             return $json->decode($datos);
         }
     }
-    
+
     /**
      * @funcionalidad actualizamos el limite de paginas
      * @param type $psLimit limite de paginas
@@ -266,7 +266,7 @@ class psCore{
         }
         return $psStart.','.$psLimit;
     }
-    
+
     /**
      * @funcionalidad establecemos el numero maximo de paginas para no excederlo
      * @param type $psLimit pasamos el limite actual
@@ -284,7 +284,7 @@ class psCore{
         }
         return false;
     }
-    
+
     /**
      * @funcionalidad obtener las paginas
      * @param type $psTotal total de paginas
@@ -304,6 +304,5 @@ class psCore{
         $page['max'] = $this->setMax($psLimit, $psTotal);
         //devolvemos el array page
         return $page;
-        
     }
 }
