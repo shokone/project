@@ -6,7 +6,7 @@ if(!defined('PS_HEADER')){
 /**
  * clase psDb
  * clase destinada al control de la base de datos
- * 
+ *
  * @name c.db.php
  * @author Iván Martínez Tutor
  */
@@ -14,7 +14,7 @@ class psDb{
     //declaramos la variable $conexion
     private $conexion;
     protected $db;
-    
+
     /**
      * @funcionalidad instanciamos la clase y la guardamos en una variable estática
      * @staticvar psDb $instancia instancia de la clase
@@ -27,7 +27,7 @@ class psDb{
         }
         return $instancia;
     }
-    
+
     /**
      * @funcionalidad constructor de la base de datos
      * cargaremos los datos necesarios para cargar la base de datos
@@ -80,6 +80,8 @@ class psDb{
                     return $consulta->fetch(PDO::FETCH_NUM);
                 case 'fetch_assoc':
                     return $consulta->fetch(PDO::FETCH_ASSOC);
+                case 'closeCursor':
+                    return $consulta->closeCursor();
             }
         }catch(PDOException $e){
             die("Error al realizar la consulta, error: ".$e->getMessage());
