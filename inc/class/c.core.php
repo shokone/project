@@ -61,15 +61,27 @@ class psCore{
         return $psDb->db_execute($consulta, null, 'fetch_assoc');
     }
 
+    /**
+     * @funcionalidad obtenemos los datos de una palabra para sustituirla
+     * @param  [type]   $word -> obtenemos la palabra
+     * @param  [type]   $type -> obtenemos un valor booleano para comprobar o no el tipo
+     * @return type devolvemos el array de datos generado
+     */
     function badWords($word, $type = false){
         global $psDb;
-        /*************************************************************/
-/**************************  FALTAN COSAS HAY QUE TERMINARLO *******************************/
-        /***************************************************************/
-        /*$consulta = "SELECT word, swop, method, type FROM w_badwords :type";
+        $consulta = "SELECT word, swop, method, type FROM w_badwords :type";
         $valores = array(
-            'type' =>
-        );*/
+            'type' => ($type ? '' : 'WHERE type = :0'),
+            '0' => 0,
+        );
+        $query = $psDb->db_execute($consulta, $valores);
+        foreach($query as $badWord){
+            $search = empty($badWord['method']) ? $badWord['word'] : $badword['word']." ";
+            $replace = $badWord['type'] == 1 ? '<img class="bwtype" title="'.$badword['word'].'" src="'.$badWord['swop'].'"/>' : $badWord['swop'].' ';
+            $subject = $word;
+            $word = str_ireplace($search, $replace, $subject)
+        }
+        return $word;
     }
 
     /**
