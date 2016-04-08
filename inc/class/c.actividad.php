@@ -1,14 +1,14 @@
-<?php 
+<?php
 //si la constante PS_HEADER no esta definida no se accede al script
 if (!defined('PS_HEADER')) {
     exit("No se permite el acceso al script");
 }
 
 /**
- * Clase realizada para el control de la actividad 
+ * Clase realizada para el control de la actividad
  *
  * @name c.actividad.php
- * @author 
+ * @author Iván Martínez Tutor
  */
 class psActividad{
     private $actividad = [];
@@ -21,11 +21,11 @@ class psActividad{
     public static function &getInstance(){
         static $instance;
         if(is_null($instance)){
-                $instance = new psActividad;
+            $instance = new psActividad;
         }
         return $instance;
     }
-    
+
     /**
      * constructor
      */
@@ -91,7 +91,7 @@ class psActividad{
             return 'historico';
         }
     }
-    
+
     /**
      * @funcionalidad obtenemos la consulta a realizar dependiendo de la actividad que se realice
      * @param type $datos pasamos el tipo de actividad
@@ -129,7 +129,7 @@ class psActividad{
                         "SELECT p.pub_id, u.user_name FROM u_muro AS p LEFT JOIN u_miembros AS u ON p.p_user = u.user_id WHERE p.pub_id = :obj_uno LIMIT 1",
                         $valores
                     ];
-                    return $array;    
+                    return $array;
                 }else{
                     $array = [
                         "SELECT c.pub_id, c.c_body, u.user_name FROM u_muro_comentarios AS c LEFT JOIN u_muro AS p ON c.pub_id = p.pub_id LEFT JOIN u_miembros AS u ON p.p_user = u.user_id WHERE cid = :obj_uno LIMIT 1",
@@ -139,7 +139,7 @@ class psActividad{
                 }
         }
     }
-    
+
     /**
      * @funcionalidad obtenemos las notificaciones e insertamos las nuevas
      * @global type $psUser variable global de la clase psUser
@@ -161,12 +161,12 @@ class psActividad{
         ];
         $consulta = $psDb->db_execute("SELECT ac_id FROM u_actividad WHERE user_ id = :user_id ORDER BY ac_date DESC",$valores);
         $resultado = $psDb->resultadoArray($consulta);
-        
+
         //obtenemos el total de notificaciones de actividad en curso
         $acTotal = count($resultado);
         //obtenemos el id de la notificación de actividad más vieja
         $lastNot = $resultado[$acTotal -1]['ac_id'];
-        
+
         //comprobamos si hemos llegado al límite de notificaciones de actividad
         //si es así borramos la última
         if($acTotal >= $psCore->settings['c_max_acts']){
@@ -188,7 +188,7 @@ class psActividad{
             return false;
         }
     }
-    
+
     /**
      * @funcionalidad obtenemos la frase a mostrar en la pagina dependiendo de la accion realizada
      * @global type $psCore obtenemos los datos del nucleo a traves de su variable global
@@ -219,7 +219,7 @@ class psActividad{
                         $etext = "";
                     }else{//voto el post
                         $etext = ($datos['obj_dos']+1)." veces";
-                    } 
+                    }
                 }else{
                     if($datos['obj_dos'] == 0){
                         $etext = "negativo";
@@ -290,7 +290,7 @@ class psActividad{
         }
         return $frase;
     }
-    
+
     /**
      * @funcionalidad obtenemos los datos y formamos la estructura de la actividad
      * @param type $datos pasamos los datos por parametro
@@ -328,7 +328,7 @@ class psActividad{
         }
         return $actividad;
     }
-    
+
     /**
      * @funcionalidad obtenemos la actividad a partir del usuario
      * @param type $u_id obtenemos el id del usuario
@@ -360,11 +360,11 @@ class psActividad{
         //realizamos la consulta en la base de datos
         $consulta = $psDb->db_execute("SELECT ac_id, user_id, obj_uno, obj_dos, ac_type, ac_date FROM u_actividad WHERE user_id = :user_id :type ORDER BY ac_date DESC LIMIT :comienzo, 25", $valores);
         $resultado = $psDb->resultadoArray($consulta);
-        
+
         //montamos y devolvemos la actividad
         return $this->montarActividad($resultado);
     }
-    
+
     /**
      * @funcionalidad esee metodo se encargará de eliminar la noticia de actividad seleccionada
      * @global type $psUser variable global de la clase psUser
@@ -387,7 +387,7 @@ class psActividad{
         }
         return "0: La actividad seleccionada no puede eliminarse.";
     }
-    
+
     /**
      * @funcionalidad obtenemos la actividad relacionada con el seguimiento de usuarios
      * @global type $psUser variable global de la clase psUser
@@ -404,7 +404,7 @@ class psActividad{
         $valores = ['user_id' => $psUser->uid];
         $consulta = $psDb->db_execute("SELECT f_id FROM u_follows WHERE f_user = :user_id AND f_type = 1",$valores);
         $resultado = $psDb->resultadoArray($consulta);
-        
+
         //ordenamos el array de datos obtenido
         foreach($resultado as $indice => $valor){
             $seguidores[] = "'".$valor['f_id']."'";
@@ -417,7 +417,7 @@ class psActividad{
         $valores2 = ['seguidores' => $seguidores, 'start' => $com];
         $consulta2 = $psDb->db_execute("SELECT ua.*, u.user_name AS usuario FROM u_actividad AS ua LEFT JOIN u_miembros AS u ON ua.user_id = u.user_id WHERE ua.user_id IN :seguidores ORDER BY ua.ac_date DESC LIMIT :start, 25", $valores2);
         $resultado2 = $psDb->resultadoArray($consulta2);
-        
+
         //montamos la actividad resultante
         if(empty($resultado2)){
             return "No hay actividad o no est&aacute;s siguiendo a ning&uacute;n usuario.";

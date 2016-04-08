@@ -274,4 +274,238 @@ class psUser{
             }
         }
     }
+
+    /**
+     * @funcionalidad obtenemos el id del usuario obtenido por parámetro
+     * @param  [type] $psUser [description] id del usuario
+     * @return [type]         [description] devolvemos el id del usuario si todo ha salido correctamente
+     */
+    function getUid($psUser){
+        global $psCore, $psDb;
+        $username = strtolower($psUser);
+        $consulta = "SELECT user_id FROM u_miembros WHERE LOWER(user_name) = :username";
+        $valores = [
+            'username' => $username,
+        ];
+        $psUser = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+        $psUserId = $psUser['user_id'];
+        if(empty($psUserId)){
+            return 0;
+        }else{
+            return $psUserId;
+        }
+    }
+
+    /**
+     * @funcionalidad comprobamos si el usuario está baneado a partir de la variable $user_id global
+     * @return [type] [description] devolvemos false si el usuario no está baneado,
+     *                              o los datos del usuario en caso de que sí lo esté
+     */
+    function getBaned(){
+        global $psDb;
+        //realizamos las consultas oportunas
+        $consulta = "SELECT * FROM u_suspension WHERE user_id = :uid";
+        $valores = [
+            'uid' => $this->user_id,
+        ];
+        $datos = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+        //obtenemos la hora actual
+        $tiempo = time();
+        if($datos['susp_termina'] > 1 && $datos['sus_termina'] < $tiempo){
+            $consulta2 = "UPDATE u_miembros SET user_baneado = 0 WHERE user_id = :uid";
+            $valores2 = [
+                'uid' => $this->user_id,
+            ];
+            $psDb->db_execute($consulta2, $valores2);
+            $consulta3 = "DELETE FROM u_suspension WHERE user_id = :uid";
+            $valores3 = [
+                'uid' => $this->user_id,
+            ];
+            $psDb->db_execute($consulta3, $valores3);
+            return false;
+        }else{
+            return $datos;
+        }
+    }
+
+    /**
+     * @funcionalidad obtenemos el nombre del usuario a partir de su id
+     * @param  [type] $uid [description] id del usuario del cual se quiere obtener el nombre
+     * @return [type]      [description] devolvemos el nombre del usuario
+     */
+    function getUserName($uid){
+        global $psDb;
+        $consulta = "SELECT user_name FROM u_miembros WHERE user_id = :uid";
+        $valores = [
+            'uid' => (int)$uid,
+        ];
+        $psUser = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+        return $psUser['user_name'];
+    }
+
+    /**
+     * @funcionalidad comprobamos si estamos siguiendo al usuario obtenido por parametro
+     * @param  [type] $uid [description] id del usuario a comprobar
+     * @return [type]      [description] obtenemos un valor booleano con el resultado de la comprobación
+     */
+    function follow($uid){
+        global $psDb;
+        $consulta = "SELECT follow_id FROM u_follows WHERE f_id = :uid AND f_user = :uid2 AND f_type = :data";
+        $valores = [
+            'uid' => (int)$uid,
+            'uid2' => $uid,
+            'data' => 1,
+        ];
+        $datos = $psDb->db_execute($consulta, $valores, 'rowCount');
+        if($datos > 0){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    /**
+     * @funcionalidad dar la medalla al usuario cuando realiza una acción concreta establecida
+     * @return [type] [description]
+     */
+    function darMedalla(){
+        global $psDb;
+        //realizamos las consultas oportunas en la db
+        //obtenemos id de medallas
+        $consulta = "SELECT wm.medal_id FROM w_medallas AS wm LEFT JOIN w_medallas_asign AS w ON wm.medal_id = w.medal_id WHERE wm.m_type = \'1\' AND w.medal_id = :uid";
+        $valores = ['uid' => $this->user_id,];
+        $query = $psDb->db_execute($consulta, $valores, 'rowCount');
+        //seguidores por id de usuario
+        $consulta2 = "SELECT COUNT(follow_id) AS f FROM u_follows WHERE f_id = :uid AND f_type = \'1\'";
+        $valores2 = ['uid' => $this->user_id,];
+        $query2 = $psDb->db_execute($consulta2, $valores2, 'fetch_num');
+        //seguidores por nombre de usuario
+        $consulta3 = "SELECT COUNT(follow_id) AS f FROM u_follows WHERE f_user = :uid AND f_type = \'1\'";
+        $valores3 = ['uid' => $this->user_id,];
+        $query3 = $psDb->db_execute($consulta3, $valores3, 'fetch_num');
+        //comentarios en post
+        $consulta4 = "SELECT COUNT(cid) AS c FROM p_comentarios WHERE c_user = :uid AND c_status = \'0\'";
+        $valores4 = ['uid' => $this->user_id,];
+        $query4 = $psDb->db_execute($consulta4, $valores4, 'fetch_num');
+        //comentarios en fotos
+        $consulta5 = "SELECT COUNT(cid) AS c FROM f_comentarios WHERE c_user = :uid";
+        $valores5 = ['uid' => $this->user_id,];
+        $query5 = $psDb->db_execute($consulta5, $valores5, 'fetch_num');
+        //fotos
+        $consulta6 = "SELECT COUNT(foto_id) AS f FROM f_fotos WHERE f_status = \'0\' AND f_user = :uid";
+        $valores6 = ['uid' => $this->user_id,];
+        $query6 = $psDb->db_execute($consulta6, $valores6, 'fetch_num');
+        //post
+        $consulta7 = "SELECT COUNT(post_id) AS p FROM p_posts WHERE post_user = :uid AND post_status = \'0\'";
+        $valores7 = ['uid' => $this->user_id,];
+        $query7 = $psDb->db_execute($consulta7, $valores7, 'fecth_num');
+
+        //obtenemos las medallas
+        $consulta8 = "SELECT medal_id, m_cant, m_cond_user, m_cond_user_rango FROM w_medallas WHERE m_type = \'1\' ORDER BY m_cant DESC";
+        $query8 = $psDb->db_execute($consulta8);
+        $datos = $psDb->resultadoArray($query8);
+        //damos las medallas a los usuarios
+        foreach($datos as $medallas){
+            if($medalla['m_cond_user'] == 1 && !empty($this->info['user_puntos']) && $medalla['m_cant'] > 0 && $medalla['m_cant'] <= $this->info['user_puntos']){
+                $new = $medalla['medal_id'];
+            }else if($medalla['m_cond_user'] == 2 && !empty($query2) && $medalla['m_cant'] > 0 && $medalla['m_cant'] <= $query2[0]){
+                $new = $medalla['medal_id'];
+            }else if($medalla['m_cond_user'] == 3 && !empty($query3) && $medalla['m_cant'] > 0 && $medalla['m_cant'] <= $query3[0]){
+                $new = $medalla['medal_id'];
+            }else if($medalla['m_cond_user'] == 4 && !empty($query4) && $medalla['m_cant'] > 0 && $medalla['m_cant'] <= $query4[0]){
+                $new = $medalla['medal_id'];
+            }else if($medalla['m_cond_user'] == 5 && !empty($query5) && $medalla['m_cant'] > 0 && $medalla['m_cant'] <= $query5[0]){
+                $new = $medalla['medal_id'];
+            }else if($medalla['m_cond_user'] == 6 && !empty($query6) && $medalla['m_cant'] > 0 && $medalla['m_cant'] <= $query6[0]){
+                $new = $medalla['medal_id'];
+            }else if($medalla['m_cond_user'] == 7 && !empty($query7) && $medalla['m_cant'] > 0 && $medalla['m_cant'] <= $query7[0]){
+                $new = $medalla['medal_id'];
+            }else if($medalla['m_cond_user'] == 8 && !empty($query) && $medalla['m_cant'] > 0 && $medalla['m_cant'] <= $query){
+                $new = $medalla['medal_id'];
+            }else if($medalla['m_cond_user'] == 9 && !empty($this->info['user_rango']) && $medalla['m_cant'] > 0 && $medalla['m_cond_user_rango'] == $this->info['user_rango']){
+                $new = $medalla['medal_id'];
+            }
+            //Si hay una nueva medalla hacemos las consultas en la db
+            if(!empty($new)){
+                $consulta9 = "SELECT id FROM w_medallas_asign WHERE medal_id = :new AND medal_for = :uid";
+                $valores9 = [
+                    'new' => $new,
+                    'uid' => $this->user_id,
+                ];
+                //comprobamos si la consulta ya se encuentra en la base de datos con ese usuario
+                if($psDb->db_execute($consulta9, $valores9, 'rowCount')){
+                    $con1 = "INSERT INTO w_medallas_asign (medal_id, medal_for, medal_date, medal_ip) VALUES (:id, :for, :dat, :ip";
+                    $val1 = [
+                        'id' => (int)$new,
+                        'for' => $this->user_id,
+                        'dat' => time(),
+                        'ip' => $_SERVER['REMOTE_ADDR'],
+                    ];
+                    $con2 = "INSERT INTO u_monitor (user_id, obj_uno, not_type, not_date) VALUES (:uid, :new, :type, :tim)";
+                    $val2 = [
+                        'uid' => $this->user_id,
+                        'new' => (int)$new,
+                        'type' => 15,
+                        'tim' => time(),
+                    ];
+                    $con3 = "UPDATE w_medallas SET m_total = m_total + 1 WHERE medal_id = :new";
+                    $val3 = ['new' => (int)$new,];
+                    $psDb->db_execute($con1, $val1);
+                    $psDb->db_execute($con2, $val2);
+                    $psDb->db_execute($con3, $val3);
+                }
+            }
+        }
+    }
+
+    /**
+     * @funcionalidad obtenemos la información básica del usuario, estadísticas, estado y comprobamos su seguimiento
+     * @param  [type] $uid [description] id del usuario a comprobar
+     * @return [type]      [description] devolvemos un array con los datos del usuario
+     */
+    function getUserInfo($uid){
+        //creamos las variables globales
+        global $psCore, $psDb;
+        //creamos las variables locales
+        $online = (time() - ($psCore->settings['c_last_active'] * 60));
+        $inactive = ($online * 2);//tiempo inactivo = doble de online
+        //obtenemos la info general del usuario
+        $consulta = "SELECT u.user_id, u.user_name, u.user_lastactive, u.user_baneado, p.user_sexo, p.user_pais, p.p_nombre, p.p_mensaje, p.p_sitio FROM u_miembros AS u, u_perfil AS p WHERE u.user_id = :uid AND p.user_id = :uidd";
+        $valores = [
+            'uid' => (int)$uid,
+            'uidd' => (int)$uid,
+        ];
+        $datos = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+
+        //obtenemos el estado del usuario
+        if($datos['user_lastactive'] > $online){
+            $datos['status'] = array('t' => 'Online', 'css' => 'online',);
+        }else if($datos['user_lastactive'] > $inactive){
+            $datos['status'] = array('t' => 'Inactivo', 'css' => 'inactive',);
+        }else {
+            $datos['status'] = array('t' => 'Offline', 'css' => 'offline',);
+        }
+
+        //obtenemos las estadísticas del usuario
+        $consulta = "SELECT u.user_puntos, r.r_name, r.r_color, r.r_image FROM u_miembros AS u LEFT JOIN u_rangos AS r ON u.user_rango = r.rango_id WHERE user_id = :uid";
+        $valores = ['uid' => $uid,];
+        $datos['stats'] = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+        $c1 = "SELECT COUNT(post_id) AS p FROM p_posts WHERE post_user = :uid AND post_status = \'0\'";
+        $c2 = "SELECT COUNT(cid) AS c FROM p_comentarios WHERE c_user = :uid AND c_status = \'0\'";
+        $c3 = "SELECT COUNT(follow_id) AS s FROM u_follows WHERE f_id = :uid AND f_type = \'1\'";
+        $v1 = ['uid' => (int)$uid,];
+        $q1 = $psDb->db_execute($c1, $v1);
+        $q2 = $psDb->db_execute($c2, $v1);
+        $q3 = $psDb->db_execute($c3, $v1);
+        $datos['status']['user_posts'] = $q1[0];
+        $datos['status']['user_comentarios'] = $q2[0];
+        $datos['status']['user_seguidores'] = $q3[0];
+
+        //comprobamos si estamos siguiendo al usuario
+        $datos['follow'] = $this->follow($uid);
+
+        //devolvemos el array datos con la info del usuario
+        return $datos;
+    }
 }

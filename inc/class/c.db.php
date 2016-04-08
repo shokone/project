@@ -6,7 +6,7 @@ if(!defined('PS_HEADER')){
 /**
  * clase psDb
  * clase destinada al control de la base de datos
- * 
+ *
  * @name c.db.php
  * @author Iván Martínez Tutor
  */
@@ -14,7 +14,7 @@ class psDb{
     //declaramos la variable $conexion
     private $conexion;
     protected $db;
-    
+
     /**
      * @funcionalidad instanciamos la clase y la guardamos en una variable estática
      * @staticvar psDb $instancia instancia de la clase
@@ -27,7 +27,7 @@ class psDb{
         }
         return $instancia;
     }
-    
+
     /**
      * @funcionalidad constructor de la base de datos
      * cargaremos los datos necesarios para cargar la base de datos
@@ -68,10 +68,12 @@ class psDb{
         try{
             $consulta = $con->prepare($sql);
             if(!is_null($valores)){
-                foreach($valores as $indice => $valor){
-                    $consulta->bindParam($indice,$valor);
+                foreach($valores as $key => $valor){
+                    $consulta->bindParam($key,$valor);
                 }
             }
+            //si nuestro proveedor de bases de datos tiene limitada la ejecución lanzamos esto para limpiar memoria y evitar este problema
+            $consulta->closeCursor();
             $consulta->execute();
             switch($type){
                 case 'rowCount':

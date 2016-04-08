@@ -29,6 +29,29 @@ class psCore{
     }
 
     /**
+     * @funcionalidad cargamos las configuraciones del nucleo del script
+     */
+    public function psCore(){
+        //cargamos las configuraciones
+        $this->settings = $this->getSettings();
+        $this->settings['domain'] = str_replace('http://','',$this->settings['url']);
+        $this->settings['tema'] = $this->getTema();
+        $this->settings['default'] = $this->settings['url'].'/themes/default';
+        $this->settings['categorias'] = $this->getCategorias();
+        $this->settings['images'] = $this->settings['tema']['t_url'].'/images';
+        $this->settings['css'] = $this->settings['tema']['t_url'].'/css';
+        $this->settings['js'] = $this->settings['tema']['t_url'].'/js';
+        //si estamos en la seccion portal o posts cargamos los datos nuevos
+        if($_GET['do'] == 'portal' || $_GET['do'] == 'posts'){
+            $this->settings['news'] = $this->getNoticias();
+            echo "noti cargado<br>";
+        }
+        //guardamos el mensaje del instalador y de los post pendientes de moderacion
+        $this->settings['instalador'] = $this->existInstall();
+        $this->settings['novemods'] = $this->getNovemodera();
+    }
+
+    /**
      * @funcionalidad cargamos los datos de los ajustes guardados en la base de datos
      * @return type devolvemos el array de datos generado
      */
@@ -36,6 +59,17 @@ class psCore{
         global $psDb;
         $consulta = "SELECT * FROM w_configuracion";
         return $psDb->db_execute($consulta, null, 'fetch_assoc');
+    }
+
+    function badWords($word, $type = false){
+        global $psDb;
+        /*************************************************************/
+/**************************  FALTAN COSAS HAY QUE TERMINARLO *******************************/
+        /***************************************************************/
+        /*$consulta = "SELECT word, swop, method, type FROM w_badwords :type";
+        $valores = array(
+            'type' =>
+        );*/
     }
 
     /**
@@ -200,36 +234,6 @@ class psCore{
     }
 
     /**
-     * @funcionalidad cargamos las configuraciones del nucleo del script
-     */
-    public function psCore(){
-        //cargamos las configuraciones
-        $this->settings = $this->getSettings();
-        echo "seting cargado<br>";
-        $this->settings['domain'] = str_replace('http://','',$this->settings['url']);
-        echo "dominio cargado<br>";
-        $this->settings['tema'] = $this->getTema();
-        echo "tema cargado<br>";
-        $this->settings['default'] = $this->settings['url'].'/themes/default';
-        $this->settings['categorias'] = $this->getCategorias();
-        echo "cat cargado<br>";
-        $this->settings['images'] = $this->settings['tema']['t_url'].'/images';
-        $this->settings['css'] = $this->settings['tema']['t_url'].'/css';
-        $this->settings['js'] = $this->settings['tema']['t_url'].'/js';
-        //si estamos en la seccion portal o posts cargamos los datos nuevos
-        if($_GET['do'] == 'portal' || $_GET['do'] == 'posts'){
-            $this->settings['news'] = $this->getNoticias();
-            echo "noti cargado<br>";
-        }
-        echo "completado";
-        //guardamos el mensaje del instalador y de los post pendientes de moderacion
-        $this->settings['instalador'] = $this->existInstall();
-        echo "existe la instalacion<br>";
-        $this->settings['novemods'] = $this->getNovemodera();
-        echo "novedades moderacion<br>";
-    }
-
-    /**
      * @funcionalidad creamos el servicio json para guardar o cargar datos
      * @param type $datos pasamos los datos por parametro
      * @param type $type pasamos el tipo de accion a realizar
@@ -248,10 +252,60 @@ class psCore{
     }
 
     /**
+     * @funcionalidad comprobamos y validamos el string obtenido para ser válido en una url
+     * @param [type]  $string [description] string a validar
+     * @param boolean $max    [description] devolvemos el string validado
+     */
+    function setSeo($string, $maxConversion = false){
+        //cambiamos las letras con acento y la ñ
+        $acento = array('á', 'é', 'í', 'ó', 'ú', 'ñ');
+        $valido = array('a', 'e', 'i', 'o', 'u', 'n');
+        //comprobamos texto y validamos para la url
+        $string = str_replace($acento, $valido, $string);
+        $string = trim($string);
+        //comprobamos con expresiones regulares
+        //sustituimos cualquier carácter disinto de letras mayúsculas y minúsculas y numeros por -
+        $string = trim(preg_replace('/[^ A-Za-z0-9_]/', '-', $string));
+        //eliminamos los espacios restantes y los sustituimos por -
+        $string = preg_replace('/[ \t\n\r]+/', '-', $string);
+        $string = str_replace(' ', '-', $string);
+        $string = preg_replace('/[ -]+/', '-', $string);
+        //si $maxConversion = true
+        //realizamos mas validaciones
+        if($maxConversion){
+            $string = str_replace('-', '', $string);
+            $string = strtolower($string);
+        }
+        return $string;
+    }
+
+    /**
+     * @funcionalidad convertimos los datos para actualizar en la db
+     * @param type $datos obtenemos por parametro un array con los datos 
+     * @param type $prefijo obtenemos el prefijo para colocar delante de cada dato
+     * @return type devolvemos un array con los datos generados
+     */
+    function getDatos($datos, $prefijo = ''){
+        //obtenemos los datos de las keys del array
+        $keys = array_keys($datos);
+        //obtenemos los valores del array
+        $valores = array_values($datos);
+        foreach($dato as $key => $valor){
+            //añadimos el prefijo y rellenamos un array con cada dato
+            $values[$key] = $prefijo.$keys[$key] . " = " . $valor . ", ";
+        }
+        return $values;
+    }
+
+    /*****************************************************************************************/
+    /************************************ PAGINAS ********************************************/
+    /*****************************************************************************************/
+
+    /**
      * @funcionalidad actualizamos el limite de paginas
      * @param type $psLimit limite de paginas
-     * @param type $start primera pagina
-     * @param type $psMax ultima pagina
+     * @param type $start si su valor es true empezamos por la primera página
+     * @param type $psMax ultima página
      * @return type devolvemos un string con comienzo, final
      */
     public function setPagLimite($psLimit,$start=false,$psMax=0){
@@ -304,5 +358,13 @@ class psCore{
         $page['max'] = $this->setMax($psLimit, $psTotal);
         //devolvemos el array page
         return $page;
+    }
+
+    function getPagination(){
+
+    }
+
+    function inicioPages($url, &$start, $max, $max_per_page){
+
     }
 }
