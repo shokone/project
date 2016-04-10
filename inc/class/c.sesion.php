@@ -52,12 +52,12 @@ class psSesion{
         $this->cookie_dominio = ($dom == 'localhost') ? '' : '.'.$dom;
         $this->cookie_nombre = $this->cookie_pref.$this->cookie_dominio;
         //obtenemos la ip del usuario
-        //$this->ip =
+        $this->ip = $psCore->getIp();
         //si está activada la opción login por ip, 
         //iniciamos nueva sesión cuando el usuario cambie de ip
-        //$this->ses_ip = empty($psCore->settings['c_allow_sess_ip']) ? false : true;
+        $this->ses_ip = empty($psCore->settings['c_allow_sess_ip']) ? false : true;
         //damos un tiempo para expirar la sesión
-        //$this->ses_time_online = 
+        $this->ses_time_online = empty($psCore->settings['c_last_active']) ? $hits->ses_time_online : ($psCore->settings['c_last_active'] * 60);
     }
     
     /**

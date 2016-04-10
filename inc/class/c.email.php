@@ -52,9 +52,9 @@ class psEmail{
         global $psCore;
         $remitente = $psCore->settings['titulo']."<no-reply@".$psCore->settings['domain'].">";
         
-        $head = "From: $remitente<br>";
-        $head .= "Return-path: $remitente<br>";
-        $head .= "Reply-to: $remitente<br>";
+        $head = "From: ".$remitente."<br>";
+        $head .= "Return-path: ".$remitente."<br>";
+        $head .= "Reply-to: ".$remitente."<br>";
         return $head;
     }
     

@@ -1197,4 +1197,642 @@ class psAdmin{
             return true;
         }
     }
+
+    /**
+     * @funcionalidad activamos o desactivamos la cuenta del usuario
+     * @return [type]              [description] devolvemos un valor dependiendo del resultado de la actualización
+     */
+    function setUserInactivo(){
+        global $psUser, $psDb;
+        $uid = $_POST['uid'];
+        $consulta = "SELECT user_activo FROM u_miembros WHERE user_id = :uid";
+        $valores = array('uid' => $uid);
+        $datos = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+        //si la cuenta esta activada la desactivamos
+        if($datos['user_activo'] == 1){
+            $consulta2 = "UPDATE u_miembros SET user_activo = :valor WHERE user_id = :uid";
+            $valores2 = array('valor' => 0, 'uid' => $uid);
+            if($psDb->db_execute($consulta2, $valores2)){
+                return 'La cuenta ha sido desactivada.';
+            }else{
+                return 'Ocurri&oacute; un error durante la desactivaci&oacute;n de la cuenta';
+            }
+        }else{//si esta desactivada, la activaremos
+            $consulta3 = "UPDATE u_miembros SET user_activo = :valor WHERE user_id = :uid";
+            $valores3 = array('valor' => 1, 'uid' => $uid);
+            if($psDb->db_execute($consulta3, $valores3)){
+                return 'La cuenta ha sido activada.';
+            }else{
+                return 'Ocurri&oacute; un error durante la activaci&oacute;n de la cuenta';
+            }
+        }
+    }
+
+    /**
+     * @funcionalidad obtenemos los cambios de nick para comprobar
+     * Si el estado = 0 pendiente de aprobación
+     * Si el estado = 1 aprobado el cambio de nick
+     * Si el estado = 2 denegado el cambio de nick
+     * @return [type]              [description] devolvemos un array con los datos obtenidos
+     */
+    function getChangeNick(){
+        global $psDb, $psCore;
+        $max = 25;//maximo a mostrar por página
+        //realizamos la consulta
+        $consulta = "SELECT u.user_id, u.user_name, n.* FROM u_nicks AS n LEFT JOIN u_miembros AS u ON n.user_id = u.user_id WHERE estado = :valor ORDER BY n.time DESC LIMIT :limite";
+        $valores = array(
+            'valor' => 0,
+            'limite' => $psCore->setPagLimite($max, true),
+        );
+        $query = $psDb->db_execute($consulta, $valores);
+        $datos['data'] = $psDb->resultadoArray($query);
+        //obtenemos las paginas
+        $consulta2 = "SELECT COUNT(*) FROM u_nicks WHERE estado = :valor";
+        $valores2 = array('valor' => 0);
+        list($query2) = $psDb->db_execute($consulta2, $valores2, 'fetch_num');
+        $datos['pages'] = $psCore->inicioPages($psCore->settings['url'].'/admin/nicks?', $_GET['start'], $query2, $max);
+        return $datos;
+    }
+
+    /**
+     * @funcionalidad obtenemos todos los cambios de nick aceptados y denegados
+     * Si el estado = 0 pendiente de aprobación
+     * Si el estado = 1 aprobado el cambio de nick
+     * Si el estado = 2 denegado el cambio de nick
+     * @return [type]              [description] devolvemos un array con los datos obtenidos
+     */
+    function getChangeNickAll(){
+        global $psDb, $psCore;
+        $max = 25;//maximo a mostrar por página
+        //realizamos la consulta
+        $consulta = "SELECT u.user_id, u.user_name, n.* FROM u_nicks AS n LEFT JOIN u_miembros AS u ON n.user_id = u.user_id WHERE estado > :valor ORDER BY n.time DESC LIMIT :limite";
+        $valores = array(
+            'valor' => 0,
+            'limite' => $psCore->setPagLimite($max, true),
+        );
+        $query = $psDb->db_execute($consulta, $valores);
+        $datos['data'] = $psDb->resultadoArray($query);
+        //obtenemos las paginas
+        $consulta2 = "SELECT COUNT(*) FROM u_nicks WHERE estado > :valor";
+        $valores2 = array('valor' => 0);
+        list($query2) = $psDb->db_execute($consulta2, $valores2, 'fetch_num');
+        $datos['pages'] = $psCore->inicioPages($psCore->settings['url'].'/admin/nicks?', $_GET['start'], $query2, $max);
+        return $datos;
+    }
+
+    /**
+     * @funcionalidad aprobamos o no el nuevo nick del usuario
+     * Si el estado = 0 pendiente de aprobación
+     * Si el estado = 1 aprobado el cambio de nick
+     * Si el estado = 2 denegado el cambio de nick
+     */
+    function changeNick(){
+        global $psDb, $psCore, $psMonitor;
+    }
+
+    /**
+     * @funcionalidad obtenemos un listado con las sesiones
+     * @return [type]              [description] devolvemos un array con los datos obtenidos
+     */
+    function getSesions(){
+        global $psDb, $psCore;
+        $max = 25;//maximo a mostrar por página
+        //realizamos la consulta
+        $consulta = "SELECT u.user_id, u.user_name, s.* FROM u_sessions AS s LEFT JOIN u_miembros AS u ON s.session_user_id = u.user_id ORDER BY s.session_time DESC LIMIT :limite";
+        $valores = array(
+            'limite' => $psCore->setPagLimite($max, true),
+        );
+        $query = $psDb->db_execute($consulta, $valores);
+        $datos['data'] = $psDb->resultadoArray($query);
+        //obtenemos las paginas
+        $consulta2 = "SELECT COUNT(*) FROM u_sessions";
+        list($query2) = $psDb->db_execute($consulta2, null, 'fetch_num');
+        $datos['pages'] = $psCore->inicioPages($psCore->settings['url'].'/admin/sesiones?', $_GET['start'], $query2, $max);
+        return $datos;
+    }
+
+    /**
+     * @funcionalidad eliminamos la sesión
+     * @return [type]              [description] devolvemos un string con el resultado de la operación
+     */
+    function delSesion(){
+        global $psCore, $psDb;
+        $consulta = "SELECT session_id FROM u_sessions WHERE session_id = :sesid";
+        $valores = array('sesid' => $_POST['sesion_id']);
+        if($psDb->db_execute($consulta, $valores, 'fetch_num')){
+            $consulta2 = "DELETE FROM u_sessiones WHERE session_id = :sesid";
+            if($psDb->db_execute($consulta2, $valores, 'fetch_num')){
+                return 'Sesi&oacute;n eliminada';
+            }else{
+                return 'La sesi&oacute;n seleccionada no existe';
+            }
+        }
+    }
+
+    /*****************************************************************************************/
+    /************************************ Posts **********************************************/
+    /*****************************************************************************************/
+
+    /**
+     * @funcionalidad obtenemos un listado con los posts en la admin
+     * @return [type]              [description] devolvemos un array con los datos obtendos
+     */
+    function getPostsAdmin(){
+        global $psCore, $psDb;
+        $max = 15;//maximo de posts a mostrar por pagina
+        if($_GET['order'] == "estado"){
+            $order = "p.post_status";//ordenamos por estado
+        }else if($_GET['order'] == ip){
+            $order = "p.post_ip";//ordenamos por ip
+        }else{
+            $order = "p.post_id";//ordenamos por id
+        }
+        //realizamos la consulta en la db
+        $consulta = "SELECT u.user_id, u.user_name, c.c_nombre, c.c_seo, c.c_img, p.* FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS p ON c.cid = p.post_category WHERE p.post_id > :id ORDER BY :order LIMIT :limite";
+        $valores = array(
+            'id' => 0,
+            'order' => $order." ".($_GET['modo'] == "asc" ? 'ASC' : 'DESC'),
+            'limite' => $psCore->setPagLimite($max, true),
+        );
+        $query = $psDb->db_execute($consulta, $valores);
+        $datos['data'] = $psDb->resultadoArray($query);
+        //obtenemos las páginas
+        $consulta2 = "SELECT COUNT(*) FROM p_posts WHERE post_id > :id";
+        $valores2 = array('id' => 0);
+        list($query2) = $psDb->db_execute($consulta2, $valores2, 'fetch_assoc');
+        $datos['pages'] = $psCore->inicioPages($psCore->settings['url'].'/admin/posts?order='.$_GET['order']."&modo=".$_GET['modo'], $_GET['start'], $query2, $max);
+        return $datos;
+    }
+
+    /*****************************************************************************************/
+    /************************************ Fotos **********************************************/
+    /*****************************************************************************************/
+
+    /**
+     * @funcionalidad obtenemos un listado con las fotos en la admin
+     * @return [type]              [description] devolvemos un array con los datos obtendos
+     */
+    function getFotosAdmin(){
+        global $psCore, $psDb;
+        $max = 15;//obtenemos el máximo de fotos a mostrar por página
+        //realizamos la consulta en la db
+        $consulta = "SELECT u.user_id, u.user_name, f.* FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.foto_id > :id ORDER BY f.foto_id DESC LIMIT :limite";
+        $valores = array(
+            'id' => 0,
+            'limite' => $psCore->setPagLimite($max, true),
+        );
+        $query = $psDb->db_execute($consulta, $valores);
+        $datos['data'] => $psDb->resultadoArray($query);
+        //obtenemos las páginas
+        $consulta2 = "SELECT COUNT(*) FROM f_fotos WHERE foto_id > :id";
+        $valores2 = array('id' => 0);
+        list($query) = $psDb->db_execute($consulta2, $valores2, 'fetch_num');
+        $datos['pages'] = $psCore->inicioPages($psCore->settings['url']."/admin/fotos?", $_GET['start'], $query, $max);
+        return $datos;
+    }
+
+    /**
+     * @funcionalidad eliminamos la foto seleccionada
+     * @return [type]              [description] devolvemos un string con el resultado de las consultas
+     */
+    function borrarFoto(){
+        global $psDb;
+        $foto_id = $_POST['foto_id'];
+        $consulta = "SELECT foto_id FROM f_fotos WHERE foto_id = :foto_id";
+        $valores = array('foto_id' => $foto_id);
+        if($psDb->db_execute($consulta, $valores, 'fetch_num')){
+            $consulta2 = "DELETE FROM f_fotos WHERE foto_id = :foto_id";
+            $valores2 = array('foto_id' => (int)$foto_id);
+            if($psDb->db_execute($consulta2, $valores2)){
+                return 'La foto ha sido eliminada.';
+            }else{
+                return 'Error. La foto no pudo ser eliminada.';
+            }
+        }else{
+            return 'La foto seleccionada no existe.';
+        }
+    }
+
+    /**
+     * @funcionalidad cambiamos el estado de los comentarios de la foto seleccionada de activo a desactivo y viceversa
+     * @return [type]              [description] devolvemos un string con el resultado de las consultas
+     */
+    function setFotoComentarios(){
+        global $psUser, $psDb;
+        $consulta = "SELECT f_closed FROM f_fotos WHERE foto_id = :id";
+        $valores = array('id' => (int)$_POST['foto_id']);
+        $datos = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+        //si los comentarios de la foto estan habilitados, los deshabilitamos
+        if($datos['f_status'] == 1){
+            $consulta2 = "UPDATE f_fotos SET f_closed = :closed WHERE foto_id = :id";
+            $valores2 = array('closed' => 0,'id' => (int)$_POST['foto_id']);
+            if($psDb->db_execute($consulta2, $valores2)){
+                return 'Los comentarios de la foto han sido deshabilitados';
+            }else{
+                return 'Ocurri&oacute; un error durante el cambio de estado de los comentarios de la foto.';
+            }
+        }else{//si los comentarios de la foto estan deshabilitados, los habilitamos
+            $consulta3 = "UPDATE f_fotos SET f_closed = :closed WHERE foto_id = :id";
+            $valores3 = array('closed' => 1,'id' => (int)$_POST['fid']);
+            if($psDb->db_execute($consulta3, $valores3)){
+                return 'Los comentarios de la foto han sido habilitados';
+            }else{
+                return 'Ocurri&oacute; un error durante el cambio de estado de los comentarios de la foto.';
+            }
+        }
+    }
+
+    /**
+     * @funcionalidad cambiamos el estado de la foto seleccionada de activo a desactivo y viceversa
+     * @return [type]              [description] devolvemos un string con el resultado de las consultas
+     */
+    function setFotoEstado(){
+        global $psUser, $psDb;
+        $consulta = "SELECT f_status FROM f_fotos WHERE foto_id = :id";
+        $valores = array('id' => (int)$_POST['foto_id']);
+        $datos = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+        //si la foto esta habilitada, la deshabilitamos
+        if($datos['f_status'] == 1){
+            $consulta2 = "UPDATE f_fotos SET f_status = :status WHERE foto_id = :id";
+            $valores2 = array('status' => 0,'id' => (int)$_POST['fid']);
+            if($psDb->db_execute($consulta2, $valores2)){
+                return 'La foto ha sido deshabilitada.';
+            }else{
+                return 'Ocurri&oacute; un error durante el cambio de estado de la foto.';
+            }
+        }else{//si la foto esta deshabilitada, la habilitamos
+            $consulta3 = "UPDATE f_fotos SET f_status = :status WHERE foto_id = :id";
+            $valores3 = array('status' => 1,'id' => (int)$_POST['foto_id']);
+            if($psDb->db_execute($consulta3, $valores3)){
+                return 'La foto ha sido habilitada.';
+            }else{
+                return 'Ocurri&oacute; un error durante el cambio de estado de la foto.';
+            }
+        }
+    }
+
+    /*****************************************************************************************/
+    /************************************ Noticias *******************************************/
+    /*****************************************************************************************/
+
+    /**
+     * @funcionalidad cambiamos el estado de la noticia seleccionada de activo a desactivo y viceversa
+     * @return [type]              [description] devolvemos un string con el resultado de las consultas
+     */
+    function setNoticiaActiva(){
+        global $psUser, $psDb;
+        $consulta = "SELECT not_active FROM w_noticias WHERE not_id = :id";
+        $valores = array('id' => (int)$_POST['nid']);
+        $datos = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+        //si la noticia esta habilitada, la deshabilitamos
+        if($datos['f_status'] == 1){
+            $consulta2 = "UPDATE w_noticias SET not_active = :status WHERE not_id = :id";
+            $valores2 = array('status' => 0,'id' => (int)$_POST['fid']);
+            if($psDb->db_execute($consulta2, $valores2)){
+                return 'La noticia ha sido deshabilitada.';
+            }else{
+                return 'Ocurri&oacute; un error durante el cambio de estado de la noticia.';
+            }
+        }else{//si la noticia esta deshabilitada, la habilitamos
+            $consulta3 = "UPDATE w_noticias SET not_active = :status WHERE not_id = :id";
+            $valores3 = array('status' => 1,'id' => (int)$_POST['nid']);
+            if($psDb->db_execute($consulta3, $valores3)){
+                return 'La noticia ha sido habilitada.';
+            }else{
+                return 'Ocurri&oacute; un error durante el cambio de estado de la noticia.';
+            }
+        }
+    }
+
+    /*****************************************************************************************/
+    /************************** Lista negra palabras (bad words) *****************************/
+    /*****************************************************************************************/
+
+    /**
+     * @funcionalidad obtenemos el listado de badwords
+     * @return [type]              [description] devolvemos un array con los datos generados
+     */
+    function getBadWords(){
+        global $psCore, $psDb;
+        $max = 20;//obtenemos el máximo de palabras a mostrar por página
+        //realizamos la consulta en la db
+        $consulta = "SELECT u.user_id, u.user_name, b.* FROM w_badwords AS b LEFT JOIN u_miembros AS u ON b.author = u.user_id ORDER BY b.wid DESC LIMIT :limite";
+        $valores = array('limite' => $psCore->setPagLimite($max, true),);
+        $query = $psDb->db_execute($consulta, $valores);
+        $datos['data'] => $psDb->resultadoArray($query);
+        //obtenemos las páginas
+        $consulta2 = "SELECT COUNT(*) FROM w_badwords";
+        list($query) = $psDb->db_execute($consulta2, null, 'fetch_num');
+        $datos['pages'] = $psCore->inicioPages($psCore->settings['url']."/admin/badwords?", $_GET['start'], $query, $max);
+        return $datos;
+    }
+
+    /**
+     * @funcionalidad obtenemos la palabra seleccionada
+     * @return [type]              [description] devolvemos un array con los datos generados
+     */    
+    function getBadWord(){
+        global $psDb;
+        $consulta = "SELECT * FROM w_badwords WHERE wid = :id";
+        $valores = array('id' => $_GET['id']);
+        return $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+    }
+
+    /**
+     * @funcionalidad creamos una nueva palabra
+     * @return [type]              [description] devolvemos el resultado de la consulta
+     */ 
+    function newBadWord(){
+        global $psCore, $psDb, $psUser;
+        $method = empty($_POST['method']) ? 0 : 1;
+        $type = empty($_POST['type']) ? 0 : 1;
+        if(empty($_POST['before']) || empty($_POST['after'])  || empty($_POST['reason'])){
+            return 'Por favor debe rellenar todos los campos';
+        }else{
+            //buscamos la palabra
+            $consulta = "SELECT wid FROM w_badwords WHERE LOWER(word) = :word AND LOWER(swop) = :swop";
+            $valores = array(
+                'word' => strtolower($_POST['before']),
+                'swop' => strtolower($_POST['after']),
+            );
+            if(!$psDb->db_execute($consulta, $valores, 'rowCount')){
+                //actualizamos la palabra
+                $consulta2 = "INSERT INTO w_bardows (word, swop, method, type, author, reason, date) VALUES (:word, :swop, :method, :type, :author, :reason, :dates)";
+                $valores2 = array(
+                    'word' => strtolower($_POST['before']),
+                    'swop' => strtolower($_POST['after']),
+                    'method' => $method,
+                    'type' => $type,
+                    'author' => $psUser->user_id,
+                    'reason' => $_POST['reason'],
+                    'dates' => time(),
+                );
+                if($psDb->db_execute($consulta2, $valores2)){
+                    return true;
+                }else{
+                    return 'Ocurri&oacute; un error al intentar agregar la nueva palabra.';
+                }
+            }else{
+                return 'La palabra introducida ya existe en nuestra base de datos';
+            }
+        }
+    }
+
+    /**
+     * @funcionalidad actualizamos los datos de la palabra seleccionada
+     * @return [type]              [description] devolvemos el resultado de la consulta
+     */ 
+    function guardarBadWord(){
+        global $psCore, $psDb, $psUser;
+        $method = empty($_POST['method']) ? 0 : 1;
+        $type = empty($_POST['type']) ? 0 : 1;
+        if(empty($_POST['before']) || empty($_POST['after'])){
+            return 'Por favor debe rellenar todos los campos';
+        }else{
+            //bucamos la palabra 
+            $consulta = "SELECT wid FROM w_badwords WHERE LOWER(word) = :word AND LOWER(swop) = :swop";
+            $valores = array(
+                'word' => strtolower($_POST['before']),
+                'swop' => strtolower($_POST['after']),
+            );
+            if(!$psDb->db_execute($consulta, $valores, 'rowCount')){
+                //actualizamos la palabra
+                $consulta2 = "UPDATE w_badwords SET word = :word, swop = :swop, method = :method, type = :type, author = :author WHERE wid = :wid";
+                $valores2 = array(
+                    'word' => strtolower($_POST['before']),
+                    'swop' => strtolower($_POST['after']),
+                    'method' => $method,
+                    'type' => $type,
+                    'author' => $psUser->user_id,
+                    'wid' => (int)$_GET['id'],
+                );
+                if($psDb->db_execute($consulta2, $valores2)){
+                    return true;
+                }else{
+                    return 'Ocurri&oacute; un error al intentar guardar la palabra.';
+                }
+            }else{
+                return 'La palabra introducida ya existe en nuestra base de datos';
+            }
+        }
+    }
+
+    /**
+     * @funcionalidad borramos la palabra seleccionada
+     * @return [type]              [description] devolvemos un string con el resultado de la consulta
+     */ 
+    function delBadWord(){
+        global $psDb;
+        $consulta = "DELETE FROM w_badwords WHERE wid = :id";
+        $valores = array('id' => $_GET['id']);
+        if($psDb->db_execute($consulta, $valores)){
+            return 'Bad Word retirada del listado';
+        }else{
+            return 'Lo sentimos, hubo un error al intentar borrar la palabra de listado.';
+        }
+    }
+
+    /*****************************************************************************************/
+    /****************************** lista negra usuarios *************************************/
+    /*****************************************************************************************/
+
+    /**
+     * @funcionalidad obtenemos el listado de badwords
+     * @return [type]              [description] devolvemos un array con los datos generados
+     */
+    function getBlackList(){
+        global $psCore, $psDb;
+        $max = 20;//obtenemos el máximo de usuarios bloqueados a mostrar por página
+        //realizamos la consulta en la db
+        $consulta = "SELECT u.user_id, u.user_name, b.* FROM w_blacklist AS b LEFT JOIN u_miembros AS u ON b.author = u.user_id ORDER BY b.date DESC LIMIT :limite";
+        $valores = array('limite' => $psCore->setPagLimite($max, true),);
+        $query = $psDb->db_execute($consulta, $valores);
+        $datos['data'] => $psDb->resultadoArray($query);
+        //obtenemos las páginas
+        $consulta2 = "SELECT COUNT(*) FROM w_blacklist";
+        list($query) = $psDb->db_execute($consulta2, null, 'fetch_num');
+        $datos['pages'] = $psCore->inicioPages($psCore->settings['url']."/admin/blacklist?", $_GET['start'], $query, $max);
+        return $datos;
+    }   
+    
+    /**
+     * @funcionalidad obtenemos el estado del bloqueo del usuario seleccionado
+     * @return [type]              [description] devolvemos un array con los datos generados
+     */  
+    function getBlockUser(){
+        global $psDb;
+        $consulta = "SELECT type, value, reason FROM w_blacklist WHERE id = :id";
+        $valores = array('id' => $_GET['id']);
+        return $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+    } 
+
+    /**
+     * @funcionalidad actualizamos los datos del bloqueo del usuario
+     * @return [type]              [description] devolvemos el resultado de la consulta
+     */ 
+    function saveBlockUser(){
+        global $psDb, $psCore, $psUser;
+        if(empty($_POST['value']) || empty($_POST['type'])){
+            return 'Por favor debe rellenar todos los campos';
+        }else{
+            //comprobamos los campos
+            if($_POST['type'] == 1 && $_POST['value'] == $_SERVER['REMOTE_ADDR']){
+                return 'Lo sentimos no puedes bloquear a un usuario con tu misma ip.';
+            }
+            $consulta = "SELECT id FROM w_blacklist WHERE type = :type AND value = :value";
+            $valores = array(
+                'type' => $_POST['type'],
+                'value' => $_POST['value'],
+            );
+            if(!$psDb->db_execute($consulta, $valores, 'rowCount')){
+                $consulta2 = "UPDATE w_blacklist SET type = :type, value = :value, author = :author WHERE id = :id";
+                $valores2 = array(
+                    'type' => $_POST['type'],
+                    'value' => $_POST['value'],
+                    'author' => $psUser->user_id,
+                    'id' => (int)$_GET['id'],
+                );
+                if($psDb->db_execute($consulta2, $valores2)){
+                    return true;
+                }else{
+                    return 'Ocurri&oacute; un error al intentar guardar el bloqueo.';
+                }
+            }else{
+                return 'El bloqueo del usuario selecionado ya existe en nuestra base de datos';
+            }
+        }
+    }
+
+    /**
+     * @funcionalidad creamos un bloqueo nuevo para el usuario seleccionado
+     * @return [type]              [description] devolvemos el resultado de la consulta
+     */ 
+    function newBlockUser(){
+        global $psDb, $psCore, $psUser;
+        if(empty($_POST['value']) || empty($_POST['type']) empty($_POST['reason'])){
+            return 'Por favor debe rellenar todos los campos';
+        }else{
+            //comprobamos los campos
+            if($_POST['type'] == 1 && $_POST['value'] == $_SERVER['REMOTE_ADDR']){
+                return 'Lo sentimos no puedes bloquear a un usuario con tu misma ip.';
+            }
+            $consulta = "SELECT id FROM w_blacklist WHERE type = :type AND value = :value";
+            $valores = array(
+                'type' => $_POST['type'],
+                'value' => $_POST['value'],
+            );
+            if(!$psDb->db_execute($consulta, $valores, 'rowCount')){
+                $consulta2 = "INSERT INTO w_blacklist (type, value, reason, author, date) VALUES (:type, :value, :reason, :author, :dates)";
+                $valores2 = array(
+                    'type' => $_POST['type'],
+                    'value' => $_POST['value'],
+                    'reason' => $_POST['reason'],
+                    'author' => $psUser->user_id,
+                    'dates' => date(),
+                );
+                if($psDb->db_execute($consulta2, $valores2)){
+                    return true;
+                }else{
+                    return 'Ocurri&oacute; un error al intentar crear el bloqueo.';
+                }
+            }else{
+                return 'El bloqueo del usuario selecionado ya existe en nuestra base de datos';
+            }
+        }
+    }
+
+    /**
+     * @funcionalidad borramos el bloqueo del usuario seleccionado
+     * @return [type]              [description] devolvemos un string con el resultado de la consulta
+     */ 
+    function delBlockUser(){
+        global $psDb;
+        $consulta = "DELETE FROM w_blacklist WHERE wid = :id";
+        $valores = array('id' => $_GET['bid']);
+        if($psDb->db_execute($consulta, $valores)){
+            return 'Bloqueo del usuario eliminado.';
+        }else{
+            return 'Lo sentimos, hubo un error al intentar borrar el bloqueo del usuario.';
+        }
+    }
+
+    /*****************************************************************************************/
+    /********************************** Estadísticas *****************************************/
+    /*****************************************************************************************/
+
+    /**
+     * @funcionalidad obtenemos las estadísticas de la web
+     * @return [type]              [description] devolvemos un array con todos los datos obtenidos
+     */
+    function getStatsAdmin(){
+        global $psDb;
+        $consulta = "SELECT
+            (SELECT COUNT(foto_id) FROM f_fotos WHERE f_status = :f0) as fotos_visibles,
+            (SELECT COUNT(foto_id) FROM f_fotos WHERE f_status = :f1) as fotos_ocultas, 
+            (SELECT COUNT(foto_id) FROM f_fotos WHERE f_status = :f2) as fotos_eliminadas, 
+            (SELECT COUNT(post_id) FROM p_posts WHERE post_status = :p0) as posts_visibles, 
+            (SELECT COUNT(post_id) FROM p_posts WHERE post_status = :p1) as posts_ocultos, 
+            (SELECT COUNT(post_id) FROM p_posts  WHERE post_status = :p2) as posts_eliminados, 
+            (SELECT COUNT(post_id) FROM p_posts  WHERE post_status = :p3) as posts_revision, 
+            (SELECT COUNT(cid) FROM p_comentarios WHERE c_status = :c0) as comentarios_posts_visibles, 
+            (SELECT COUNT(cid) FROM p_comentarios WHERE c_status = :c1) as comentarios_posts_ocultos, 
+            (SELECT COUNT(user_id) FROM u_miembros WHERE user_activo = :u1) as usuarios_activos, 
+            (SELECT COUNT(user_id) FROM u_miembros WHERE user_activo = :u0 ) as usuarios_inactivos, 
+            (SELECT COUNT(user_id) FROM u_miembros WHERE user_baneado = :ub1 ) as usuarios_baneados, 
+            (SELECT COUNT(cid) FROM f_comentarios) as comentarios_fotos_total, 
+            (SELECT COUNT(follow_id) FROM u_follows WHERE f_type  = :ft1 ) AS usuarios_follows,
+            (SELECT COUNT(follow_id) FROM u_follows WHERE f_type  = :ft2 ) AS posts_follows,
+            (SELECT COUNT(follow_id) FROM u_follows WHERE f_type  = :ft3 ) AS posts_compartidos,
+            (SELECT COUNT(fav_id) FROM p_favoritos) AS posts_favoritos,  
+            (SELECT COUNT(mr_id) FROM u_respuestas) AS usuarios_respuestas,
+            (SELECT COUNT(mp_id) FROM u_mensajes) AS mensajes_total, 
+            (SELECT COUNT(mp_id) FROM u_mensajes WHERE mp_del_to = :mpt1) AS mensajes_de_eliminados,
+            (SELECT COUNT(mp_id) FROM u_mensajes WHERE mp_del_from = :mpf1) AS mensajes_para_eliminados,
+            (SELECT COUNT(bid) FROM p_borradores) AS posts_borradores,
+            (SELECT COUNT(bid) FROM u_bloqueos) AS usuarios_bloqueados, 
+            (SELECT COUNT(bid) FROM u_bloqueos) AS usuarios_bloqueados,
+            (SELECT COUNT(medal_id) FROM w_medallas WHERE m_type = :mt1) AS medallas_usuarios,
+            (SELECT COUNT(medal_id) FROM w_medallas WHERE m_type = :mt2) AS medallas_posts,
+            (SELECT COUNT(medal_id) FROM w_medallas WHERE m_type = :mt3) AS medallas_fotos,
+            (SELECT COUNT(id) FROM w_medallas_assign) AS medallas_asignadas, 
+            (SELECT COUNT(aid) FROM w_afiliados WHERE a_active = :a1) AS afiliados_activos, 
+            (SELECT COUNT(aid) FROM w_afiliados WHERE a_active = :a0) AS afiliados_inactivos,
+            (SELECT COUNT(pub_id) FROM u_muro) AS muro_estados, 
+            (SELECT COUNT(cid) FROM u_muro_comentarios) AS muro_comentarios
+        ";
+        $valores = array(
+            'f0' => 0,
+            'f1' => 1,
+            'f2' => 2,
+            'p0' => 0,
+            'p1' => 1,
+            'p2' => 2,
+            'p3' => 3,
+            'c0' => 0,
+            'c1' => 1,
+            'u1' => 1,
+            'u0' => 0,
+            'ub1' => 1,
+            'ft1' => 1,
+            'ft2' => 2,
+            'ft3' => 3,
+            'mpt1' => 1,
+            'mpf1' => 1,
+            'mt1' => 1,
+            'mt2' => 2,
+            'mt3' => 3,
+            'a1' => 1,
+            'a0' => 0
+        );
+        $stats = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+        $stats['fotos_total'] = $stats['fotos_visibles'] + $stats['fotos_ocultas'] + $stats['fotos_eliminadas'];
+        $stats['medallas_total'] = $stats['medallas_usuarios'] + $stats['medallas_posts'] + $stats['medallas_fotos'];
+        $stats['posts_total'] = $stats['posts_visibles'] + $stats['posts_ocultos'] + $stats['posts_eliminados'];
+        $stats['comentarios_posts_total'] = $stats['comentarios_posts_visibles'] + $stats['comentarios_posts_ocultos'];
+        $stats['usuarios_total'] = $stats['usuarios_activos'] + $stats['usuarios_inactivos'] + $stats['usuarios_baneados'];
+        $stats['seguidos_total'] = $stats['posts_follows'] + $stats['usuarios_follows'];
+        $stats['muro_total'] = $stats['muro_estados'] + $stats['muro_comentarios'];
+        $stats['afiliados_total'] = $stats['afiliados_activos'] + $stats['afiliados_inactivos'];
+        return $stats;
+    }
 }
