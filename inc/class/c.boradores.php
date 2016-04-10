@@ -59,9 +59,9 @@ class psBorradores(){
 	}
 
 	/**
-     * @funcionalidad modificamos los datos de un usuario
-     * @param  [type]   $uid -> obtenemos el id del usuario por parametro
-     * @return [type]           devolvemos el resultado de la consulta (true si todo ok, sino un mensaje de error)
+     * @funcionalidad modificamos o creamos un borrador
+     * @param  [type]   $guardar -> comprobamos si hay que guardar el borrador o crear uno nuevo
+     * @return [type]           devolvemos el resultado de la consulta 
      */
 	function newBorrador($guardar = false){
 		global $psCore, $psDb, $psUser;
