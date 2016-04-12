@@ -89,7 +89,7 @@ class psCore{
      * realizamos una suma del total de datos (post, comentarios, users, fotos)
      * @return type devolvemos un array con los datos de moderacion generados
      */
-    public function getNovemodera(){
+    public function getNovedadesMod(){
         global $psDb;
         $consulta = "SELECT (SELECT count(post_id) FROM p_posts WHERE post_status = 3) as revposts, (SELECT count(cid) FROM p_comentarios WHERE c_status = 1) as revcomentarios, (SELECT count(DISTINCT obj_id) FROM w_denuncias WHERE d_type = 1) as repposts, (SELECT count(DISTINCT obj_id) FROM w_denuncias WHERE d_type = 2) as repmps, (SELECT count(DISTINCT obj_id) FROM w_denuncias WHERE d_type = 3) as repusers, (SELECT count(DISTINCT obj_id) FROM w_denuncias WHERE d_type = 4) as repfotos, (SELECT count(susp_id) FROM u_suspension) as supusers, (SELECT count(post_id) FROM p_posts WHERE post_status = 2) as pospapelera, (SELECT count(foto_id) FROM f_fotos WHERE f_status = 2) as fospapelera";
         $datos = $psDb->db_execute($consulta,null,'fetch_assoc');
@@ -112,7 +112,7 @@ class psCore{
      * @funcionalidad obtenemos los temas de la base de datos
      * @return string devolvemos un array con los datos generados
      */
-    public function getTema(){
+    public function getTheme(){
         global $psDb;
         $valores = [
             'tema_id' => $this->settings['tema_id']
@@ -319,36 +319,36 @@ class psCore{
 
     /**
      * @funcionalidad actualizamos el limite de paginas
-     * @param type $psLimit limite de paginas
+     * @param type $limit limite de paginas
      * @param type $start si su valor es true empezamos por la primera página
-     * @param type $psMax ultima página
+     * @param type $max ultima página
      * @return type devolvemos un string con comienzo, final
      */
-    public function setPagLimite($psLimit,$start=false,$psMax=0){
+    public function setPagLimite($limit,$start=false,$max=0){
         if($start == false){
-            $psStart = empty($_GET['page']) ? 0 : (int) (($_GET['page'] - 1) * $psLimit);
+            $start = empty($_GET['page']) ? 0 : (int) (($_GET['page'] - 1) * $limit);
         }else{
-            $psStart = $_GET['s'];
-            $continua = $this->setMax($psLimit, $psMax);
+            $start = $_GET['start'];
+            $continua = $this->setMax($limit, $max);
             if($continua == true){
-                $psStart = 0;
+                $start = 0;
             }
         }
-        return $psStart.','.$psLimit;
+        return $start.','.$limit;
     }
 
     /**
      * @funcionalidad establecemos el numero maximo de paginas para no excederlo
-     * @param type $psLimit pasamos el limite actual
-     * @param type $psMax pasamos el maximo actual
+     * @param type $limit pasamos el limite actual
+     * @param type $max pasamos el maximo actual
      * @return boolean si es correcto devolvemos true
      */
-    public function setMax($psLimit, $psMax){
+    public function setMax($limit, $max){
         //establecemos un maximo para no exceder el numero de paginas
-        $var = ($_GET['page'] * $psLimit);
-        if($psMax < $var){
-            $var2 = $var - $psLimit;
-            if($psMax < $var2){
+        $var = ($_GET['page'] * $limit);
+        if($max < $var){
+            $var2 = $var - $limit;
+            if($max < $var2){
                 return true;
             }
         }
@@ -357,12 +357,12 @@ class psCore{
 
     /**
      * @funcionalidad obtener las paginas
-     * @param type $psTotal total de paginas
-     * @param type $psLimit limite de paginas
+     * @param type $total total de paginas
+     * @param type $limit limite de paginas
      * @return type devolvemos un array con los valores de las paginas
      */
-    public function getPages($psTotal, $psLimit){
-        $psPages = ceil($psTotal / $psLimit);
+    function getPages($total, $limit){
+        $psPages = ceil($total / $limit);
         //obtenemos la pagina
         $psPage = empty($_GET['page']) ? 1 : $_GET['page'];
         //guardamos las paginas en un array
@@ -371,15 +371,43 @@ class psCore{
         $page['section'] = $psPages + 1;
         $page['prev'] = $psPage - 1;
         $page['next'] = $psPage + 1;
-        $page['max'] = $this->setMax($psLimit, $psTotal);
+        $page['max'] = $this->setMax($limit, $total);
         //devolvemos el array page
         return $page;
     }
 
-    function getPagination(){
-
+    /**
+     * @funcionalidad obtener la paginacion y los elementos totales de cada página
+     * @param type $total total de paginas
+     * @param type $max_per_page limite de elementos por página
+     * @return type devolvemos un array con los valores de las paginas
+     */
+    function getPagination($total, $max_per_page = 15){
+        //obtenemos la pagina actual
+        $page = empty($_GET['page']) ? 1 : (int)$_GET['page'];
+        //obtenemos el numero total de pagina redondeando hacia el entero mas alto
+        $total_pages = ceil($total / $max_per_page);
+        //obtenemos la página siguiente
+        $next = $page +1;
+        $pages['next'] = ($page <= $total_pages) ? $next : 0;
+        //obtenemos la página anterior
+        $prev = $page - 1;
+        $pages['prev'] = ($page > 0) ? $prev : 0;
+        //obtenemos el limite para la consulta en la db
+        $pages['limit'] = ($prev * $max_per_page).', '.$max_per_page;
+        //obtenemosel total
+        $pages['total'] = $total;
+        return $pages;
     }
 
+    /**
+     * @funcionalidad 
+     * @param type $url
+     * @param type $start
+     * @param type $max
+     * @param type $max_per_page
+     * @return type 
+     */
     function inicioPages($url, &$start, $max, $max_per_page){
 
     }
