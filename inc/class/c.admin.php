@@ -861,7 +861,7 @@ class psAdmin{
         $valores = array(
             'order' => $order,
             'modo' => $_GET['modo'] == 'asc' ? 'ASC' : 'DESC',
-            'limit' => $psCore->inicioPages($max, true),
+            'limit' => $psCore->setPagLimite($max, true),
         );
         $query = $psDb->db_execute($consulta, $valores);
         $datos['data'] = $psDb->resultadoArray($query);
