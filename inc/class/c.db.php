@@ -100,6 +100,7 @@ class psDb{
     /**
      * @funcionalidad: si el resultado de la consulta devuelve un array
      * llamamos a esta funcion para guardarlo y retornarlo
+     * Lo utilizaremos en momentos que tengamos claves enteras y strings en el mismo array
      * @param type $consulta resultado de la consulta pasado por parametro
      * @return type devolvemos un array con los datos obtenidos en la consulta
      */

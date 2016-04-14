@@ -309,8 +309,49 @@ class psCore{
         return $values;
     }
 
+    /**
+     * @funcionalidad obtenemos la ip del usuario
+     * @return type devolvemos la ip obtenida o unknow en caso de no poder obtenerla
+     */
     function getIp(){
-        
+        //obtenemos la ip del usuario a través de diferentes peticiones
+        $ip = $_SERVER['HTTP_CLIENT_IP'];
+        if(!$ip && strcasecmp($ip, 'unknown')){
+            return $ip;
+        }
+        $ip = $_SERVER["HTTP_X_FORWARDED_FOR"]; 
+        if($ip &&  !​​strcasecmp($ip, 'unknown')){
+            return $ip;
+        }
+        $ip = $_SERVER["REMOTE_ADDR"]; 
+        si ( $ tmp &&  ! ​​Strcasecmp ( $ tmp ,  'unknown')){
+            return $ip;
+        }
+
+        return 'unknown'; 
+    }
+
+    /**
+     * @funcionalidad obtenemos el contenido de una url mediante curl o file
+     * @param type $url obtenemos la url a través de la cual queremos obtener el contenido
+     * @return type devolvemos los datos obtenidos
+     */
+    function getUrlContent($url){
+        //comprobamos si podemos hacerlo mediante curl
+        if(function_exists('curl_init')){
+            $useragent = 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.43 Safari/537.31';
+            //abrimos la conexion y obtenemos un resultado
+            $curl_init = curl_init();
+            curl_setopt($curl_init, CURLOPT_USERAGENT, $useragent);
+            curl_setopt($curl_init, CURLOPT_URL, $url);
+            curl_setopt($curl_init, CURLOPT_TIMEOUT, 90);
+            curl_setopt($curl_init, CURLOPT_RETURNTRANSFER, 1);
+            $resultado = curl_exec($curl_init);
+            curl_close($curl_init);
+        }else{//si no podemos con curl lo haremos mediante file
+            $resultado = @file_get_contents($url);
+        }
+        return $resultado;
     }
 
     /*****************************************************************************************/
@@ -401,14 +442,74 @@ class psCore{
     }
 
     /**
-     * @funcionalidad 
-     * @param type $url
-     * @param type $start
-     * @param type $max
-     * @param type $max_per_page
+     * @funcionalidad obtenemos la paginación completa y la mostramos en pantalla
+     * @param type $url url de la página
+     * @param type $start página de inicio
+     * @param type $max máximo de páginas
+     * @param type $max_per_page máximo de elementos por página
+     * @param type $change_start si = false, cambiaremos la url por la de la página actual
      * @return type 
      */
-    function inicioPages($url, &$start, $max, $max_per_page){
-
+    function inicioPages($url, &$start, $max, $max_per_page, $change_start = false){
+        global $psDb;
+        //quitamos &start= para obtener la url
+        $url = explode('&start=', $url);
+        $url = $url[0];
+        //comprobamos el valor de start 
+        if($$start < 0){//si es menor que 0 lo igualamos a 0
+            $start = 0;
+        }else if($start >= $max){//si start vale más que el máximo de páginas 
+            if(($max % $max_per_page) == 0){//comprobamos el resto entre el maximo de páginas y el de elementos por página
+                $start = max(0, $max_per_page);//start vale el valor máximo
+            }else{
+                $start = $max % $max_per_page;//start vale el resto de la misma operación anterior
+            }
+        }else{
+            //obtenemos el valor máximo entre 0 y start - el resto de start y max de elementos por página
+            $start = max(0, ($start - ($start % $max_per_page)));
+        }
+        $nextPage = 2;
+        //obtenemos el enlace
+        $link = '<a class="menuPages" href="' . ($change_start ? $url : strtr($url, array('%' => '%%')) . '&start=%d') . '">%s</a>';
+        //mostramos la primera página > 1 < ... 6 7 (8) 9 10 ... 15
+        if($start > $max_per_page * 2){
+            $inicio = sprintf($link, 0, '1');
+        }else{
+            $inicio = '';
+        }
+        //mostramos el hueco hasta la siguiente página 1 > ... < 6 7 
+        if($start > $max_per_page * ($nextPage + 1)){
+            $inicio = '<b> ... </b>';
+        }
+        //mostramos las páginas anteriores a la seleccionada 1 ... > 6 7 < (8) 9 10 ... 15
+        for($a = $nextPage; $a >= 1; $a--){
+            if($start >= $max_per_page * $a){
+                $nStart = $start - $max_per_page * $a;
+                $inicio = sprintf($link, $nStart, $nStart / $max_per_page + 1);
+            }
+        }
+        //mostramos la página actual
+        if(!($start < 0)){
+            $inicio .= '[<b>' . ($start / $max_per_page + 1) . '</b>] ';
+        }else{
+            $inicio .= sprintf($link, $start, $start / $max_per_page + 1);
+        }
+        //mostramos las páginas siguientes a la actual
+        $max_start = (int)($max - 1) / $max_per_page + 1;
+        for($a = 1; $a <= $nextPage; $a++){
+            if(($start + $max_per_page * $a) <= $max_start){
+                $max_start = $start + $max_per_page * $a;
+                $inicio .= sprintf($link, $max_start, $max_start / $max_per_page + 1);
+            }
+        }
+        //mostramos el hueco hasta la última página
+        if($start + $max_per_page * ($nextPage + 1) < $max_start){
+            $inicio .= '<b> ... </b>';
+        }
+        //mostramos el número de la última página
+        if($start + $max_per_page * $nextPage < $max_start){
+            $inicio .= sprintf($link, $max_start, $max_start / $max_per_page + 1);
+        }
+        return $inicio;
     }
 }
