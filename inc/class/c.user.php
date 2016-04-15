@@ -276,6 +276,89 @@ class psUser{
     }
 
     /**
+     * @funcionalidad obtenemos un listado con todos los usuarios
+     * @return [type]         [description] devolvemos un array con los datos obtenidos
+     */
+    function getUsuarios(){
+        global $psCore, $psDb;
+        $online = (time() - ($psCore->settings['c_last_active'] * 60));
+        $inactive = (time() - (($psCore->settings['c_last_active'] * 60) * 2));
+        //comprobamos si el usuario está online
+        //obtenemos el array de valores para la consulta
+        $valores = array(
+            'activo' => 1,
+            'baneado' => 0
+        );
+        if($_GET['online'] == true){
+            $valores['online'] = 'AND u.user_lastactive > :online2';
+            $valores['online2'] = $online;
+        }else{
+            $valores['online'] = '';
+        }
+        // comprobamos si tiene foto
+        if($_GET['avatar'] == 'true'){
+            $valores['avatar'] = 'AND p.p_avatar = :avatar2';
+            $valores['avatar2'] = 1; 
+        }else{
+            $valores['avatar'] = '';
+        }
+        // comprobamos su sexo
+        if(!empty($_GET['sexo'])){
+            $valores['sex'] = 'AND p.user_sexo = :sex2';
+            $valores['sex2'] = ($_GET['sexo'] == 'f') ? 0 : 1;
+        }else{
+            $valores['sex'] = '';
+        }
+        // comprobamos el pais
+        if(!empty($_GET['pais'])){
+            $valores['pais'] = 'AND p.user_pais = :pais2';
+            $valores['pais2'] = filter_input(INPUT_GET, 'pais');
+        }else{
+            $valores['pais'] = '';
+        }
+        // comprobamos si forma parte del staff
+        if(!empty($_GET['rango'])){
+            $valores['rango'] = 'AND u.user_rango = :rango2';
+            $valores['rango2'] = filter_input(INPUT_GET, 'rango');
+        }else{
+            $valores['rango'] = '';
+        }
+        //realizamos las consultas
+        $consulta = "SELECT COUNT(u.user_id) AS total FROM u_miembros AS u LEFT JOIN u_perfil AS p ON u.user_id = p.user_id WHERE u.user_activo = :activo AND u.user_baneado = :baneado :online :avatar :sex :pais :rango";
+        $total = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+        $total = $total['total'];
+        $pages = $psCore->getPagination($total, 15);
+
+        $valores['limite'] = $pages['limit'];
+        $consulta2 = "SELECT u.user_id, u.user_name, p.user_pais, p.user_sexo, p.p_avatar, p.p_mensaje, u.user_rango, u.user_puntos, u.user_comentarios, u.user_posts, u.user_lastactive, u.user_baneado, r.r_name, r.r_color, r.r_image FROM u_miembros AS u LEFT JOIN u_perfil as P ON u.user_id = p.user_id LEFT JOIN u_rangos AS r ON r.rango_id = u.user_rango WHERE user_activo = :activo AND u.user_baneado = :baneado :online :avatar :sex :pais :rango ORDER BY u.user_id DESC LIMIT :limite";
+
+        while($rows = $psDb->db_execute($consulta2, $valores, 'fetch_assoc')){
+            if($rows['user_lastactive'] > $online){
+                $rows['status'] = array('t' => 'Online', 'css' => 'online');
+            }else if($rows['user_lastactive'] > $inactive){
+                $rows['status'] = array('t' => 'Inactivo', 'css' => 'inactivo');
+            }else{
+                $rows['status'] = array('t' => 'Offline', 'css' => 'offline');
+            }
+            $rows['rango'] = array(
+                'title' => $rows['r_name'], 
+                'color' => $rows['r_color'], 
+                'image' => $rows['r_image']
+            );
+            $datos[] = $rows;
+        }
+
+        $total = explode(', ', $pages['limit']);
+        $total = $total[0] + count($datos);
+        $dato = array(
+            'data' => $datos,
+            'pages' => $pages,
+            'total' => $total
+        );
+        return $dato;
+    }   
+
+    /**
      * @funcionalidad obtenemos el id del usuario obtenido por parámetro
      * @param  [type] $psUser [description] id del usuario
      * @return [type]         [description] devolvemos el id del usuario si todo ha salido correctamente
