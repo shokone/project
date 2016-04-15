@@ -1188,11 +1188,16 @@ class psAdmin{
         //serializamosel array de datos para 
         $perfil['configs'] = serialize($datos);
         $datos_actualizar = $psCore->getDatos($perfil, 'p_');
-        $consulta = "UPDATE u_perfil SET :datos WHERE user_id = :uid";
-        $valores = array(
-            'datos' => $datos_actualizar,
-            'uid' => $_GET['uid'],
-        );
+        $datosActualizar = '';
+        foreach($actualizaciones['values'] as $key => $valor){
+            $datosActualizar .= $valor;
+        }
+        $valores['datosActualizar'] = $datosActualizar;
+        foreach($actualizaciones['values2'] as $key => $valor){
+            $valores[$key] = $valor;
+        }
+        $valores['uid'] = $_GET['uid'];
+        $consulta = "UPDATE u_perfil SET :datosActualizar WHERE user_id = :uid";
         if($psDb->db_execute($consulta, $valores)){
             return true;
         }

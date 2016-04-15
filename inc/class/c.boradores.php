@@ -85,12 +85,17 @@ class psBorradores(){
 				if($guardar){//si guardar vale true actualizamos el borrador
 					$borrador_id = intval($_POST['borrador_id']);
 					$actualizaciones = $psCore->getDatos($borrador, 'b_');
-					$consulta = "UPDATE p_borradores SET :actualizaciones WHERE bid = :bid AND b_user = :user";
-					$valores = array(
-						'actualizaciones' => $actualizaciones,
-						'bid' => $borrador_id,
-						'user' => $psUser->info['user_id'],
-					);
+					$datosActualizar = '';
+					foreach($actualizaciones['values'] as $key => $valor){
+						$datosActualizar .= $valor;
+					}
+					$valores['datosActualizar'] = $datosActualizar;
+					foreach($actualizaciones['values2'] as $key => $valor){
+						$valores[$key] = $valor;
+					}
+					$valores['bid'] = $borrador_id;
+					$valores['user'] = $psUser->info['user_id'];
+					$consulta = "UPDATE p_borradores SET :datosActualizar WHERE bid = :bid AND b_user = :user";
 					if($psDb->db_execute($consulta, $valores)){
 						return $borrador_id;
 					}else{
