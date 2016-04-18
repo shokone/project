@@ -363,19 +363,19 @@ class psUser{
      * @param  [type] $psUser [description] id del usuario
      * @return [type]         [description] devolvemos el id del usuario si todo ha salido correctamente
      */
-    function getUid($psUser){
+    function getUid($uid){
         global $psCore, $psDb;
-        $username = strtolower($psUser);
+        $username = strtolower($uid);
         $consulta = "SELECT user_id FROM u_miembros WHERE LOWER(user_name) = :username";
         $valores = [
             'username' => $username,
         ];
-        $psUser = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
-        $psUserId = $psUser['user_id'];
-        if(empty($psUserId)){
+        $uid2 = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+        $user_id = $uid2['user_id'];
+        if(empty($user_id)){
             return 0;
         }else{
-            return $psUserId;
+            return $user_id;
         }
     }
 

@@ -1293,6 +1293,10 @@ class psAdmin{
      */
     function changeNick(){
         global $psDb, $psCore, $psMonitor;
+
+
+
+        
     }
 
     /**

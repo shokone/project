@@ -304,9 +304,10 @@ class psCore{
         $valores = array_values($datos);
         foreach($dato as $key => $valor){
             //añadimos el prefijo y rellenamos un array con cada dato
-            $values[$key] = $prefijo.$keys[$key] . " = " . $valor . ", ";
+            $values[$key] = $prefijo.$keys[$key] . " = :" . $key . ", ";
+            $values2[$key] = $valor;
         }
-        return $values;
+        return array('values' => $values, 'values2' => $valor);
     }
 
     /**
