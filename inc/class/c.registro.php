@@ -24,6 +24,9 @@ class psRegistro{
         return $instancia;
     }
 
+    /**
+     * @funcionalidad registramos a un nuevo usuario en la web
+     */
     public function nuevoRegistro(){
         global $psCore, $psUser, $psDb;
         //obtenemos los datos en un array
@@ -172,9 +175,14 @@ class psRegistro{
             }
         }else{
             //activamos la cuenta del usuario
+            $psUser->activate($psDatos['user_id'], $psDatos['user_registro']);
             //iniciamos sesión en la cuenta del usuario
-            //
+            $psUser->login($psDatos['user_nick'], $psDatos['user_password'], true);
+            return '<div class="box_cuerpo" style="padding: 10px 20px; border-top:1px solid black">
+            Bienvenido a <b>'.$psCore->settings['titulo'].'</b>, Ahora est&aacute;s registrado y tu cuenta ha sido activada, podr&aacute;s disfrutar de esta comunidad inmediatamente.<br><br>&iexcl;Muchas gracias y bienvenido! :)</div>';
         }
+    }else{
+        return 'Lo sentimos, ocurri&oacute; un error. Int&eacute;ntelo de nuevo m&aacute;s tarde.';
     }
 }
 

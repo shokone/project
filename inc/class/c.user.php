@@ -249,18 +249,21 @@ class psUser{
     /**
      * @funcionalidad activamos la cuenta del usuario
      * @param  [type] $uid [description] id del usuario
+     * @param  [type] $key obtenemos la clave
      * @return [type]      [description]
      */
-    function activate($uid){
+    function activate($uid, $key){
         global $psDb;
-        if(empty($uid)) $uid = (int)$_GET['uid'];
+        if(empty($uid)) $uid = (int)filter_input(INPUT_GET, 'uid');
+        if(empty($key)) $key = filter_input(INPUT_GET, 'key');
         //ejecutamos la consulta en la base de datos
         $consulta = "SELECT user_name, user_password, user_registro FROM u_miembros WHERE user_id = :uid";
         $valores = [
             'uid' => $uid,
         ];
         $query = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
-        if($psDb->db_execute($consulta, $valores, 'rowCount') == 0){
+        $local = md5($query['user_registro']);
+        if($psDb->db_execute($consulta, $valores, 'rowCount') == 0 || $key != $local){
             return false;
         }else{
             $consulta2 = "UPDATE u_miembros SET user_active = 1 WHERE user_id = :uid";
