@@ -152,9 +152,8 @@ class psMedallas(){
   }
 
   /**
-   * @funcionalidad 
-   * @param  [type]  
-   * @return [type]  
+   * @funcionalidad añadimos una nueva medalla
+   * @return [type] devolvemos un string con el resultado de la operación
    */
   function newMedalla(){
     global $psDb, $psCore, $psUser;
