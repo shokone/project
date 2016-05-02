@@ -1,0 +1,52 @@
+/* creamos estilos para todos los navegadores */
+.boxBorder(@x: 2px, @color: black, @type: solid){
+	border: @arguments;
+	-moz-border: @arguments;
+	-webkit-border: @arguments;
+	-o-border: @arguments;
+	-ms-border: @arguments;
+}
+.boxRadius(@tam:10px, @tam2: 10px){
+	border-radius:@arguments;
+	-moz-border-radius:@arguments;
+	-ms-border-radius:@arguments;
+	-o-border-radius:@arguments;
+	-webkit-border-radius:@arguments;
+}
+.boxShadow(@x: 0, @y:0, @blur:1px, @color:#000){
+	box-shadow: @arguments;
+	-moz-box-shadow: @arguments;
+	-webkit-box-shadow: @arguments;
+	-ms-box-shadow: @arguments;
+	-o-box-shadow: @arguments;
+}
+.boxSizing(@x: border-box){
+	box-sizing: @arguments;
+	-moz-box-sizing: @arguments;
+	-o-box-sizing: @arguments;
+	-ms-box-sizing: @arguments;
+	-webkit-box-sizing: @arguments;
+}
+
+body{
+	margin: 0;
+	padding: 0;
+}
+
+/* cabecera */
+header{
+	width: 100%;
+	height: 100px;
+	background-color:green;
+	margin-bottom: 10px;
+}
+
+#logo{
+	width: 30%;
+  	height: 48px;
+	float:left;
+	margin: 10px 0 10px 15px;
+}
+
+
+/* menu */

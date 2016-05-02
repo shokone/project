@@ -1,0 +1,19 @@
+/* creamos estilos para todos los navegadores */
+body {
+  margin: 0;
+  padding: 0;
+}
+/* cabecera */
+header {
+  width: 100%;
+  height: 100px;
+  background-color: green;
+  margin-bottom: 10px;
+}
+#logo {
+  width: 30%;
+  height: 48px;
+  float: left;
+  margin: 10px 0 10px 15px;
+}
+/* menu */
