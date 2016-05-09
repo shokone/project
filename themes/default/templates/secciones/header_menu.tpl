@@ -65,24 +65,96 @@
                       <a title="Ir a administraci&oacute;n" href="{$psConfig.url}/admin/">Admin </a>
                   </li>
               {/if}
-          {else}
-              <li class="registrate">
-                  <a title="Registrate!" onclick="registro_load_form(); return false" href=""><b>Registrate!</b></a>
-              </li>
           {/if} 
       </ul> 
       <!-- menu derecha -->
       <ul class="nav navbar-nav navbar-right">
-          <li><a href="#">Enlace #3</a></li>
-          <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Menú #2 <b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                  <li><a href="#">Acción #1</a></li>
-                  <li><a href="#">Acción #2</a></li>
-                  <li><a href="#">Acción #3</a></li>
-                  <li class="divider"></li>
-                  <li><a href="#">Acción #4</a></li>
-              </ul>
-          </li>
+          {if $psUser->member}
+              <li class="monitor">
+                  <a href="{$psConfig.url}/monitor/" onclick="notifica.last(); return false" title="Monitor del usuario" name="monitor">
+                      <span class="iconos monitor"></span>
+                  </a>
+                  <div class="noti_lista" id="monitor_lista">
+                      <div>
+                          <strong onclick="location.href='{$psConfig.url}/monitor/'">Notificaciones</strong>
+                      </div>
+                  <ul></ul>
+                  <a href="{$psConfig.url}/monitor/" class="ver-mas">Ver m&aacute;s notificaciones</a>
+                  </div>
+              </li>
+              <li class="mensajes">
+                  <a href="{$psConfig.url}/mensajes/" onclick="mensaje.last(); return false" title="Mensajes" name="mensajes">
+                      <span class="iconos mensajes"></span>
+                  </a>
+                  <div class="noti_lista" id="mensajes_lista">
+                      <div>
+                          <strong onclick="location.href='{$psConfig.url}/mensajes/'">Mensajes</strong>
+                      </div>
+                      <ul id="mensaje_box"></ul>
+                      <a href="{$psConfig.url}/mensajes/">Ver todos los mensajes</a>
+                  </div>
+              </li>
+              {if $psAvisos}
+                  <li class="avisos">
+                      <a title="Avisos" href="{$psConfig.url}/mensajes/avisos/">
+                          <img src="{$psConfig.default}/images/icons/megaphone.png" />
+                      </a>
+                      <div id="alert_aviso" class="alertas"><a title="{$psAvisos} aviso{if $psAvisos != 1}s{/if}"><span>{$psAvisos}</span></a></div>
+                  </li>
+              {/if}
+              <li>
+                  <a title="Mis Favoritos" href="{$psConfig.url}/favoritos.php">
+                      <span class="iconos favoritos"></span>
+                  </a>
+              </li>
+              <li>
+                  <a title="Mis Borradores" href="{$psConfig.url}/borradores.php">
+                      <span class="iconos borradores"></span>
+                  </a>
+              </li>
+              <li>
+                  <a title="Mi cuenta" href="{$psConfig.url}/cuenta/">
+                      <span class="iconos micuenta"></span>
+                  </a>
+              </li>
+              <li class="userMenu">
+                  <a title="Mi Perfil" href="{$psConfig.url}/perfil/{$psUser->info.user_name}">{$psUser->nick}</a>
+              </li>
+              <li class="logout">
+                  <a href="{$psConfig.url}/login-salir.php" title="Desconectar">
+                      <span class="iconos logout"></span>
+                  </a>
+              </li>
+          {else}
+              <li class="registrate">
+                  <a title="Registrate!" onclick="registro_load_form(); return false" href=""><b>Registrate!</b></a>
+              </li>
+              <li>
+                  <a title="Login" href="javascript:open_login();">Login </a>
+                  <div id="box_login" class="nodisplay">
+                      <div class="body-login">
+                          <a title="Cerrar login" href="javascript:close_login();"><img src="" title="Cerrar login" alt="Cerrar login"/></a>
+                          <span class="gif_cargando floatR nodisplay" id="login_cargando"></span>
+                          <div id="login_error" class="nodisplay"></div>
+                          <form action="javascript:login_ajax()" method="post">
+                              <label>Usuario</label>
+                              <input type="text" class="inlogin" id="nickname" name="nick" maxlength="64">
+                              <label>Contraseña</label>
+                              <input type="password" class="inlogin" id="password" name="pass" maxlength="64">
+                              <label for="rem">Recordar usuario</label>
+                              <input type="checkbox" id="rem" name="rem" value="true" checked="checked" /> 
+                              <input type="submit" title="Entrar" value="Entrar" class="btn btnOk">
+                          </form>
+                          <div class="login_footer">
+                              <a href="#" onclick="remind_password();">&#191;Olvidaste tu contrase&#241;a?</a><br/>
+                              <a href="#" onclick="resend_validation();">&#191;No te ha llegado el correo de validaci&oacute;n?</a><br/>
+                              <a onclick="open_login(); registro_load_form(); return false" href="">
+                                <strong>Registrarme!</strong>
+                              </a>
+                          </div>
+                      </div>
+                  </div>
+              </li>
+          {/if}
       </ul>
   </div>

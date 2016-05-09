@@ -6,7 +6,7 @@
 	-o-border: @arguments;
 	-ms-border: @arguments;
 }
-.boxRadius(@tam:10px, @tam2: 10px){
+.boxRadius(@tam:10px, @tam2: 10px, @t3: 10px, @t4: 10px){
 	border-radius:@arguments;
 	-moz-border-radius:@arguments;
 	-ms-border-radius:@arguments;
@@ -27,6 +27,9 @@
 	-ms-box-sizing: @arguments;
 	-webkit-box-sizing: @arguments;
 }
+
+.floatL{float: left;}
+.floatR{float: right;}
 
 body{
 	margin: 0;
@@ -50,3 +53,36 @@ header{
 
 
 /* menu */
+.nodisplay{display: none;}
+
+
+/* iconos */
+.iconos {
+	  width: 16px;
+	  height: 16px;
+	  background-image: url('images/big2v1.png');
+	  background-repeat: no-repeat;
+	  display:block;
+}
+.iconos.monitor{background-position: 0 -929px;}
+.iconos.mensajes{background-position:0 -856px;}
+.iconos.favoritos{background-position: 0 -946px;}
+.iconos.micuenta{background-position: 0 -874px;}
+.iconos.borradores{background-position:0 -1470px; margin-top:-1px;}
+.iconos.logout{background-position: 0 -964px;}
+
+#loading {
+	position: fixed;
+	top: 200px;
+	left: 44%;
+	width: 120px;
+	text-align: center;
+	background: #444;
+	background: rgba(0, 0, 0, 0.7);
+	color: white;
+	font-size: 14px;
+	padding: 8px 10px;
+	.boxRadius(5px, 5px, 5px, 5px);
+	z-index: 10003;
+	display:none;
+}

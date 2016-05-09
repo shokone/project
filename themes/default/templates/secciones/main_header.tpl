@@ -10,13 +10,14 @@
 		<!-- AGREGAMOS UN ESTILO EXTRA SI EXISTE -->
 		<link href="{$psConfig.css}/{$psPage}.css" rel="stylesheet" type="text/css" />
 		<link href="{$psConfig.css}/bootstrap.min.css" rel="stylesheet" type="text/css" />
-		<link href="{$psConfig.css}/bootstrap-theme.min.css" rel="stylesheet" type="text/css" />
+		<link href="{$psConfig.css}/bootstrap-theme.css" rel="stylesheet" type="text/css" />
 
 		<link rel="shortcut icon" href="{$psConfig.images}/favicon.ico" type="image/x-icon" />
 
 		<script type="text/javascript" src="{$psConfig.js}/jquery-2.2.3.min.js"></script>
 		<script type="text/javascript" src="{$psConfig.js}/bootstrap.min.js"></script>
 		<script type="text/javascript" src="{$psConfig.js}/npm.js"></script>
+		<script type="text/javascript" src="{$psConfig.js}/acciones.js"></script>
 		<script type="text/javascript">
 		// {literal}
 		var global_data = {
@@ -35,6 +36,8 @@
 		</script>
 	</head>
 	<body>
+		<div id="loading"><img src="{$psConfig.tema.t_url}/images/ajax-loader.gif" />Cargando...</div>
+		<div id="myActions"></div>
 		<header>
 			<div id="logo">
             	<a id="logoi" title="{$psConfig.titulo}" href="{$psConfig.url}">

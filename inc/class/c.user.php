@@ -12,14 +12,14 @@ if(!defined('PS_HEADER')){
  */
 class psUser{
     //declaramos las variables de la clase
-    protected $member = 0; //el usuario se ha logueado?
-    protected $admod = 0; //el usuario es administrador?
-    protected $baneado = 0; //el usuario está baneado?
-    protected $info = []; //si el usuario está logueado obtenemos los datos de la bd
-    protected $nick = 'Visitante'; //nombre a mostrar del usuario
-    protected $user_id = 0; //id del usuario
-    protected $error; //contendrá el número del error, si lo hay
-    protected $sesion; //contendrá los datos del usuario
+    public $member = 0; //el usuario se ha logueado?
+    public $admod = 0; //el usuario es administrador?
+    public $baneado = 0; //el usuario está baneado?
+    public $info = []; //si el usuario está logueado obtenemos los datos de la bd
+    public $nick = 'Visitante'; //nombre a mostrar del usuario
+    public $user_id = 0; //id del usuario
+    public $error; //contendrá el número del error, si lo hay
+    public $sesion; //contendrá los datos del usuario
 
     /**
      * @funcionalidad instanciamos la clase y la guardamos en una variable estática
@@ -42,7 +42,8 @@ class psUser{
         //cargamos las variables globales de las clases core y medallas
         global $psCore, $psMedallas;
         //cargamos la sesion del usuario
-        $this->sesion = new psSesion();
+        require 'c.sesion.php';
+        $this->sesion =& psSesion::getInstance();
         if(!$this->sesion->leerSesion()){
             $this->sesion->createSesion();
         }else{
