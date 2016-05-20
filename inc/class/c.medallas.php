@@ -11,7 +11,7 @@ if(!defined('PS_HEADER')){
  * @name() c.medallas.php
  * @author  Iván Martínez Tutor
  */
-class psMedallas(){
+class psMedallas{
   /**
    * @funcionalidad comprobamos si la clase ha sido instanciada
    * si no es así creamos un nuevo objeto para la clase psMedallas

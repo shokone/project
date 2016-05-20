@@ -16,17 +16,21 @@ require(PS_ROOT."/inc/smarty/Smarty.class.php");
  */
 class psSmarty extends Smarty{
     //asignamos variables
-    //variable principal de smarty
-    var $_tpl_var = [];
+    //variable principal de smarty para asignar valores
+    var $_tpl_hooks;
     //variable de smarty para valores no multiples
-    var $_tpl_var_no_multiple = true;
+    var $_tpl_hooks_no_multi = true;
     
-    public function psSmarty(){
+    function psSmarty(){
         //creamos la variable global para el nucleo psCore
         global $psCore;
         //damos a smarty las rutas de los directorios principales
-        $this->template_dir = PS_ROOT."/themes/".PS_TEMA."/templates";
-        $this->compile_dir = PS_ROOT."/cache";
+        $this->template_dir = PS_ROOT."/themes/".PS_TEMA."/templates/";
+        $this->compile_dir = PS_ROOT."/cache/";
+        $this->config_dir = PS_ROOT.'/inc/php/';
+        $this->plugins_dir = PS_ROOT."/inc/smarty/plugins";
+        $this->template_cb = array('url' => $psCore->settings['url'], 'title' => $psCore->settings['titulo']);
+        $this->_tpl_hooks = array();
     }
     
     public static function &getInstance(){
@@ -35,5 +39,15 @@ class psSmarty extends Smarty{
             $instancia = new psSmarty();
         }
         return $instancia;
+    }
+
+    function assign_hook($hook, $include){
+        if(!isset($this->_tpl_hooks[$hook])){
+          $this->_tpl_hooks[$hook] = array();
+        }
+        if($this->_tpl_hooks_no_multi && in_array($include, $this->_tpl_hooks[$hook])){
+          return;
+        }
+        $this->_tpl_hooks[$hook][] = $include;
     }
 }

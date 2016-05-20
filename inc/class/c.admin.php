@@ -1052,7 +1052,7 @@ class psAdmin{
                 </html>
             ";
             mail($admin[0], ($cuenta ? 'Cuenta eliminada' : 'Contenido eliminado'), $body, 'Content-type: text/html; charset=iso-8859-15');
-            return 'Todos los cambios han salido correctamente.';
+            return true;
         }else{
             return 'Ha ocurrido un error, por favor int&eacute;ntelo de nuevo m&aacute;s tarde o contacte con el administrador principal del portal.';
         }
@@ -1293,10 +1293,69 @@ class psAdmin{
      */
     function changeNick(){
         global $psDb, $psCore, $psMonitor;
-
-
-
-        
+        $nid = filter_input(INPUT_POST, 'nid');
+        //obtenemos los datos de la db a partir del nick
+        $consulta = "SELECT * FROM u_nicks WHERE id = :nid";
+        $valores = array('nid' => $nid);
+        $datos = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+        //comprobamos si hemos pulsado el botón de aprobar, denegar u cancelar
+        if($_POST['accion'] == 'aprobar'){
+            $cap = "UPDATE u_miembros SET user_name = :name, user_password = :pass, user_name_changes = :changes WHERE user_id = :uid";
+            $vap = array(
+                'name' => $datos['name_2'],
+                'pass' => $datos['hash'],
+                'changes' => 'user_name_changes'-1,
+                'uid' => $datos['user_id']
+            );
+            $psDb->db_execute($cap, $vap);
+            $cap2 = "UPDATE u_nicks SET estado = :estado WHERE id = :id";
+            $vap2 = array(
+                'estado' => 1,
+                'id' => $nid
+            );
+            $psDb->db_execute($cap2, $vap2);
+            //una vez realizadas las consultas enviamos el aviso al usuario
+            $aviso = 'Hola <b>' . $datos['name_1'] . '</b>:<br><br>Le informamos que su petici&oacute;n de cambio de nick ha sido aprobada. <br><br>Su nuevo nick es: <b>' . $datos['name_2'] . '</b>. Recibir&aacute; un email inform&aacute;ndole del cambio.';
+            $psMonitor->setAviso($datos['user_id'], 'Cambio realizado', $aviso, 4);
+            //ahora obtenemos los datos para enviarle por correo al usuario
+            $asunto = $datos['name_1'] . 'su petici&oacute;n de cambio de nick ha sido aprobada.';
+            $body = '<p>Hola <b>' . $datos['name_1'] . '</b>:</p><br><p>Le informamos su cambio de nick ha sido aprobado.</p> 
+            <p>A partir de este momento podr&aacute; acceder a ' . $psCore->settings['titulo'] . 'con su nuevo nick.</p>
+            <p> Su nuevo nick es: <b>' . $datos['name_2'] . '</b></p><br>
+            <p>El Staff de <strong>' . $psCore->settings['titulo'] . '.</strong></p><br>
+            <p>Esperamos verle pronto de nuevo. Hasta pronto!</p>';
+        }else if($_POST['accion'] == 'denegar'){
+            $cap = "UPDATE u_miembros SET user_name_changes = :changes WHERE user_id = :uid";
+            $vap = array(
+                'changes' => 'user_name_changes'-1,
+                'uid' => $datos['user_id']
+            );
+            $psDb->db_execute($cap, $vap);
+            $cap2 = "UPDATE u_nicks SET estado = :estado WHERE id = :id";
+            $vap2 = array(
+                'estado' => 2,
+                'id' => $nid
+            );
+            $psDb->db_execute($cap2, $vap2);
+            //una vez realizadas las consultas enviamos el aviso al usuario
+            $aviso = 'Hola <b>' . $datos['name_1'] . '</b>:<br><br>Le informamos que su petici&oacute;n de cambio de nick ha sido denegada. <br><br>';
+            $psMonitor->setAviso($datos['user_id'], 'Cambio realizado', $aviso, 3);
+            //ahora obtenemos los datos para enviarle por correo al usuario
+            $asunto = $datos['name_1'] . 'su petici&oacute;n de cambio de nick ha sido denegada. Recibir&aacute; un email inform&aacute;ndole del cambio.';
+            $body = '<p>Hola <b>' . $datos['name_1'] . '</b>:</p><br><p>Le enviamos este correo para informarle que su solicitud de cambio de nick ha sido denegada.</p> 
+            <p>El Staff de <strong>' . $psCore->settings['titulo'] . '.</strong></p><br>
+            <p>Esperamos verle pronto de nuevo y sentimos las molestias ocasionadas. Hasta pronto!</p>';
+        }else{
+            return 'Solicitud de cambio de nick cancelada';
+        }
+        //añadimos la clase email para enviar el correo
+        include '../inc/class/c.email.php';
+        $psEmail = new psEmail('confirmar', 'nombre');
+        $psEmail->em_to = $datos['user_email'];
+        $psEmail->em_subject = $asunto;
+        $psEmail->em_body = $body;
+        $psEmail->em_head = $psEmail->setEmHead();
+        $psEmail->sendEmail() or die('Ocurri&oacute un error al intentar enviar el correo');
     }
 
     /**
@@ -1843,5 +1902,33 @@ class psAdmin{
         $stats['muro_total'] = $stats['muro_estados'] + $stats['muro_comentarios'];
         $stats['afiliados_total'] = $stats['afiliados_activos'] + $stats['afiliados_inactivos'];
         return $stats;
+    }
+
+    /**
+     * @funcionalidad obtenemos iconos extra del tema
+     * @param  [type]  $cat nombre del archivo
+     * @param  [type]  $size tamaño del archivo
+     * @return [type]  devolvemos un array con los datos obtenidos
+     */
+    function getIconosExtra($cat, $size){
+        //buscamos imágenes de los siguientes tipos
+        $tipos = array('jpg', 'png', 'gif');
+        //obtenemos la ruta de las imágenes del tema
+        $dir = opendir('../../themes/default/images/icons/' . $cat);
+        //obtenemos los iconos
+        while($file = readdir($dir)){
+            $extra = substr($file, -3);
+            if(in_array($extra, $tipos)){
+                if(!empty($size)){
+                    $img = substr($file, -6, 2);
+                    if($size == $img){
+                        $iconos[] = substr($file, 0, -7);
+                    }
+                }else{
+                    $iconos[] = $file;
+                }
+            }
+        }
+        return $iconos;
     }
 }

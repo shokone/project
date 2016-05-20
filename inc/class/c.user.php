@@ -15,7 +15,7 @@ class psUser{
     public $member = 0; //el usuario se ha logueado?
     public $admod = 0; //el usuario es administrador?
     public $baneado = 0; //el usuario está baneado?
-    public $info = []; //si el usuario está logueado obtenemos los datos de la bd
+    public $info = array(); //si el usuario está logueado obtenemos los datos de la bd
     public $nick = 'Visitante'; //nombre a mostrar del usuario
     public $user_id = 0; //id del usuario
     public $error; //contendrá el número del error, si lo hay
@@ -47,7 +47,7 @@ class psUser{
         if(!$this->sesion->leerSesion()){
             $this->sesion->createSesion();
         }else{
-            $this->loadUser();
+            $this->load();
         }
         //si es miembro actualizamos los puntos del usuario
         if($this->member){
@@ -56,10 +56,10 @@ class psUser{
     }
 
     /**
-     * @functionalidad cada 24 horas actualizaremos los puntos del usuario al valor establecido en la configuración
+     * @public functionalidad cada 24 horas actualizaremos los puntos del usuario al valor establecido en la configuración
      * @return devolvemos un valor booleano confirmando el cambio
      */
-    function actualizarPuntos(){
+    public function actualizarPuntos(){
         global $psDb;
         //obtenemos la hora a la que recargar los puntos del usuario
         //0 = media noche en el servidor
@@ -91,27 +91,36 @@ class psUser{
      * @param  [type]  $redirectTo [description] si la cuenta ha sido o no activada
      * @return [type]              [description] devolvemos un valor booleano para terminar con la función
      */
-    function login($name, $pass, $remember = false, $redirectTo = null){
+    public function login($name, $pass, $remember = false, $redirectTo = null){
         global $psCore, $psDb;
         //encriptamos la pass para comprobarla con la db
         $pass = md5($pass);
+
         //consultamos con la base de datos
-        $u_pwtype = $psDb->db_execute((($psDb->db_execute("SHOW COLUMNS FROM u_miembros LIKE \'user_pwtype\'") == 1) ? 'user_pwtype' : ''),null, 'rowCount');
-        $consulta = "SELECT user_id, user_password, :pwtype, user_activo, user_baneado FROM u_miembros WHERE LOWER(user_name) = :name";
+        /*$c = "SELECT * FROM u_miembros LIKE `user_pwtype`";
+        if($psDb->db_execute($c) == 1){
+            $u_pwtype = 'user_pwtype';
+        }else{
+            $u_pwtype = '';
+        }*/
+        //exit($u_pwtype);
+        $consulta = "SELECT user_id, user_password, user_activo, user_baneado FROM u_miembros WHERE LOWER(user_name) = :name";
         $valores = [
-            'pwtype' => $u_pwtype,
+            //'pwtype' => $u_pwtype,
             'name' => $name,
         ];
-        $consulta2 = $psDb->db_execute($consulta, $valores);
-        $datos = $psDb->db_execute($consulta2, null, 'fetch_assoc');
+        $datos = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
         //comprobamos si el usuario existe
-        if(empty($datos)) return '0: El nombre de usuario con el que intenta aceder no existe';
+        if(empty($datos)){
+            return '0: El nombre de usuario con el que intenta aceder no existe';
+        }
 
         if($datos['user_pwtype']){
             //realizamos la consulta en la db
-            $consulta3 = "UPDATE u_miembros SET user_password = :pass, user_pwtype = \'0\' WHERE user_id = :uid";
+            $consulta3 = "UPDATE u_miembros SET user_password = :pass, user_pwtype = :type WHERE user_id = :uid";
             $valores2 = [
                 'pass' => $pass,
+                'type' => 0,
                 'uid' => $datos['user_id'],
             ];
             $psDb->db_execute($consulta3, $valores2);
@@ -125,7 +134,7 @@ class psUser{
                 //actualizamos la sesión del usuario
                 $this->sesion->anadirSesion($datos['user_id'], $remember, true);
                 //cargamos la información del usuario
-                $this->cargarUser(true);
+                $this->load(true);
                 //comprobamos si tenemos que asignar alguna medalla al usuario
                 $this->darMedalla();
                 //redirigimos al usuario
@@ -146,24 +155,24 @@ class psUser{
      * @param  string $redirectTo [description] redireccionamos al home
      * @return [type]             [description] devolvemos un valor booleano para terminar con la función
      */
-    function logout($uid, $redirectTo = '/'){
+    public function logout($uid, $redirectTo = '/'){
         global $psCore, $psDb;
         //destruimos la sesión
         $this->sesion = new psSesion();
         $this->sesion->leerSesion();
-        $this->sesion->destruirSesion();
+        $this->sesion->destruir_sesion();
         //limpiamos variables
         $this->member = 0;
         $this->info = '';
         //obtenemos los datos de la última conexión del usuario
         $ultimaConexion = (time() - (($psCore->settings['c_last_active'] * 60) * 3));
         //actualizamos los datos en la db
-        $consulta = "UPDATE u_miembros SET user_lastactive \':lastactive\' WHERE user_id = :uid";
-        $valores = [
-            'lasactive' => $ultimaConexion,
+        $consulta = "UPDATE u_miembros SET user_lastactive = :lastactive WHERE user_id = :uid";
+        $valores = array(
+            'lastactive' => $ultimaConexion,
             'uid' => (int)$uid,
-        ];
-        $psDb->db_execute($consulta,$valores);
+        );
+        $psDb->db_execute($consulta, $valores);
         //redirigimos al usuario
         if($redirectTo != null){
             $psCore->redirectTo($redirectTo);
@@ -177,30 +186,30 @@ class psUser{
      * @param  boolean $login [description] si ha iniciado sesión, por defecto no (false)
      * @return [type]         [description]
      */
-    function load($login = false){
+    public function load($login = false){
         global $psDb;
         //cargamos los datos de la base de datos
-        $consulta = "SELECT u.*, s.* FROM u_miembros u, u_sessions s WHERE s.session_id = :id AND u.user_id = s.session_user_id";
-        $valores = [
-            'id' => $this->sesion->id,
-        ];
-        $query = $psDb->db_execute($consulta, $valores);
+        $consulta = "SELECT u.*, s.* FROM u_miembros AS u, u_sessions AS s WHERE s.session_id = :id AND u.user_id = s.session_user_id";
+        $valores = array(
+            'id' => $this->sesion->id_sesion,
+        );
+        $this->info = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
         //comprobamos si el usuario existe
         if(!isset($this->info['user_id'])){
             return false;
         }
         //realizamos las consultas necesarias para cargar los permisos del usuario
         $consulta2 = "SELECT r_name, r_color, r_image, r_allows FROM u_rangos WHERE rango_id = :uid";
-        $valores2 = [
+        $valores2 = array(
             'uid' => $this->info['user_id'],
-        ];
-        $this->info['rango'] = $pdDb->db_execute($consulta2, $valores2, 'fetch_assoc');
-
+        );
+        $this->info['rango'] = $psDb->db_execute($consulta2, $valores2, 'fetch_assoc');
+        
         $consulta3 = "SELECT r_allows FROM u_rangos WHERE rango_id = :u_rango";
         $valores3 = [
             'u_rango' => $this->info['user_rango'],
         ];
-        $query3 = $psDb->db_execute($consulta3, $valores3);
+        $query3 = $psDb->db_execute($consulta3, $valores3, 'fetch_assoc');
         $this->permisos = unserialize($query3['r_allows']);
         //actualizamos la variable booleana member
         $this->member = 1;
@@ -244,7 +253,7 @@ class psUser{
             $psDb->db_execute($consulta6, $valores6);
         }
         //borramos la variable sesion por seguridad
-        unset($this->sesion);
+        //unset($this->sesion);
     }
 
     /**
@@ -253,7 +262,7 @@ class psUser{
      * @param  [type] $key obtenemos la clave
      * @return [type]      [description]
      */
-    function activate($uid, $key){
+    public function activate($uid, $key){
         global $psDb;
         if(empty($uid)) $uid = (int)filter_input(INPUT_GET, 'uid');
         if(empty($key)) $key = filter_input(INPUT_GET, 'key');
@@ -283,7 +292,7 @@ class psUser{
      * @funcionalidad obtenemos un listado con todos los usuarios
      * @return [type]         [description] devolvemos un array con los datos obtenidos
      */
-    function getUsuarios(){
+    public function getUsuarios(){
         global $psCore, $psDb;
         $online = (time() - ($psCore->settings['c_last_active'] * 60));
         $inactive = (time() - (($psCore->settings['c_last_active'] * 60) * 2));
@@ -367,7 +376,7 @@ class psUser{
      * @param  [type] $psUser [description] id del usuario
      * @return [type]         [description] devolvemos el id del usuario si todo ha salido correctamente
      */
-    function getUid($uid){
+    public function getUid($uid){
         global $psCore, $psDb;
         $username = strtolower($uid);
         $consulta = "SELECT user_id FROM u_miembros WHERE LOWER(user_name) = :username";
@@ -388,7 +397,7 @@ class psUser{
      * @return [type] [description] devolvemos false si el usuario no está baneado,
      *                              o los datos del usuario en caso de que sí lo esté
      */
-    function getBaned(){
+    public function getBaned(){
         global $psDb;
         //realizamos las consultas oportunas
         $consulta = "SELECT * FROM u_suspension WHERE user_id = :uid";
@@ -420,7 +429,7 @@ class psUser{
      * @param  [type] $uid [description] id del usuario del cual se quiere obtener el nombre
      * @return [type]      [description] devolvemos el nombre del usuario
      */
-    function getUserName($uid){
+    public function getUserName($uid){
         global $psDb;
         $consulta = "SELECT user_name FROM u_miembros WHERE user_id = :uid";
         $valores = [
@@ -435,7 +444,7 @@ class psUser{
      * @param  [type] $uid [description] id del usuario a comprobar
      * @return [type]      [description] obtenemos un valor booleano con el resultado de la comprobación
      */
-    function follow($uid){
+    public function follow($uid){
         global $psDb;
         $consulta = "SELECT follow_id FROM u_follows WHERE f_id = :uid AND f_user = :uid2 AND f_type = :data";
         $valores = [
@@ -456,42 +465,41 @@ class psUser{
      * @funcionalidad dar la medalla al usuario cuando realiza una acción concreta establecida
      * @return [type] [description]
      */
-    function darMedalla(){
+    public function darMedalla(){
         global $psDb;
         //realizamos las consultas oportunas en la db
         //obtenemos id de medallas
-        $consulta = "SELECT wm.medal_id FROM w_medallas AS wm LEFT JOIN w_medallas_asign AS w ON wm.medal_id = w.medal_id WHERE wm.m_type = \'1\' AND w.medal_id = :uid";
-        $valores = ['uid' => $this->user_id,];
+        $consulta = "SELECT wm.medal_id FROM w_medallas AS wm LEFT JOIN w_medallas_assign AS w ON wm.medal_id = w.medal_id WHERE wm.m_type = :type AND w.medal_id = :uid";
+        $valores = array('type' => 1, 'uid' => $this->user_id,);
         $query = $psDb->db_execute($consulta, $valores, 'rowCount');
         //seguidores por id de usuario
-        $consulta2 = "SELECT COUNT(follow_id) AS f FROM u_follows WHERE f_id = :uid AND f_type = \'1\'";
-        $valores2 = ['uid' => $this->user_id,];
+        $consulta2 = "SELECT COUNT(follow_id) AS f FROM u_follows WHERE f_id = :uid AND f_type = :type";
+        $valores2 = ['uid' => $this->user_id,'type' => 1];
         $query2 = $psDb->db_execute($consulta2, $valores2, 'fetch_num');
         //seguidores por nombre de usuario
-        $consulta3 = "SELECT COUNT(follow_id) AS f FROM u_follows WHERE f_user = :uid AND f_type = \'1\'";
-        $valores3 = ['uid' => $this->user_id,];
+        $consulta3 = "SELECT COUNT(follow_id) AS f FROM u_follows WHERE f_user = :uid AND f_type = :type";
+        $valores3 = ['uid' => $this->user_id,'type' => 1];
         $query3 = $psDb->db_execute($consulta3, $valores3, 'fetch_num');
         //comentarios en post
-        $consulta4 = "SELECT COUNT(cid) AS c FROM p_comentarios WHERE c_user = :uid AND c_status = \'0\'";
-        $valores4 = ['uid' => $this->user_id,];
+        $consulta4 = "SELECT COUNT(cid) AS c FROM p_comentarios WHERE c_user = :uid AND c_status = :status";
+        $valores4 = ['uid' => $this->user_id,'status' => 0];
         $query4 = $psDb->db_execute($consulta4, $valores4, 'fetch_num');
         //comentarios en fotos
         $consulta5 = "SELECT COUNT(cid) AS c FROM f_comentarios WHERE c_user = :uid";
         $valores5 = ['uid' => $this->user_id,];
         $query5 = $psDb->db_execute($consulta5, $valores5, 'fetch_num');
         //fotos
-        $consulta6 = "SELECT COUNT(foto_id) AS f FROM f_fotos WHERE f_status = \'0\' AND f_user = :uid";
-        $valores6 = ['uid' => $this->user_id,];
+        $consulta6 = "SELECT COUNT(foto_id) AS f FROM f_fotos WHERE f_status = :status AND f_user = :uid";
+        $valores6 = ['uid' => $this->user_id,'status' => 0];
         $query6 = $psDb->db_execute($consulta6, $valores6, 'fetch_num');
         //post
-        $consulta7 = "SELECT COUNT(post_id) AS p FROM p_posts WHERE post_user = :uid AND post_status = \'0\'";
-        $valores7 = ['uid' => $this->user_id,];
+        $consulta7 = "SELECT COUNT(post_id) AS p FROM p_posts WHERE post_user = :uid AND post_status = :status";
+        $valores7 = ['uid' => $this->user_id,'status' => 0];
         $query7 = $psDb->db_execute($consulta7, $valores7, 'fecth_num');
 
         //obtenemos las medallas
-        $consulta8 = "SELECT medal_id, m_cant, m_cond_user, m_cond_user_rango FROM w_medallas WHERE m_type = \'1\' ORDER BY m_cant DESC";
-        $query8 = $psDb->db_execute($consulta8);
-        $datos = $psDb->resultadoArray($query8);
+        $consulta8 = "SELECT medal_id, m_cant, m_cond_user, m_cond_user_rango FROM w_medallas WHERE m_type = :type ORDER BY m_cant DESC";
+        $datos = $psDb->resultadoArray($psDb->db_execute($consulta8, array('type' => 1)));
         //damos las medallas a los usuarios
         foreach($datos as $medallas){
             if($medalla['m_cond_user'] == 1 && !empty($this->info['user_puntos']) && $medalla['m_cant'] > 0 && $medalla['m_cant'] <= $this->info['user_puntos']){
@@ -536,8 +544,8 @@ class psUser{
                         'type' => 15,
                         'tim' => time(),
                     ];
-                    $con3 = "UPDATE w_medallas SET m_total = m_total + 1 WHERE medal_id = :new";
-                    $val3 = ['new' => (int)$new,];
+                    $con3 = "UPDATE w_medallas SET m_total = m_total + :total WHERE medal_id = :new";
+                    $val3 = ['total' => 1, 'new' => (int)$new,];
                     $psDb->db_execute($con1, $val1);
                     $psDb->db_execute($con2, $val2);
                     $psDb->db_execute($con3, $val3);
@@ -551,7 +559,7 @@ class psUser{
      * @param  [type] $uid [description] id del usuario a comprobar
      * @return [type]      [description] devolvemos un array con los datos del usuario
      */
-    function getUserInfo($uid){
+    public function getUserInfo($uid){
         //creamos las variables globales
         global $psCore, $psDb;
         //creamos las variables locales

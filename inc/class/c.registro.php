@@ -181,8 +181,46 @@ class psRegistro{
             return '<div class="box_cuerpo" style="padding: 10px 20px; border-top:1px solid black">
             Bienvenido a <b>'.$psCore->settings['titulo'].'</b>, Ahora est&aacute;s registrado y tu cuenta ha sido activada, podr&aacute;s disfrutar de esta comunidad inmediatamente.<br><br>&iexcl;Muchas gracias y bienvenido! :)</div>';
         }
-    }else{
-        return 'Lo sentimos, ocurri&oacute; un error. Int&eacute;ntelo de nuevo m&aacute;s tarde.';
     }
+
+    /**
+     * @funcionalidad validamos la dirección de correo del usuario
+     * comprobaremos que no esté ya guardado en la base de datos
+     * @return devolvemos un string con el resultado de la validación
+     */
+    function validarEmailUser(){
+        global $psDb, $psCore;
+        //obtenemos los datos del formulario
+        $nick = strtolower(filter_input(INPUT_POST, 'nick'));
+        $email = strtolower(filter_input(INPUT_POST, 'email'));
+        $validar = empty($nick) ? 'email' : 'nick';
+        //comprobamos
+        if(!empty($nick) || !empty($email)){
+            if($validar = 'email'){
+                $consulta = "SELECT user_id FROM u_miembros WHERE LOWER(user_email) = :email";
+                $valores = array('email' => $email);
+            }else if($validar = 'nick'){
+                $consulta = "SELECT user_id FROM u_miembros WHERE LOWER(user_name) = :nick";
+                $valores = array('nick' => $nick);
+            }
+            if($psDb->db_execute($consulta, $valores, 'rowCount')){
+                return '0: El '.$validar.' ya se encuentra registrado.';
+            }
+            $consulta2 = "SELECT id FROM w_blacklist WHERE (type = :type AND value = :value) OR (type = :type2 AND value = :value2)";
+            $valores2 = array(
+                'type' => 3,
+                'value' => $nick,
+                'type2' => 4,
+                'value2' => $email
+            );
+            if($psDb->db_execute($consulta2, $valores2, 'rowCount'){
+                return '0: Parte del '.$validar.' no est&aacute; permitido en esta comunidad.';
+            }
+        }else{
+            return '0: Debe rellenar todos los campos para poder procesar la solicitud.';
+        }
+        return '1: El '.$validar.' est&aacute; disponible.';
+    }
+
 }
 

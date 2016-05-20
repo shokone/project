@@ -12,7 +12,7 @@ if(!defined('PS_HEADER')){
  */
 class psCore{
     //declaramos las variables de la clase
-    protected $settings; //configuraciones del sitio
+    public $settings; //configuraciones del sitio
     protected $consultas;//consultas del sitio
 
     /**
@@ -35,7 +35,7 @@ class psCore{
         //cargamos las configuraciones
         $this->settings = $this->getSettings();
         $this->settings['domain'] = str_replace('http://','',$this->settings['url']);
-        $this->settings['tema'] = $this->getTema();
+        $this->settings['tema'] = $this->getTheme();
         $this->settings['default'] = $this->settings['url'].'/themes/default';
         $this->settings['categorias'] = $this->getCategorias();
         $this->settings['images'] = $this->settings['tema']['t_url'].'/images';
@@ -44,11 +44,10 @@ class psCore{
         //si estamos en la seccion portal o posts cargamos los datos nuevos
         if($_GET['do'] == 'portal' || $_GET['do'] == 'posts'){
             $this->settings['news'] = $this->getNoticias();
-            echo "noti cargado<br>";
         }
         //guardamos el mensaje del instalador y de los post pendientes de moderacion
         $this->settings['instalador'] = $this->existInstall();
-        $this->settings['novemods'] = $this->getNovemodera();
+        $this->settings['novemods'] = $this->getNovedadesMod();
     }
 
     /**
@@ -69,17 +68,19 @@ class psCore{
      */
     function badWords($word, $type = false){
         global $psDb;
-        $consulta = "SELECT word, swop, method, type FROM w_badwords :type";
-        $valores = array(
-            'type' => ($type ? '' : 'WHERE type = :0'),
-            '0' => 0,
-        );
-        $query = $psDb->db_execute($consulta, $valores);
+        $consulta = "SELECT word, swop, method, type FROM w_badwords";
+        if($type == true){
+            $consulta .= ' WHERE type = :type';
+            $valores['type'] = 0;
+            $query = $psDb->db_execute($consulta, $valores);
+        }else{
+            $query = $psDb->db_execute($consulta);
+        }
         foreach($query as $badWord){
             $search = empty($badWord['method']) ? $badWord['word'] : $badword['word']." ";
             $replace = $badWord['type'] == 1 ? '<img class="bwtype" title="'.$badword['word'].'" src="'.$badWord['swop'].'"/>' : $badWord['swop'].' ';
             $subject = $word;
-            $word = str_ireplace($search, $replace, $subject)
+            $word = str_ireplace($search, $replace, $subject);
         }
         return $word;
     }
@@ -91,8 +92,9 @@ class psCore{
      */
     public function getNovedadesMod(){
         global $psDb;
-        $consulta = "SELECT (SELECT count(post_id) FROM p_posts WHERE post_status = 3) as revposts, (SELECT count(cid) FROM p_comentarios WHERE c_status = 1) as revcomentarios, (SELECT count(DISTINCT obj_id) FROM w_denuncias WHERE d_type = 1) as repposts, (SELECT count(DISTINCT obj_id) FROM w_denuncias WHERE d_type = 2) as repmps, (SELECT count(DISTINCT obj_id) FROM w_denuncias WHERE d_type = 3) as repusers, (SELECT count(DISTINCT obj_id) FROM w_denuncias WHERE d_type = 4) as repfotos, (SELECT count(susp_id) FROM u_suspension) as supusers, (SELECT count(post_id) FROM p_posts WHERE post_status = 2) as pospapelera, (SELECT count(foto_id) FROM f_fotos WHERE f_status = 2) as fospapelera";
-        $datos = $psDb->db_execute($consulta,null,'fetch_assoc');
+        $consulta = "SELECT (SELECT count(post_id) FROM p_posts WHERE post_status = :s1) as revposts, (SELECT count(cid) FROM p_comentarios WHERE c_status = :s2) as revcomentarios, (SELECT count(DISTINCT obj_id) FROM w_denuncias WHERE d_type = :t1) as repposts, (SELECT count(DISTINCT obj_id) FROM w_denuncias WHERE d_type = :t2) as repmps, (SELECT count(DISTINCT obj_id) FROM w_denuncias WHERE d_type = :t3) as repusers, (SELECT count(DISTINCT obj_id) FROM w_denuncias WHERE d_type = :t4) as repfotos, (SELECT count(susp_id) FROM u_suspension) as supusers, (SELECT count(post_id) FROM p_posts WHERE post_status = :s3) as pospapelera, (SELECT count(foto_id) FROM f_fotos WHERE f_status = :s4) as fospapelera";
+        $valores = array('s1' => 3, 's2' => 3, 't1' => 1, 't2' => 2, 't3' => 3, 't4' => 4, 's3' => 2, 's4' => 2);
+        $datos = $psDb->db_execute($consulta,$valores,'fetch_assoc');
         $datos['total'] = $datos['repposts'] + $datos['repfotos'] + $datos['repmps'] + $datos['repusers'] + $datos['revposts'] + $datos['revcomentarios'];
         return $datos;
     }
@@ -103,8 +105,8 @@ class psCore{
      */
     public function getCategorias(){
         global $psDb;
-        $consulta = $psDb->db_execute("SELECT cid, c_orden, c_nombre, c_seo, c_img FROM p_categorias ORDER BY c_orden");
-        $resultado = $psDb->resultadoArray($consulta);
+        $consulta = "SELECT cid, c_orden, c_nombre, c_seo, c_img FROM p_categorias ORDER BY c_orden";
+        $resultado = $psDb->db_execute($consulta);
         return $resultado;
     }
 
@@ -117,7 +119,7 @@ class psCore{
         $valores = [
             'tema_id' => $this->settings['tema_id']
         ];
-        $datos = $psDb->db_execute("SELECT * FROM w_temas WHERE tid = :tema_id LIMIT 1", $valores, 'fetch_assoc');
+        $datos = $psDb->db_execute("SELECT * FROM w_themes WHERE tid = :tema_id LIMIT 1", $valores, 'fetch_assoc');
         $datos['t_url'] = $this->settings['url']."/themes/".$datos['t_path'];
         return $datos;
     }
@@ -128,9 +130,9 @@ class psCore{
      */
     public function getNoticias(){
         global $psDb;
-        $consulta = $psDb->db_execute("SELECT not_body FROM w_noticias WHERE not_active = \'1\' ORDER BY rand()", null, 'fetch_assoc');
+        $consulta = $psDb->db_execute("SELECT not_body FROM w_noticias WHERE not_active = :active ORDER BY :rand", array('active' => 1, 'rand' => rand()), 'fetch_assoc');
         while($fila = $consulta){
-            $fila['not_body'] = $fila['not_body'].'news';
+            $fila['not_body'] = $fila['not_body'];
             $datos[] = $fila;
         }
         return $datos;
@@ -192,7 +194,7 @@ class psCore{
      * @param type $message comprobamos si hemos insertado un mensaje diferente al definido por defecto
      * @return boolean devolvemos un array con el error establecido
      */
-    public function setLevel($psLevel,$message=false){
+    public function setLevel($psLevel, $message = false){
         global $psUser;
         //comprobamos los niveles de acceso
         //acceso a cualquier usuario
@@ -200,7 +202,7 @@ class psCore{
             return true;
         }else if($psLevel == 1){
             //acceso solo visitantes
-            if($psUser->is_member = 0){
+            if($psUser->member == 0){
                 return true;
             }else{
                 if($message){
@@ -211,7 +213,7 @@ class psCore{
             }
         }else if($psLevel == 2){
             //acceso solo para miembros
-            if($psUser->is_member == 1){
+            if($psUser->member == 1){
                 return true;
             }else{
                 if($message){
@@ -222,7 +224,7 @@ class psCore{
             }
         }else if($psLevel == 3){
             //acceso solo a moderadores
-            if($psUser->is_admod || $psUser->permisos['moacp']){
+            if($psUser->admod || $psUser->permisos['moacp']){
                 return true;
             }else{
                 if($message){
@@ -232,7 +234,7 @@ class psCore{
                 }
             }
         }else if($psLevel == 4){
-            if($psUser->is_admod == 1){
+            if($psUser->admod == 1){
                 return true;
             }else{
                 if($message){
@@ -316,20 +318,18 @@ class psCore{
      */
     function getIp(){
         //obtenemos la ip del usuario a través de diferentes peticiones
-        $ip = $_SERVER['HTTP_CLIENT_IP'];
-        if(!$ip && strcasecmp($ip, 'unknown')){
-            return $ip;
+        if(getenv('HTTP_CLIENT_IP') && strcasecmp(getenv('HTTP_CLIENT_IP'), 'unknown')){
+            $ip = getenv('HTTP_CLIENT_IP'); 
+        }else if(getenv('HTTP_X_FORWARDED_FOR') && strcasecmp(getenv('HTTP_X_FORWARDED_FOR'), 'unknown')){
+            $ip = getenv('HTTP_X_FORWARDED_FOR');
+        }else if(getenv('REMOTE_ADDR') && strcasecmp(getenv('REMOTE_ADDR'), 'unknown')){
+            $ip = getenv('REMOTE_ADDR');
+        }else if(isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] && strcasecmp($_SERVER['REMOTE_ADDR'], 'unknown')){
+            $ip = $_SERVER['REMOTE_ADDR'];
+        }else{
+            $ip = 'unknown';
         }
-        $ip = $_SERVER["HTTP_X_FORWARDED_FOR"]; 
-        if($ip &&  !​​strcasecmp($ip, 'unknown')){
-            return $ip;
-        }
-        $ip = $_SERVER["REMOTE_ADDR"]; 
-        si ( $ tmp &&  ! ​​Strcasecmp ( $ tmp ,  'unknown')){
-            return $ip;
-        }
-
-        return 'unknown'; 
+        return $ip;
     }
 
     /**
@@ -513,4 +513,109 @@ class psCore{
         }
         return $inicio;
     }
+
+    /**
+     * @funcionalidad comprobamos el tiempo que pasó desde la fecha obtenida
+     * @param type $fecha obtenemos la fecha a partir de la cuál calcular el tiempo
+     * @param type $mostrar comprobamos si mostramos el tiempo o no
+     * @return type devolvemos un string con el resultado
+     */
+    function setHaceTiempo($fecha, $mostrar = false){
+        $tiempo = time() - $fecha;
+        if($fecha <= 0){
+            return 'Nunca';
+        }else if(round($tiempo / 31536000) <= 0){//1 año
+            if(round($tiempo / 2678400) <= 0){//1 mes
+                if(round($tiempo / 86400) <= 0){//1 dia
+                    if(round($tiempo / 3600) <= 0){//1 hora
+                        if(round($tiempo / 60) <= 0){//1 minuto
+                            if($tiempo <= 60){ 
+                                $hace = 'instantes'; 
+                            } 
+                        } else  { 
+                            $calculo = round($tiempo / 60);
+                            $texto = ($calculo <= 1) ? 'minuto' : 'minutos';
+                            $hace = $calculo . ' ' . $texto; 
+                        } 
+                    } else { 
+                        $calculo = round($tiempo / 3600);
+                        $texto = ($calculo <= 1) ? 'hora' : 'horas';
+                        $hace = $calculo . ' ' . $texto; 
+                    } 
+                }else{
+                    $calculo = round($tiempo / 86400);
+                    $texto = ($calculo <= 1) ? 'd&iacute;a' : 'd&iacute;as';
+                    $hace = $calculo . ' ' . $texto; 
+                }
+            }else{
+                $calculo = round($tiempo / 2678400);
+                $texto = ($calculo <= 1) ? 'mes' : 'meses';
+                $hace = $calculo . ' ' . $texto;
+            }
+        }else{
+            $calculo = round($tiempo / 31536000);
+            $texto = ($calculo <= 1) ? 'a&ntilde;o' : 'a&ntilde;os';
+            $hace = $calculo . ' ' . $texto;
+        }
+        if($mostrar == true){
+            return 'Hace ' . $hace;
+        }else{
+            return $hace;
+        }
+    }
+
+    /**
+     * @funcionalidad comprobamos el tiempo que ha pasado entre acciones para no sobrecargar el servidor
+     * @param type $p si true imprimimos el mensaje si no lo devolvemos
+     * @param type $type tipo de acción, por defecto post
+     * @param type $mensaje mensaje a mostrar con el error
+     * @return type devolvemos true si todo bien o el mensaje a mostrar al usuario
+     */
+    function antiFlood($p = true, $type = 'post', $mensaje = ''){
+        global $psUser;
+        $ahora = time();
+        $mensaje = empty($mensaje) ? 'Est&aacute;s intentando realizar demasiadas acciones en tan poco tiempo.' : $mensaje;
+        $limite = $psUser->permisos['goaf'];
+        $calculo = $ahora - $_SESSION['flood'][$type];
+        if($calculo < $limite){
+            $mensaje .= 'Int&eacute;ntelo de nuevo pasados '.($limite - $calculo).' segundos';
+            //imprimir o devolver el valor
+            if($p){
+                die($mensaje);
+            }else{
+                return $mensaje;
+            }
+        }else{
+            if(empty($_SESSION['flood'][$type])){
+                $_SESSION['flood'][$type] = time();
+            }else{
+                $_SESSION['flood'][$type] = $ahora;
+            }
+            return true;
+        }
+    }
+    
+    /**
+     * @funcionalidad añadimos un enlace al perfil del usuario al mencionarlo en un comentario
+     * @param type $html obtenemos los nombres de los usuarios y lo devolvemos con el enlace
+     * @return type devolvemos los datos obtenidos
+     */
+    public function setMenciones($html){
+        global $psUser;
+        $html = $html.' ';
+        //buscamos al usuario
+        preg_match_all('@([a-zA-Z0-9_-]{4,16})', $html, $usuarios);
+        $menciones = $usuarios[1];
+        //obtenemos los usuarios
+        foreach($menciones as $key => $valor){
+            $uid = $psUser->getUid($valor);
+            if(!empty($uid)){
+                $name = '@'.$valor.' ';
+                $reemplazar = '<a href="'.$this->settings['url'].'/perfil/'.$user.'" uid="'.$uid.'">'.$name.'</a>';
+                $html = str_replace($name, $reemplazar, $html);
+            }
+        }
+        return $html;
+    }
+
 }

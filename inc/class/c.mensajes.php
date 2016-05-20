@@ -11,8 +11,8 @@ if(!defined('PS_HEADER')){
  * @name() c.mensajes.php
  * @author  Iván Martínez Tutor
  */
-class psMensajes(){
-	$mensajes = 0;//mensajes sin leer
+class psMensajes{
+	protected $mensajes = 0;//mensajes sin leer
 
 	/**
 	 * @funcionalidad instanciamos la clase mensajes
@@ -46,7 +46,7 @@ class psMensajes(){
      * @param  [type] $type tipo de accion a realizar 
      * @param  [type] $unread comprobamos si hay mensajes sin leer
      * @param  [type] $modo si se realiza la actualización manual o no
-     * @return [type]  
+     * @return [type] devolvemos un array con los datos de los mensajes
      */
 	function getMensajes($type = 1, $unread = false, $modo = 'normal'){
 		global $psDb, $psCore, $psUser;
@@ -229,7 +229,7 @@ class psMensajes(){
 			$subject = empty($_POST['asunto']) ? 'sin asunto' : $psCore->badWords(filter_input(INPUT_POST, 'asunto'));
 			$body = substr(filter_input(INPUT_POST, 'mensaje'), 0, 1000);
 			//comprobamos si el mensaje está vacío
-			if(str_replace(array('\n', '\t', ' '), '', $body){
+			if(str_replace(array('\n', '\t', ' '), '', $body)){
 				return 'Debes ingresar el contenido de tu mensaje para poder enviarlo.';
 			}
 			//obtenemos el id del usuario
@@ -445,7 +445,7 @@ class psMensajes(){
 				$psDb->db_execute($consulta4, $valores4);
 				$datos['mp_date'] = time();
 				$datos['mp_ip'] = $_SERVER['REMOTE_ADDR'];
-				$datos['mp_body'] = $psCore->badWords($psCore->parsearSmiles($psCore->parsearCode($mbody)), true);
+				$datos['mp_body'] = $psCore->badWords($mbody, true);
 				return $datos;
 			}
 		}else{
@@ -495,7 +495,7 @@ class psMensajes(){
 		$consulta3 = "SELECT r.*, u.user_name FROM u_respuestas AS r LEFT JOIN u_miembros AS u ON r.mr_from = u.user_id WHERE r.mp_id = :mid ORDER BY r.mr_id";
 		$valores3 = array('mid' => $mid);
 		while($row = $psDb->db_execute($consulta3, $valores3, 'fetch_assoc')){
-			$row['mr_body'] = $psCore->badWords($psCore->parsearSmiles($psCore->parsearCode($row['mr_body'])), true);
+			$row['mr_body'] = $psCore->badWords($row['mr_body'], true);
 			$historial['res'][] = $row;
 		}
 		//comprobamos
@@ -625,7 +625,7 @@ class psMensajes(){
 					if($psDb->db_execute($consulta4, $valores4)){
 						//si todo ok borramos también en la tabla respuestas
 						$consulta5 = "DELETE FROM u_respuestas WHERE mp_id = :id";
-						$psDb->db_execute($consulta5, $valores4):
+						$psDb->db_execute($consulta5, $valores4);
 					}
 				}
 				break;

@@ -1,8 +1,4 @@
 <?php
-//comprobamos si hemos declarado la contante PS_HEADER
-if(!defined('PS_HEADER')){
-    exit("No se permite el acceso al script");
-}
 /**
  * clase psDb
  * clase destinada al control de la base de datos
@@ -10,30 +6,17 @@ if(!defined('PS_HEADER')){
  * @name c.db.php
  * @author Iván Martínez Tutor
  */
-class psDb{
+class psDb extends PDOStatement{
     //declaramos la variable $conexion
-    private $conexion;
+    public $conexion;
     protected $db;
-
-    /**
-     * @funcionalidad instanciamos la clase y la guardamos en una variable estática
-     * @staticvar psDb $instancia instancia de la clase
-     * @return \psDb devolvemos una instancia de la clase
-     */
-    public static function &getInstance($db){
-        static $instancia;
-        if(is_null($instancia)){
-            $instancia = new psDb($db);
-        }
-        return $instancia;
-    }
-
+    
     /**
      * @funcionalidad constructor de la base de datos
      * cargaremos los datos necesarios para cargar la base de datos
      */
     public function __construct($db) {
-        $this->db['host']=$db['host'];
+        $this->db['host']= $db['host'];
         $this->db['database'] = $db['database'];
         $this->db['user'] = $db['user'];
         $this->db['pass'] = $db['pass'];
@@ -59,17 +42,18 @@ class psDb{
      * @param type $valores valores a modificar
      * @param type $type pasamos por parametro el tipo de consulta en string
      */
-    function db_execute($sql, $valores=null,$type = ''){
+    function db_execute($sql, $valores = null, $type = ''){
         //comprobamos si la conexion es nula
         if($this->conexion == null){
             $this->conectar();
         }
-        $con=$this->conexion;
+        $con = $this->conexion;
         try{
             $consulta = $con->prepare($sql);
             if(!is_null($valores)){
                 foreach($valores as $key => $valor){
-                    $consulta->bindParam($key,$valor);
+                    $k = ':'.$key;
+                    $consulta->bindValue($key, $valor);
                 }
             }
             //si nuestro proveedor de bases de datos tiene limitada la ejecución lanzamos esto para limpiar memoria y evitar este problema
@@ -95,6 +79,20 @@ class psDb{
      */
     function getLastInsertId(){
         return PDO::lastInsertId();
+    }
+
+    function executeSqlFile($sql){
+        //comprobamos si la conexion es nula
+        if($this->conexion == null){
+            $this->conectar();
+        }
+        $con = $this->conexion;
+        try{
+            $consulta = $con->exec($sql);
+        }catch(PDOException $e){
+            die("Error al realizar la consulta, error: ".$e->getMessage());
+        }
+        return $consulta;
     }
 
     /**

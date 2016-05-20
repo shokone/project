@@ -37,13 +37,13 @@ class psPosts{
         //damos la medalla si procede
         $this->darMedalla($pid);
         //obtenemos los datos del post
-        $consulta = "SELECT p.*, pu.*, u.user_id FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN u_perfil AS pu ON p.post_user = pu.user_id WHERE post_id = :pid :first";
+        $consulta = "SELECT p.*, pu.*, u.user_id FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN u_perfil AS pu ON p.post_user = pu.user_id WHERE post_id = :pid ";
         $valores['pid'] = $pid;
         if($psUser->admod && $psCore->settings['c_see_mod'] == 1){
-            $valores['first'] = '';
         }else{
-            $valores['first'] = 'AND u.user_activo = :activo AND u.user_baneado = :ban';
+            $consulta .= 'AND u.user_activo = :activo';
             $valores['activo'] = 1;
+            $consulta .= ' AND u.user_baneado = :ban';
             $valores['ban'] = 0;
         }
         $post = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
@@ -69,7 +69,7 @@ class psPosts{
         //obtenemos las estadísticas y las actualizamos
         if($post['post_cache'] < time() - ($psCore->settings['c_stats_cache'] * 60)){
             //comentarios
-            $consulta3 = "SELECT COUNT(u.user_name) AS n FROM u_mimbros AS u LEFT JOIN p_comentarios AS c ON u.user_id = c.c_user WHERE c.c_post_id = :pid AND c.c_status = :status AND u.user_activo = :activo AND u.user_baneado = :ban";
+            $consulta3 = "SELECT COUNT(u.user_name) AS n FROM u_miembros AS u LEFT JOIN p_comentarios AS c ON u.user_id = c.c_user WHERE c.c_post_id = :pid AND c.c_status = :status AND u.user_activo = :activo AND u.user_baneado = :ban";
             $valores3 = array(
                 'pid' => $pid,
                 'status' => 0,
@@ -80,7 +80,7 @@ class psPosts{
             $post['post_comments'] = $query3[0];
             //seguidores
             $consulta4 = "SELECT COUNT(u.user_name) AS s FROM u_miembros AS u LEFT JOIN u_follows AS f ON u.user_id = f.f_user WHERE f.f_type = :type AND f.f_id = :fid AND u.user_activo = :activo AND u.user_baneado = :ban";
-            $valores = array(
+            $valores4 = array(
                 'type' => 2,
                 'fid' => $pid,
                 'activo' => 1,
@@ -108,7 +108,7 @@ class psPosts{
                 'cache' => time(),
                 'pid' => $pid
             );
-            $psDb->db_execute($consutla7, $valores7);
+            $psDb->db_execute($consulta7, $valores7);
         }
         //obtenemos los seguidores
         if($post['post_seguidores'] > 0){
@@ -133,8 +133,8 @@ class psPosts{
             $post['visitas'] = $psDb->resultadoArray($psDb->db_execute($consulta9, $valores9));
         }
         //obtenemos las categorías
-        $consulta10 = "SELECT c.c_nombre, c.c_seo FROM p_categorias AS c  WHERE c.cid = :cid";
-        $consulta10 = array('cid' => $post['post_category']);
+        $consulta10 = "SELECT c_nombre, c_seo FROM p_categorias  WHERE cid = :cid";
+        $valores10 = array('cid' => $post['post_category']);
         $post['categoria'] = $psDb->db_execute($consulta10, $valores10, 'fetch_assoc');
         //obtenemos los puntos
         if($post['post_user'] == $psUser->user_id || $psUser->admod){
@@ -160,17 +160,16 @@ class psPosts{
         //obtenemos la fecha
         $post['post_date'] = strftime("%d.%m.%Y a las %H:%M hs", $post['post_date']);
         //comprobamos si hay una nueva visita
-        $consulta14 = "SELECT id FROM w_visitas WHERE for = :for AND type = :type AND :first";
-        $valores14 = array(
-            'for' => $pid,
-            'type' => 2,
-        );
+        $consulta14 = "SELECT id FROM w_visitas WHERE `for` = :for AND `type` = :type";
+        $valores14['for'] = $pid;
+        $valores14['type'] = 2;
         if($psUser->member){
-            $valores14['first'] = 'user = :user OR ip LIKE :ip';
+            $consulta14 .= ' AND `user` = :user';
             $valores14['user'] = $psUser->user_id;
+            $consulta14 .= ' OR `ip` LIKE :ip';
             $valores14['ip'] = $_SERVER['REMOTE_ADDR'];
         }else{
-            $valores14['first'] = 'ip LIKE :ip';
+            $consulta14 .= ' AND `ip` LIKE :ip';
             $valores14['ip'] = $_SERVER['REMOTE_ADDR'];
         }
         $visitado = $psDb->db_execute($consulta14, $valores14, 'rowCount');
@@ -194,7 +193,7 @@ class psPosts{
             );
             $psDb->db_execute($consulta16, $valores16);
         }else{//si no es miembro o no lo ha visitado
-            $consulta15 = "UPDATE w_visitas SET date = :dates, ip = :ip WHERE for = :for AND type = :type AND user = :user";
+            $consulta15 = "UPDATE w_visitas SET date = :dates, ip = :ip WHERE `for` = :for AND `type` = :type AND user = :user";
             $valores15 = array(
                 'dates' => time(),
                 'ip' => $psCore->getIp(),
@@ -221,7 +220,7 @@ class psPosts{
         //agregamos al portal a los post visitados
         if($psCore->settings['c_allow_portal']){
             $consulta19 = "SELECT last_posts_visited FROM u_portal WHERE user_id = :uid";
-            $valores19 = array($psUser->user_id);
+            $valores19 = array('uid' => $psUser->user_id);
             $datos = $psDb->db_execute($consulta19, $valores19, 'fetch_assoc');
             
             $visitado = unserialize($datos['last_posts_visited']);
@@ -244,8 +243,8 @@ class psPosts{
         }
 
         //parseamos los bbcodes del texto
-        $post['post_body'] = $psCore->badWords($post['post_smileys'] == 0  ? $tsCore->parsearCode($post['post_body']) : $psCore->parsearCode($post['post_body'], 'firma'), true);
-        $post['user_firma'] = $psCore->badWords($psCore->parsearCodeFirma($post['user_firma']),true);
+        $post['post_body'] = $psCore->badWords($post['post_smileys'] == 0  ? $post['post_body'] : $post['post_body'], true);
+        $post['user_firma'] = $psCore->badWords($post['user_firma'],true);
         //devolvemos los datos obtenidos
         return $post;
     }
@@ -256,68 +255,79 @@ class psPosts{
      * @param type $sticky comprobamos si está patrocinado
      * @return type devolvemos un array con los datos obtenidos
      */
-    function getLastPosts($cat = null, $sticky = null){
+    function getLastPosts($cat, $sticky){
         global $psDb, $psCore, $psUser;
+        //comprobamos si la categoría existe
         if(!empty($cat)){
-            //comprobamos si la categoría existe
             $consulta = "SELECT cid FROM p_categorias WHERE c_seo = :cat";
             $valores = array('cat' => $cat);
             $dcat = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
-            if($dcat['cid'] > 0){
-                $cat1 = 'AND p.post_category = :cat2';
-            }
-            //comprobamos si está como sticky
-            if($sticky){
-                $stic1 = 'AND p.post_sticky = :stic2';
-                $stic2 = 1;
-                $order = 'p.post_sponsored';
-                $start = '0, 10';
-            }else{
-                $stic1 = 'AND p.post_sticky = :stic2';
-                $stic2 = 0;
-                $order = 'p.post_id';
-                // TOTAL DE POSTS
-                $consulta2 = "SELECT COUNT(p.post_id) AS total FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE :first :cat1 :stic1";
-                if($psUser->admod && $psCore->settings['c_see_mod'] == 1){
-                    $valores2['first'] = 'p.post_id > :id';
-                    $valores2['id'] = 0;
-                }else{
-                    $valores2['first'] = 'u.user_activo = :activo :first2 :first3';
-                    $valores2['activo'] = 1;
-                    $valores2['first2'] = ' AND u.user_baneado > :ban';
-                    $valores2['ban'] = 0;
-                    $valores2['first3'] = 'p.post_status = :status';
-                    $valores2['status'] = 0;
-                }
-                $valores2['cat1'] => $cat1;
-                $valores2['cat2'] => $dcat['cid'];
-                $valores2['stic1'] => $stic1;
-                $valores2['stic2'] => $stic2;
-                $q1 = $psDb->db_execute($consulta2, $valores2, 'fetch_num');
-                $posts['total'] = $q1[0];
-                $start = $psCore->setPagLimite($psCore->settings['c_max_posts'], false, $posts['total']);
-                $lastPosts['pages'] = $psCore->getPages($posts['total'], $psCore->settings['c_max_posts']);
-            }
-            //ahora realizamos la consulta importante de la que sacamos todos los datos necesarios
-            $consulta3 = "SELECT p.post_id, p.post_user, p.post_category, p.post_title, p.post_date, p.post_comments, p.post_puntos, p.post_private, p.post_sponsored, p.post_status, p.post_sticky, u.user_id, u.user_name, u.user_activo, u.user_baneado, c.c_nombre, c.c_seo, c.c_img FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE :first :ca1 :stic1 GROUP BY p.post_id ORDER BY :order DESC LIMIT :limite";
-            if($psUser->admod && $psCore->settings['c_see_mod'] == 1){
-                $valores3['first'] = 'p.post_id > :id';
-                $valores3['id'] = 0;
-            }else{
-                $valores3['first'] = 'p.post_status = :status AND u.user_activo = :activo AND u.user_baneado = :ban ';
-                $valores3['status'] = 0;
-                $valores3['activo'] = 1;
-                $valores3['ban'] = 0;
-            }
-            $valores3['cat1'] => $cat1;
-            $valores3['cat2'] => $dcat['cid'];
-            $valores3['stic1'] => $stic1;
-            $valores3['stic2'] => $stic2;
-            $valores3['order'] = $order;
-            $valores3['limite'] = $start;
-            $lastPosts['data'] = $psDb->resultadoArray($psDb->db_execute($consulta3, $valores3));
-            return $lastPosts;
         }
+        //comprobamos si está como sticky
+        if($sticky){
+            $stic1 = ' AND p.post_sticky = :stic2';
+            $stic2 = 1;
+            $order = 'p.post_sponsored';
+            $start = 0;
+            $fin = 10;
+        }else{
+            $stic1 = ' AND p.post_sticky = :stic2';
+            $stic2 = 0;
+            $order = 'p.post_id';
+            // TOTAL DE POSTS
+            $consulta2 = "SELECT COUNT(p.post_id) AS total FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE ";
+            if($psUser->admod && $psCore->settings['c_see_mod'] == 1){
+                $consulta2 .= 'p.post_id > :id';
+                $valores2['id'] = 0;
+            }else{
+                $consulta2 .= 'u.user_activo = :activo ';
+                $valores2['activo'] = 1;
+                $consulta2 .= ' AND u.user_baneado > :ban';
+                $valores2['ban'] = 0;
+                $consulta2 .= ' AND p.post_status = :status';
+                $valores2['status'] = 0;
+            }
+            if(!empty($dcat) && $dcat['cid'] > 0){
+                $consulta2 .= ' AND p.post_category = :cat2';
+                $valores2['cat2'] = $dcat['cid'];
+            }
+            $consulta2 .= $stic1;
+            $valores2['stic2'] = $stic2;
+            $q1 = $psDb->db_execute($consulta2, $valores2, 'fetch_num');
+            $posts['total'] = $q1[0];
+            $start = $psCore->setPagLimite($psCore->settings['c_max_posts'], false, $posts['total']);
+            $start = explode(',',$start);
+            $fin = $start[1];
+            $start = $start[0];
+            $lastPosts['pages'] = $psCore->getPages($posts['total'], $psCore->settings['c_max_posts']);
+        }
+        //ahora realizamos la consulta importante de la que sacamos todos los datos necesarios
+        $consulta3 = "SELECT p.post_id, p.post_user, p.post_category, p.post_title, p.post_date, p.post_comments, p.post_puntos, p.post_private, p.post_sponsored, p.post_status, p.post_sticky, u.user_id, u.user_name, u.user_activo, u.user_baneado, c.c_nombre, c.c_seo, c.c_img FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE ";
+        if($psUser->admod && $psCore->settings['c_see_mod'] == 1){
+            $consulta3 .= 'p.post_id > :id';
+            $valores3['id'] = 0;
+        }else{
+            $consulta3 .= 'p.post_status = :status';
+            $valores3['status'] = 0;
+            $consulta3 .= ' AND u.user_activo = :activo';
+            $valores3['activo'] = 1;
+            $consulta3 .= ' AND u.user_baneado = :ban';
+            $valores3['ban'] = 0;
+        }
+        if(!empty($dcat) && $dcat['cid'] > 0){
+            $consulta3 .= ' AND p.post_category = :cat2';
+            $valores3['cat2'] = $dcat['cid'];
+        }
+        $consulta3 .= $stic1;
+        $valores3['stic2'] = $stic2;
+        $consulta3 .= ' GROUP BY p.post_id ORDER BY :order';
+        $valores3['order'] = $order;
+        //$consulta3 .= ' DESC LIMIT :start, :fin';
+        //$valores3['start'] = (int)$start;echo $start.' '.$fin;
+        //$valores3['fin'] = (int)$fin;
+        //$lastPosts['data'] = $psDb->resultadoArray($psDb->db_execute($consulta3, $valores3));echo 'jajaja';
+        $lastPosts['data'] = $psDb->db_execute($consulta3, $valores3);
+        return $lastPosts;
     }
 
     /**
@@ -715,13 +725,16 @@ class psPosts{
         global $psUser, $psCore, $psDb;
         $action = filter_input(INPUT_GET,'action');
         if($action == 'randPost'){
+            $consulta = "SELECT p.post_id, p.post_user, p.post_category, p.post_title, u.user_name, c.c_nombre, c.c_seo FROM p_posts AS p LEFT JOIN u_mmiembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = :status :var ORDER BY :rand DESC";
+            $valores['status'] = 0;
             if($psUser->is_admod && $psCore->settings['c_see_mod'] == 1){
-                $var = "";
+                $valores['var'] = "";
             }else{
-                $var = "AND u.user_activo = \'1\' && u.user_baneado = \'0\'";
+                $valores['var'] = "AND u.user_activo = :activo && u.user_baneado = :ban";
+                $valores['activo'] = 1;
+                $valores['ban'] = 0;
             }
-            $valores = ['var' => $var];
-            $consulta = "SELECT p.post_id, p.post_user, p.post_category, p.post_title, u.user_name, c.c_nombre, c.c_seo FROM p_posts AS p LEFT JOIN u_mmiembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = \'0\' :var ORDER BY RAND() DESC LIMIT 1";
+            $valores['rand'] = rand();
             if(!$psDb->db_execute($consulta,$valores,'rowCount')){
                 $psCore->redirectTo($psCore->settings['url']."/posts/");
             }
@@ -729,23 +742,22 @@ class psPosts{
         }else {
             $action = $action == 'prev' ? '<' : '>';
             $postid = (isset($_GET['id'])) ? filter_input(INPUT_GET,'id') : 1;
+            $consulta = "SELECT p.post_id, p.post_user, p.post_category, p.post_title, u.user_name, c.c_nombre, c.c_seo FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = \'0\' :var1 AND p.post_id :action :postid ORDER BY p.post_id :var2";
             if($psUser->is_admod && $psCore->settings['c_see_mod'] == 1){
-                $com = "";
+                $valores['var1'] = "";
             }else{
-                $com = "AND u.user_activo = \'1\' && u.user_baneado = \'0\'";
+                $valores['var1'] = "AND u.user_activo = :activo && u.user_baneado = :ban";
+                $valores['activo'] = 1;
+                $valores['ban'] = 0;
             }
             if($action == '<'){
                 $com2 = "DESC";
             }else{
                 $com2 = "ASC";
             }
-            $valores = [
-                'var1' => $com,
-                'action' => $action,
-                'postid' => $postid,
-                'var2' => $com2
-            ];
-            $consulta = "SELECT p.post_id, p.post_user, p.post_category, p.post_title, u.user_name, c.c_nombre, c.c_seo FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = \'0\' :var1 AND p.post_id :action :postid ORDER BY p.post_id :var2 LIMIT 1";
+            $valores['action'] = $action;
+            $valores['postid'] = $postid;
+            $valores['var2'] = $com2;
             if(!$psDb->db_execute($consulta, $valores, 'rowCount')){
                 $psCore->redirectTo($psCore->settings['url']."/posts/");
             }
@@ -762,7 +774,7 @@ class psPosts{
         global $psCore;
         $title = filter_input(INPUT_POST, 'titulo');
         $body = filter_input(INPUT_POST, 'cuerpo');
-        return array('titulo' => $title, 'cuerpo' => $psCore->badWords($psCore->parsearCode($body, true)));
+        return array('titulo' => $title, 'cuerpo' => $psCore->badWords($body));
     }
 
     /**
@@ -886,7 +898,7 @@ class psPosts{
      */
     function postRelacionados($dato){
         global $psDb, $psCore, $psUser;
-        $consulta = "SELECT p.post_id, p.post_title, c.c_seo FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = :status :admod AND MATCH(p.post_title) AGAINST(:dato IN BOOLEAN NODE) ORDER BY RAND() DESC LIMIT :limite";
+        $consulta = "SELECT p.post_id, p.post_title, c.c_seo FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = :status :admod AND MATCH(p.post_title) AGAINST(:dato IN BOOLEAN NODE) ORDER BY :rand DESC LIMIT :limite";
         $valores['status'] = 0;
         if($psUser->admod && $psCore->settings['c_see_mod'] == 1){
             $valores['admod'] = '';
@@ -896,6 +908,7 @@ class psPosts{
             $valores['ban'] = 0;
         }
         $valores['dato'] = $dato;
+        $valores['rand'] = RAND();
         $valores['limite'] = 5;
         $datos = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
         return $datos;
@@ -914,12 +927,12 @@ class psPosts{
         }else{
             str_replace('-', ', ', $tags);
         }
-        $consulta = "SELECT DISTINCT p.post_id, p.post_title, p.post_category, p.post_private, c.c_seo, c.c_img FROM p.posts AS p LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE MATCH(post_tags) AGAINST (:tags IN BOOLEAN MODE) AND p.post_status = :status AND p.post_sticky = :sticky ORDER BY :rand LIMIT :limite";
+        $consulta = "SELECT DISTINCT p.post_id, p.post_title, p.post_category, p.post_private, c.c_seo, c.c_img FROM p_posts AS p LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE MATCH(p.post_tags) AGAINST (:tags IN BOOLEAN MODE) AND p.post_status = :status AND p.post_sticky = :sticky ORDER BY :rand";
         $valores = array(
             'tags' => $tags,
             'status' => 0,
+            'sticky' => 0,
             'rand' => rand(),
-            'limite' => 0.','.10
         );
         $datos = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
         return $datos;
@@ -990,31 +1003,31 @@ class psPosts{
     function getComentarios($pid){
         global $psDb, $psCore, $psUser;
         $start = $psCore->setPagLimite($psCore->settings['c_max_com']);
-        $consulta = "SELECT u.user_name, u.user_activo, u.user_baneado, c.* FROM u_miembros AS u LEFT JOIN p_comentarios AS c ON u.user_id = c.c_user WHERE c.c_post_id = :pid :depend ORDER BY c.cid LIMIT :limite";
-        $valores['pid'] = $pid;
-        $valores2['cid'] = $pid;
+        $consulta = "SELECT u.user_name, u.user_activo, u.user_baneado, c.* FROM u_miembros AS u LEFT JOIN p_comentarios AS c ON u.user_id = c.c_user WHERE c.c_post_id = :pid ";
+        $consulta2 = "SELECT cid FROM p_comentarios WHERE c_post_id = :cid";
+        $valores['pid'] = (int)$pid;
+        $valores2['cid'] = (int)$pid;
         if($psUser->admod){//si es admin no consultamos más datos
-            $valores['depend'] = '';
-            $valores2['depend'] = '';
+            $consulta .= ' ORDER BY c.cid';
         }else{
-            $valores['depend'] = 'AND c.c_status = :status AND u.user_activo = :activo AND u.user_baneado = :baneado';
+            $consulta .= 'AND c.c_status = :status AND u.user_activo = :activo AND u.user_baneado = :baneado';
             $valores['status'] = 0;
             $valores['activo'] = 1;
             $valores['baneado'] = 0;
-            $valores2['depend'] = 'AND c_status = :status';
+            $consulta2 .= ' AND c_status = :status';
             $valores2['status'] = 0;
+            $consulta .= ' ORDER BY c.cid';
         }
         $query = $psDb->db_execute($consulta, $valores);
         $comentarios = $psDb->resultadoArray($query);
-        $consulta2 = "SELECT cid FROM p_comentarios WHERE c_post_id = :cid :depend";
         $datos['num'] = $psDb->db_execute($consulta2, $valores2, 'rowCount');
         foreach($comentarios as $comentario){
             if($comentario['c_votos'] != 0){
                 $consulta3 = 'SELECT voto_id FROM p_votos WHERE tid = :cid AND tuser = :user AND type = :type';
-                $valores3 = arary(
+                $valores3 = array(
                     'cid' => $comentario['cid'],
                     'user' => $psUser->user_id,
-                    'type' => 2
+                    'type' => 2,
                 );
                 $query = $psDb->db_execute($consulta3, $valores3, 'rowCount');
                 
@@ -1030,7 +1043,7 @@ class psPosts{
             $datos['block'] = $psDb->db_execute($consulta4, $valores4, 'rowCount');
             $datos['data'][$i] = $comentario;
             $datos['data'][$i]['votado'] = $votado;
-            $datos['data'][$i]['c_html'] = $psCore->badWords($psCore->parsearCode($datos['data'][$i]['c_body']), true);
+            $datos['data'][$i]['c_html'] = $psCore->badWords($datos['data'][$i]['c_body'], true);
         }
         return $datos;
     }
@@ -1041,17 +1054,15 @@ class psPosts{
      */
     function getLastComentarios(){
         global $psDb, $psCore, $psUser;
-        $consulta = "SELECT cm.cid, cm.c_status, u.user_name, u.user_activo, u.user_baneado, p.post_id, p.post_title, p.post_status, c.c_seo FROM p_comentarios AS cm LEFT JOIN u_miembros AS u ON cm.c_user = u.user_id LEFT JOIN p_posts AS p ON p.post_id = cm.c_post_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category :datos ORDER BY c.cid DESC LIMIT :limite";
         if($psUser->admod && $psCore->settigns['c_see_mod'] == 1){
-            $valores['datos'] = '';
+            $consulta = "SELECT cm.cid, cm.c_status, u.user_name, u.user_activo, u.user_baneado, p.post_id, p.post_title, p.post_status, c.c_seo FROM p_comentarios AS cm LEFT JOIN u_miembros AS u ON cm.c_user = u.user_id LEFT JOIN p_posts AS p ON p.post_id = cm.c_post_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category ORDER BY c.cid DESC";
         }else{
-            $valores['datos'] = 'WHERE p.post_status = :status AND cm.c_status = :cstatus AND u.user_activo = :activo AND u.user_baneado = :ban';
+            $consulta = "SELECT cm.cid, cm.c_status, u.user_name, u.user_activo, u.user_baneado, p.post_id, p.post_title, p.post_status, c.c_seo FROM p_comentarios AS cm LEFT JOIN u_miembros AS u ON cm.c_user = u.user_id LEFT JOIN p_posts AS p ON p.post_id = cm.c_post_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = :status AND cm.c_status = :cstatus AND u.user_activo = :activo AND u.user_baneado = :ban ORDER BY c.cid DESC";
             $valores['status'] = 0;
             $valores['cstatus'] = 0;
             $valores['activo'] = 1;
             $valores['ban'] = 0;
         }
-        $valores['limite'] = 10;
         $query = $psDb->db_execute($consulta, $valores);
         if(!$query){
             exit('Error al ejecutar la consulta de obtenci&oacute;n de los $uacute;ltimos comentarios.');
@@ -1115,7 +1126,7 @@ class psPosts{
                     if(!empty($mostrar_resp)){//comprobamos si está activada la opción de mostrar la respuesta del comentario
                         return array(
                             $cid, 
-                            $psCore->badWords($tsCore->parsearCode($comentario), true),
+                            $psCore->badWords($comentario, true),
                             $comentario, 
                             $fecha, 
                             filter_input(INPUT_POST, 'auser'),
@@ -1230,15 +1241,15 @@ class psPosts{
             $operador = ($datos['c_status'] == 1) ? '+' : '-';
             //estadisticas
             $consulta2 = "UPDATE w_stats SET stats_comments = :stats WHERE stats_no = :no";
-            $valores2 = array('stats' => 'stats_comments'.$operador.1, 'no' => 1);
+            $valores2 = array('stats' => 'stats_comments'.$operador.'1', 'no' => 1);
             $psDb->db_execute($consulta2, $valores2);
             //posts
             $consulta3 = "UPDATE p_posts SET post_comments = :post WHERE post_id = :pid";
-            $valores3 = array('post' => 'post_comments'.$operador.1, 'pid' => $datos['c_post_id']);
+            $valores3 = array('post' => 'post_comments'.$operador.'1', 'pid' => $datos['c_post_id']);
             $psDb->db_execute($consulta3, $valores3);
             //usuarios
             $consulta4 = "UPDATE u_miembros SET user_comentarios = :user WHERE user_id = :uid";
-            $valores4 = array('user' => 'user_comentarios'.$operador.1, 'uid' => $datos['c_user']);
+            $valores4 = array('user' => 'user_comentarios'.$operador.'1', 'uid' => $datos['c_user']);
             $psDb->db_execute($consulta4, $valores4);
             //ocultamos o mostramos los comentarios
             $consulta5 = "UPDATE p_comentarios SET c_status = :status WHERE cid = :cid";
@@ -1289,7 +1300,7 @@ class psPosts{
                     if($psDb->db_execute($consulta4, $valores2)){
                         if($val == 1 && $psCore->settings['c_allow_sump'] == 1){
                             $consulta5 = "UPDATE u_miembros SET user_puntos = :puntos WHERE user_id = :uid";
-                            $valores5 = array('puntos' => 'user_puntos+'.1, 'uid' => $datos['c_user']);
+                            $valores5 = array('puntos' => 'user_puntos+'.'1', 'uid' => $datos['c_user']);
                             $psDb->db_execute($consulta5, $valores5);
                             //comprobamos si el usuario sube de rango al votar el comentario
                             $this->subirRango($datos['c_user']);
@@ -1386,7 +1397,7 @@ class psPosts{
         $v5 = array('pid' => $pid, 'type' => 1);
         $q5 = $psDb->db_execute($c5, $v5, 'fetch_num');
         //medallas
-        $c6 = "SELECT COUNT(wm.medal_id) AS m FROM w_medallas AS wm LEFT JOIN w_medallas_asign AS ma ON wm.medal_id = ma.medal_id WHERE wm.m_type = :type AND ma.medal_for = :for";
+        $c6 = "SELECT COUNT(wm.medal_id) AS m FROM w_medallas AS wm LEFT JOIN w_medallas_assign AS ma ON wm.medal_id = ma.medal_id WHERE wm.m_type = :type AND ma.medal_for = :for";
         $v6 = array('type' => 2, 'for' => $pid);
         $q6 = $psDb->db_execute($c6, $v6, 'fetch_num');
         //ahora obtenemos los datos de las medallas

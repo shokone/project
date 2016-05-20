@@ -12,17 +12,17 @@ if(!defined('PS_HEADER')){
  */
 class psSesion{
     //declaramos las variables de la clase
-    protected $id_sesion = "";//id de la sesion
-    protected $ses_expira = 7200;//tiempo de expiración de la sesión
-    protected $ses_ip = false;//está activado el login por ip?
-    protected $ses_time_online = 300;//tiempo de sesión online
-    protected $cookie_pref = 'ps__';//prefijo de la cookie
-    protected $cookie_nombre = "";//nombre de la cookie
-    protected $cookie_dominio = "";//dominio de la cookie
-    protected $cookie_path = "/";//ruta de la cookie
-    protected $userinfo;//información del usuario
-    protected $ip;//ip del usuario
-    protected $time;//hora actual
+    public $id_sesion = "";//id de la sesion
+    public $ses_expira = 7200;//tiempo de expiración de la sesión
+    public $ses_ip = false;//está activado el login por ip?
+    public $ses_time_online = 300;//tiempo de sesión online
+    public $cookie_pref = 'ps__';//prefijo de la cookie
+    public $cookie_nombre = "";//nombre de la cookie
+    public $cookie_dominio = "";//dominio de la cookie
+    public $cookie_path = "/";//ruta de la cookie
+    public $userinfo;//información del usuario
+    public $ip;//ip del usuario
+    public $time;//hora actual
     
     /**
      * @funcionalidad instanciamos la clase y la guardamos en una variable estática
@@ -57,7 +57,7 @@ class psSesion{
         //iniciamos nueva sesión cuando el usuario cambie de ip
         $this->ses_ip = empty($psCore->settings['c_allow_sess_ip']) ? false : true;
         //damos un tiempo para expirar la sesión
-        $this->ses_time_online = empty($psCore->settings['c_last_active']) ? $hits->ses_time_online : ($psCore->settings['c_last_active'] * 60);
+        $this->ses_time_online = empty($psCore->settings['c_last_active']) ? $this->ses_time_online : ($psCore->settings['c_last_active'] * 60);
     }
     
     /**
@@ -68,6 +68,9 @@ class psSesion{
     public function leerSesion(){
         global $psDb;
         $this->id_sesion = $_COOKIE[$this->cookie_nombre];
+        //obtenemos solo la primera parte del id
+        $aux = explode('::', $this->id_sesion);
+        $this->id_sesion = $aux[0];
         //comprobamos si el id es válido
         if(strlen($this->id_sesion) > 32){
             return false;
@@ -110,9 +113,9 @@ class psSesion{
         global $psDb;
         //eliminamos la sesión de la base de datos
         $valores = ['id' => $this->id_sesion];
-        $psDb->db_execute("DELETE FROM u_sessions WHERE session_id = :id",$valores);
+        $psDb->db_execute("DELETE FROM u_sessions WHERE session_id = :id", $valores);
         //reseteamos la cookie
-        $this->set_cookie('cookproyecto', '', -604800);
+        $this->setCookie('cookproyecto', '', -604800);
     }
     
     /**
@@ -126,7 +129,7 @@ class psSesion{
             $id .= rand(0,9);
         }
         $id .= $this->ip;
-        return $id;
+        return uniqid($id, true);
     }
     
     public function anadirSesion($uid = 0, $autologin = false, $forzarUpdate = false){
@@ -146,11 +149,12 @@ class psSesion{
         $autologin = ($autologin == false) ? 0 : 1;
         //la segunda se hace la consulta con los datos obtenidos de la bd, se configura desde la administración
         $this->userinfo['session_autologin'] = empty($this->userinfo['session_autologin']) ? $autologin : $this->userinfo['session_autologin'];
-       
+        
         //ahora actualizamos en la base de datos
         $valores = ['suid' => $this->userinfo['session_user_id'],'sesip' => $this->userinfo['session_ip'],'stime' => $this->userinfo['session_time'],'sesauto' => $this->userinfo['session_autologin'],'id' => $this->id_sesion];
-        $psDb->db_execute("UPDATE u_sessions SET session_user_id = :suid, session_ip = :sesip, session_time = :stime, session_autologin = :sesauto WHERE session_id = :id",$valores);
-        
+        $ajja = $psDb->db_execute("UPDATE u_sessions SET session_user_id = :suid, session_ip = :sesip, session_time = :stime, session_autologin = :sesauto WHERE session_id = :id",$valores);
+        //limpiamos sesiones
+        $this->limpiar_sesion();
         //ahora actualizamos la cookie
         if(!empty($this->userinfo['session_autologin'])){
             //si el usuario quiere mantener la sesión iniciada, el máximo será de 1 semana
@@ -169,10 +173,11 @@ class psSesion{
      * @param type $dato valor de la cookie
      * @param type $time tiempo de expiración
      */
-    public function setCookie($name, $dato,$time){
-        $cookieName = $this->cookie_nombre."_".$name;
+    public function setCookie($name, $dato, $time){
+        $cookiename = rawurlencode($this->cookie_nombre . '_' . $name);
+        $cookiedata = rawurlencode($dato);
         //establecemos la cookie
-        setcookie($cookieName, $dato, ($this->time + $time), '/', $this->cookie_dominio);
+        setcookie($cookieName, $cookiedata, ($this->time + $time), '/', $this->cookie_dominio);
     }
     
     /**
@@ -182,10 +187,23 @@ class psSesion{
         global $psDb;
         //primero tenemos que generar un id para la sesión
         $this->id_sesion = $this->generar_sid();
+        $aux = explode('::', $this->id_sesion);
+        $this->id_sesion = $aux[0];
         //guardamos los datos en la bd, si se inicia sesión se actualizarán estos datos
-        $valores = ['id_sesion' => $this->id_sesion,'ip' => $this->ip,'time' => $this->time];
-        $psDb->db_execute("INSERT INTO u_sessions (session_id, session_user_id, session_ip, session_time) VALUES (:id_sesion, 0, :ip, :time)",$valores);
+        $valores = array('id_sesion' => $this->id_sesion,'suid' => 0,'ip' => $this->ip,'tim' => $this->time);
+        $psDb->db_execute("INSERT INTO u_sessions (session_id, session_user_id, session_ip, session_time) VALUES (:id_sesion, :suid, :ip, :tim)",$valores);
         //después creamos la cookie
-        $this->setCookie('cookproyecto', $this->id_sesion, $this->ses_expira);
+        $this->setCookie('sid', $this->id_sesion, $this->ses_expira);
+    }
+
+    /**
+     * @funcionalidad limpiamos la sesión
+     */
+    public function limpiar_sesion(){
+        global $psDb;
+        $expira = $this->time_now - $this->sess_time_online;
+        $consulta = 'DELETE FROM u_sessions WHERE session_time < :expira AND session_autologin = :login';
+        $valores = array('expira' => $expira, 'login' => 0);
+        $psDb->db_execute($consulta, $valores);
     }
 }

@@ -11,7 +11,7 @@ if(!defined('PS_HEADER')){
 * @name() c.denuncias.php
 * @author  Iván Martínez Tutor
 */
-class psDenuncias(){
+class psDenuncias{
     /**
     * @funcionalidad comprobamos si la clase ha sido instanciada
     * si no es así creamos un nuevo objeto para la clase psDenuncias
@@ -106,7 +106,7 @@ class psDenuncias(){
                return 'Error al realizar la denuncia. Por favor, int&eacute;ntelo de nuevo m&aacute;s tarde.';
             }
             break;
-         case 'mensaje':
+         case 'mensajes':
             //comprobamos si el usuario ya ha denunciado este mensaje
             $consulta = "SELECT did FROM w_denuncias WHERE obj_id = :did AND d_user = :uid AND d_type = :type";
             $valores = array(
@@ -153,7 +153,7 @@ class psDenuncias(){
                return 'Error al realizar la denuncia. Por favor, int&eacute;ntelo de nuevo m&aacute;s tarde.';
             }
             break;
-         case 'usuario':
+         case 'usuarios':
             //comprobamos si el usuario ya ha denunciado a este usuario
             $consulta = "SELECT did FROM w_denuncias WHERE obj_id = :did AND d_user = :uid AND d_type = :type";
             $valores = array(
@@ -192,7 +192,7 @@ class psDenuncias(){
                return 'Error al realizar la denuncia. Por favor, int&eacute;ntelo de nuevo m&aacute;s tarde.';
             }
             break;
-         case 'foto':
+         case 'fotos':
             //comprobamos si la foto es del usuario y si está oculta
             $consulta = "SELECT foto_id, f_user, f_status FROM f_fotos WHERE foto_id = :fid";
             $valores = array('fid' => $did);
