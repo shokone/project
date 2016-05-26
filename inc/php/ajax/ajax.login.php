@@ -36,7 +36,7 @@ switch($action){
 		$pass = filter_input(INPUT_POST, 'pass');
 		$remember = ($_POST['rem'] == true) ? true : false;
 		//comprobamos
-		if(empty($user) || empty($pass)){
+		if(empty($nick) || empty($pass)){
 			echo '0: Por favor rellena todos los campos.';
 		}else{
 			echo $psUser->login($nick, $pass, $remember);

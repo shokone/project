@@ -795,7 +795,7 @@ class psAdmin{
         $valores = array('r_id' => (int)$r_id,);
         //asignamos el resultado como si fuera un array
         list($query2) = $psDb->db_execute($consulta, $valores, 'fetch_num');
-        $datos['pages'] = $psCore->getPageIndex($psCore->settings(['url'].'/admin/rangos?act='.$query2.'&rid='.$r_id.'&type='.$type, $_GET['start'], $query2, $max));
+        $datos['pages'] = $psCore->getPageIndex($psCore->settings(['url'].'/admin/rangos?act='.$query2.'&rid='.$r_id.'&type='.$type, $_GET['s'], $query2, $max));
         return $datos;
     }
 

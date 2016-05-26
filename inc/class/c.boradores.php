@@ -10,7 +10,7 @@ if(!defined('PS_HEADER')){
  * @name c.borradores.php
  * @author Iván Martínez Tutor
  */
-class psBorradores(){
+class psBorradores{
 	//primero de todo instanciamos la clase
 	public static function &getInstance(){
 		static $instancia;

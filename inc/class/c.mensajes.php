@@ -12,7 +12,7 @@ if(!defined('PS_HEADER')){
  * @author  Iván Martínez Tutor
  */
 class psMensajes{
-	protected $mensajes = 0;//mensajes sin leer
+	public $mensajes = 0;//mensajes sin leer
 
 	/**
 	 * @funcionalidad instanciamos la clase mensajes
@@ -639,7 +639,7 @@ class psMensajes{
 	function getValidUser(){
 		global $psDb, $psCore, $psUser;
 		$to = strtolower(filter_input(INPUT_POST, 'para'));
-		if($to == strtolower($tsUser->nick)){
+		if($to == strtolower($psUser->nick)){
 			return '1';
 		}
 		$consulta = "SELECT user_id FROM u_miembros WHERE LOWER(user_name) = :name";

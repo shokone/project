@@ -508,7 +508,7 @@ class psMuro{
         //obtenemos los seguidores
         $consulta = "SELECT f_id FROM u_follows WHERE f_user = :uid AND f_type = :type";
         $valores = array('uid' => $psUser->user_id, 'type' => 1);
-        $query = $psDb->resultadoArray($psDb->db_execute($consulta, $valores,));
+        $query = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
         //ordenamos los datos obtenidos
         foreach($query as $key => $valor){
             //comprobamos si tenemos permiso para ver sus publicaciones
@@ -560,8 +560,8 @@ class psMuro{
     function getMuro($uid, $start = 0){
         global $psDb, $psCore;
         //obtenemos las publicaciones del usuario
-        $consulta = "SELECT m.*, u.user_name FROM u_muro AS m LEFT JOIN u_miembros AS u ON m.p_user_pub = u.user_id WHERE m.p_user = :user ORDER BY m.pub_id DESC LIMIT :min, :max";
-        $valores = array('user' => $uid, 'min' => $start, 'max' => 10);
+        $consulta = "SELECT m.*, u.user_name FROM u_muro AS m LEFT JOIN u_miembros AS u ON m.p_user_pub = u.user_id WHERE m.p_user = :user ORDER BY m.pub_id DESC";
+        $valores = array('user' => $uid);
         while($row = $psDb->db_execute($consulta, $valores, 'fetch_assoc')){
             //cargamos los comentarios
             if($row['p_comments'] > 0){
@@ -599,7 +599,7 @@ class psMuro{
         global $psUser, $psDb;
         //obtenemos datos de la base de datos
         $consulta = "SELECT m.*, u.user_name FROM u_muro AS m LEFT JOIN u_miembros AS u ON p.p_user_pub = u.user_id WHERE p.pub_id = :pid";
-        $valores = array('pid' => $pid);
+        $valores = array('pid' => $pid);exit('jaja');
         $publicacion = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
         //comprobamos los datos obtenidos
         if(empty($publicacion['pub_id'])){
@@ -884,7 +884,7 @@ class psMuro{
                 $megusta = false;
                 $datos['link'] = 'Me gusta!';
                 //comprobamos los datos en la base de datos
-                if($psUser->membre){}
+                if($psUser->membre){
                     $consulta = "SELECT like_id FROM u_muro_likes WHERE user_id = :uid AND obj_id = :pid AND obj_type = :type";
                     $valores = array('uid' => $psUser->user_id, 'pid' => $pid, 'type' => 1);
                     $megusta = $psDb->db_execute($consulta, $valores, 'rowCount');

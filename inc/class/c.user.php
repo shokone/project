@@ -43,15 +43,31 @@ class psUser{
         global $psCore, $psMedallas;
         //cargamos la sesion del usuario
         require 'c.sesion.php';
-        $this->sesion =& psSesion::getInstance();
+        $this->sesion = new psSesion();
         if(!$this->sesion->leerSesion()){
-            $this->sesion->createSesion();
+            $this->setSesion();
         }else{
             $this->load();
         }
         //si es miembro actualizamos los puntos del usuario
         if($this->member){
             $this->actualizarPuntos();
+        }
+    }
+
+    /**
+     * @funcionalidad comprobamos si la sesión ha sido iniciada sino la creamos
+     */
+    function setSesion(){
+        // Si no existe una sessión la creamos
+        // si existe la actualizamos...
+        if(!$this->sesion->leerSesion()){
+            $this->sesion->createSesion();
+        }else{
+            // Actualizamos sesión
+            $this->sesion->anadirSesion();
+            // Cargamos información del usuario
+            $this->load();
         }
     }
 
@@ -96,17 +112,8 @@ class psUser{
         //encriptamos la pass para comprobarla con la db
         $pass = md5($pass);
 
-        //consultamos con la base de datos
-        /*$c = "SELECT * FROM u_miembros LIKE `user_pwtype`";
-        if($psDb->db_execute($c) == 1){
-            $u_pwtype = 'user_pwtype';
-        }else{
-            $u_pwtype = '';
-        }*/
-        //exit($u_pwtype);
         $consulta = "SELECT user_id, user_password, user_activo, user_baneado FROM u_miembros WHERE LOWER(user_name) = :name";
         $valores = [
-            //'pwtype' => $u_pwtype,
             'name' => $name,
         ];
         $datos = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
@@ -115,17 +122,6 @@ class psUser{
             return '0: El nombre de usuario con el que intenta aceder no existe';
         }
 
-        if($datos['user_pwtype']){
-            //realizamos la consulta en la db
-            $consulta3 = "UPDATE u_miembros SET user_password = :pass, user_pwtype = :type WHERE user_id = :uid";
-            $valores2 = [
-                'pass' => $pass,
-                'type' => 0,
-                'uid' => $datos['user_id'],
-            ];
-            $psDb->db_execute($consulta3, $valores2);
-            $datos['user_password'] = $pass;
-        }
         //comprobamos la contraseña
         if($datos['user_password'] != $pass){
             return '0: Error. Esa contrase&ntilde;a es incorrecta.';
@@ -158,7 +154,6 @@ class psUser{
     public function logout($uid, $redirectTo = '/'){
         global $psCore, $psDb;
         //destruimos la sesión
-        $this->sesion = new psSesion();
         $this->sesion->leerSesion();
         $this->sesion->destruir_sesion();
         //limpiamos variables
@@ -264,22 +259,27 @@ class psUser{
      */
     public function activate($uid, $key){
         global $psDb;
-        if(empty($uid)) $uid = (int)filter_input(INPUT_GET, 'uid');
-        if(empty($key)) $key = filter_input(INPUT_GET, 'key');
+        if(empty($uid)){
+            $uid = (int)$_GET['uid'];
+        }
+        if(empty($key)){
+            $key = $_GET['key'];
+        }
         //ejecutamos la consulta en la base de datos
         $consulta = "SELECT user_name, user_password, user_registro FROM u_miembros WHERE user_id = :uid";
         $valores = [
             'uid' => $uid,
         ];
         $query = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
-        $local = md5($query['user_registro']);
-        if($psDb->db_execute($consulta, $valores, 'rowCount') == 0 || $key != $local){
+        $local = $query['user_registro'];
+        if($psDb->db_execute($consulta, $valores, 'rowCount') === 0 || $key != $local){
             return false;
         }else{
-            $consulta2 = "UPDATE u_miembros SET user_active = 1 WHERE user_id = :uid";
-            $valores2 = [
+            $consulta2 = "UPDATE u_miembros SET user_activo = :activo WHERE user_id = :uid";
+            $valores2 = array(
+                'activo' => 1,
                 'uid' => $uid,
-            ];
+            );
             if($psDb->db_execute($consulta2, $valores2)){
                 return $query;
             }else{

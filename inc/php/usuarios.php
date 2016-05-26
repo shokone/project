@@ -63,16 +63,16 @@ if($psContinue){
     
     //filtros
     //obtenemos los datos online, avatar, sexo, pais y rango del usuario
-    $smarty->assign("psFiltro",
-            array(
-                'online' => filter_input(INPUT_GET['online']), 
-                'avatar' => filter_input(INPUT_GET['avatar']), 
-                'sex' => filter_input(INPUT_GET['sexo']),
-                'pais' => filter_input(INPUT_GET['pais']),
-                'rango' => filter_input(INPUT_GET['rango'])));
-    
+    $smarty->assign("psFiltro", array(
+        'online' => filter_input(INPUT_GET['online']), 
+        'avatar' => filter_input(INPUT_GET['avatar']), 
+        'sex' => filter_input(INPUT_GET['sexo']),
+        'pais' => filter_input(INPUT_GET['pais']),
+        'rango' => filter_input(INPUT_GET['rango']))
+    );
+
     //obtenemos los rangos de los usuarios
-    $consulta = db_execute("SELECT rango_id, r_name FROM u_rangos ORDER BY rango_id");
+    $consulta = $psDb->db_execute("SELECT rango_id, r_name FROM u_rangos ORDER BY rango_id");
     $smarty->assign("psRangos", resultadoArray($consulta));
 }
 
@@ -84,5 +84,5 @@ if($psContinue){
 if(empty($psAjax)){
     $smarty->assign("psTitle",$psTitle);
     //incluimos el archivo del footer
-    include("../../footer.php");
+    include(PS_ROOT.'/footer.php');
 }

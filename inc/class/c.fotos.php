@@ -187,7 +187,7 @@ class psFotos{
       );
     }
     list($total) = $psDb->db_execute($consulta, $valores, 'fetch_num');
-    $datos['pages'] = $psCore->inicioPages($psCore->settings['url'] . '/fotos/?', $_GET['start'], $total, $max);
+    $datos['pages'] = $psCore->inicioPages($psCore->settings['url'] . '/fotos/?', $_GET['s'], $total, $max);
     //ahora obtenemos el límite de fotos por página junto con los datos de las fotos
     if($psUser->admod && $psCore->settings['c_see_mod']){
       $consulta2 = "SELECT f.foto_id, f.f_title, f.f_date, f.f_description, f.f_url, f.f_status, u.user_name, u.user_activo, u.user_baneado FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user ORDER BY f.foto_id DESC";
@@ -504,15 +504,13 @@ class psFotos{
     global $psDb, $psCore, $psUser;
     //realizamos la consulta
     if($psUser->admod && $psCore->settings['c_see_mod']){
-      $consulta = "SELECT c.cid, c.c_user, f.foto_id, f.f_title, f.f_status, u.user_name, u.user_activo FROM f_comentarios AS c LEFT JOIN f_fotos AS f ON c.c_foto_id = f.foto_id LEFT JOIN u_miembros AS u ON f.f_user = u.user_id ORDER BY c.c_date DESC LIMIT :limite";
-      $valores = array('limite' => 10);
+      $consulta = "SELECT c.cid, c.c_user, f.foto_id, f.f_title, f.f_status, u.user_name, u.user_activo FROM f_comentarios AS c LEFT JOIN f_fotos AS f ON c.c_foto_id = f.foto_id LEFT JOIN u_miembros AS u ON f.f_user = u.user_id ORDER BY c.c_date DESC";
     }else{
-      $consulta = "SELECT c.cid, c.c_user, f.foto_id, f.f_title, f.f_status, u.user_name, u.user_activo FROM f_comentarios AS c LEFT JOIN f_fotos AS f ON c.c_foto_id = f.foto_id LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.f_status = :status AND u.user_activo = :activo AND u.user_baneado = :ban ORDER BY c.c_date DESC LIMIT :limite";
+      $consulta = "SELECT c.cid, c.c_user, f.foto_id, f.f_title, f.f_status, u.user_name, u.user_activo FROM f_comentarios AS c LEFT JOIN f_fotos AS f ON c.c_foto_id = f.foto_id LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.f_status = :status AND u.user_activo = :activo AND u.user_baneado = :ban ORDER BY c.c_date DESC";
       $valores = array(
         'status' => 0,
         'activo' => 1,
         'ban' => 0,
-        'limite' => 10
       );
     }
     return $psDb->resultadoArray($psDb->db_execute($consulta, $valores));

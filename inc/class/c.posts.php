@@ -175,7 +175,7 @@ class psPosts{
         $visitado = $psDb->db_execute($consulta14, $valores14, 'rowCount');
         //si es miembro y no lo ha visitado
         if($psUser->member && $visitado == 0) {
-            $consulta15 = "INSERT INTO w_visitas (user, for, type, date, ip) VALUES (:uid, :for, :type, :dates, :ip)";
+            $consulta15 = "INSERT INTO w_visitas (user, `for`, type, date, ip) VALUES (:uid, :for, :type, :dates, :ip)";
             $valores15 = array(
                 'uid' => $psUser->user_id,
                 'for' => $pid,
@@ -339,9 +339,9 @@ class psPosts{
         if($psUser->admod || $psUser->permisos['gopp']){
             $post = array(
                 'date' => time(),
-                'title' => $tsCore->badWords(filter_input(INPUT_POST, 'titulo')),
+                'title' => $psCore->badWords(filter_input(INPUT_POST, 'titulo')),
                 'body' => filter_input(INPUT_POST, 'cuerpo'),
-                'tags' => $tsCore->badWords(filter_input(INPUT_POST, 'tags')),
+                'tags' => $psCore->badWords(filter_input(INPUT_POST, 'tags')),
                 'category' => filter_input(INPUT_POST, 'categoria'),
             );
             //comprobamos si algún campo está vacío
@@ -465,7 +465,7 @@ class psPosts{
         $post = array(
             'title' => $psCore->badWords(filter_input(INPUT_POST, 'titulo'), true),
             'body' => filter_input(INPUT_POST, 'cuerpo'),
-            'tags' => $tsCore->badWords(filter_input(INPUT_POST, 'tags')),
+            'tags' => $psCore->badWords(filter_input(INPUT_POST, 'tags')),
             'category' => filter_input(INPUT_POST, 'categoria'),
         );
         //comprobamos si algún campo está vacío
@@ -1543,7 +1543,7 @@ class psPosts{
             .'","url":"'.$psCore->settings['url']
             .'/posts/'.$favorito['c_seo']
             .'/'.$favorito['post_id']
-            .'/'.$tsCore->setSEO($favorito['post_title'])
+            .'/'.$psCore->setSEO($favorito['post_title'])
             .'.html","fecha_creado":'.$favorito['post_date']
             .',"fecha_creado_formato":"'.strftime("%d\/%m\/%Y a las %H:%M:%S hs", $favorito['post_date'])
             .'.","fecha_creado_palabras":"'.$psCore->setHaceTiempo($fav['post_date'], true)

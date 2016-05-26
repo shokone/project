@@ -10,9 +10,9 @@ if(!defined('PS_HEADER')){
  * @name c.cuenta.php
  * @author Iván Martínez Tutor
  */
-class psCuenta(){
+class psCuenta{
 	//instanciamos la clase
-	public static &getInstance(){
+	public static function &getInstance(){
 		static $instancia;
 		if(is_null($instancia)){
 			$instancia = new psCuenta();
@@ -100,7 +100,7 @@ class psCuenta(){
 					$perfil['firma'] = $info['user_firma'];
 				}else if($psUser->info['user_email'] != $perfil['email']){//hacemos otra comprobación con el email
 					$consulta = "SELECT user_id FROM u_miembros WHERE user_email = :email";
-					$valores = array('email' =< $perfil['email']);
+					$valores = array('email' => $perfil['email']);
 					$existe = $psDb->db_execute($consulta, $valores, 'rowCount');
 					//comprobamos si el email ya existe
 					if($existe){
@@ -125,7 +125,7 @@ class psCuenta(){
 					$gustos[$a] = filter_input(INPUT_POST, 'g_'.$a);
 				}
 				$perfil = array(
-					'nombre' => filter_input(INPUT_POST, 'nombrez')
+					'nombre' => filter_input(INPUT_POST, 'nombrez'),
 					'mensaje' => filter_input(INPUT_POST, 'mensaje'),
 					'sitio' => $sitio,
 					'socials' => serialize(array($facebook,$twitter,$youtube)),
@@ -223,7 +223,7 @@ class psCuenta(){
 				$cn2 = "SELECT user_id FROM u_miembros WHERE LOWER(user_name) = :name";
 				$cn3 = "SELECT id, user_id, time FROM u_nicks WHERE user_id = :uid AND estado = :estado";
 				
-				$valn1 = array('type' => 4, 'value' => $new_nick;
+				$valn1 = array('type' => 4, 'value' => $new_nick);
 				$valn2 = array('name' => $new_nick);
 				$valn3 = array('uid' => $new_nick, 'estado' => 0);
 				
@@ -463,22 +463,23 @@ class psCuenta(){
 		$datos['block'] = $psDb->db_execute($consulta4, $valores4, 'fetch_assoc');
 
 		//comprobamos si el usuario ha recibido visitas
-		$consulta5 = "SELECT * FROM w_visitas WHERE for = :uid AND type = :uno AND :member";
+		$consulta5 = "SELECT * FROM w_visitas WHERE `for` = :uid AND type = :uno AND ";
 		$valores5 = array(
 			'uid' => $uid,
 			'uno' => 1,
 		);
 		if($psUser->member){//si es miembro comprobamos id e ip
-			$valores5['member'] = '(user = :uid2 OR ip LIKE :server)';
+			$consulta5 .= 'user = :uid2';
 			$valores5['uid2'] = $uid;
+			$consulta5 .= ' OR ip LIKE :server';
 			$valores5['server'] = $_SERVER['REMOTE_ADDR'];
 		}else{//si no lo es solo comprobamos ip
-			$valores5['member'] = 'ip LIKE :server';
+			$consulta5 .= 'ip LIKE :server';
 			$valores5['server'] = $_SERVER['REMOTE_ADDR'];
 		}
 		$is_visited = $psDb->db_execute($consulta5, $valores5, 'rowCount');
 		if(($psUser->member && $is_visited == 0 && $psUser->user_id != $uid) || ($psCore->settings['c_hits_guets'] == 1 && !$psUser->member && !$is_visited)){//si todo ok insertamos nuevos datos
-			$consulta6 = "INSERT INTO w_visitas (user, for, type, 'date', ip) VALUES (:user, :for, :type, :dates, :ip)";
+			$consulta6 = "INSERT INTO w_visitas (user, `for`, type, `date`, ip) VALUES (:user, :for, :type, :dates, :ip)";
 			$valores6 = array(
 				'user' => $psUser->user_id,
 				'for' => $uid,
@@ -488,7 +489,7 @@ class psCuenta(){
 			);
 			$psDb->db_execute($consulta6, $valores6);
 		}else{//si no actualizamos los ya existentes
-			$consulta6 = "UPDATE w_visitas SET 'date' = :dates, ip = :ip WHERE for = :for && type = :type";
+			$consulta6 = "UPDATE w_visitas SET `date` = :dates, ip = :ip WHERE `for` = :for && type = :type";
 			$valores6 = array(
 				'dates' => date(),
 				'ip' => $_SERVER['REMOTE_ADDR'],
@@ -573,7 +574,7 @@ class psCuenta(){
 		$datos['sigd']['data'] = $psDb->resultadoArray($siguiendo);
 		$datos['sigd']['total'] = count($datos['sigd']['data']);
 		//por último obtenemos las medallas
-		$consulta4 = "SELECT m.*, a.* FROM w_medallas AS m LEFT JOIN w_medallas_asign AS a ON a.medal_id = m.medal_id WHERE a.medal_for = :for AND m.m_type = :type ORDER BY a.medal_date DESC";
+		$consulta4 = "SELECT m.*, a.* FROM w_medallas AS m LEFT JOIN w_medallas_assign AS a ON a.medal_id = m.medal_id WHERE a.medal_for = :for AND m.m_type = :type ORDER BY a.medal_date DESC";
 		$valores4 = array(
 			'for' => $uid,
 			'type' => 1
@@ -632,7 +633,7 @@ class psCuenta(){
 		$consulta = "SELECT follow_id FROM u_follows WHERE f_id = :fid AND f_user = :uid AND f_type = :type";
 		$valores = array(
 			'fid' => $uid,
-			'f_user' => $psUser->user_id,
+			'uid' => $psUser->user_id,
 			'type' => 1
 		);
 		$datos = $psDb->db_execute($consulta, $valores, 'rowCount');
@@ -653,7 +654,7 @@ class psCuenta(){
 		$consulta = "SELECT follow_id FROM u_follows WHERE f_id = :fid AND f_user = :uid AND f_type = :type";
 		$valores = array(
 			'fid' => $psUser->user_id,
-			'f_user' => $uid,
+			'uid' => $uid,
 			'type' => 1
 		);
 		$datos = $psDb->db_execute($consulta, $valores, 'rowCount');
@@ -713,7 +714,7 @@ class psCuenta(){
 		$consulta = "DELETE FROM u_fotos WHERE foto_id = :fid AND f_user = :uid";
 		$valores = array(
 			'fid' => filter_input(INPUT_POST, 'id'),
-			'uid' =< $psUser->user_id
+			'uid' => $psUser->user_id
 		);
 		if($psDb->db_execute($consulta, $valores)){
 			return true;

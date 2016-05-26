@@ -36,7 +36,7 @@ class psRegistro{
             'user_email' => filter_input(INPUT_POST,'email'),
             'user_dia' => filter_input(INPUT_POST,'dia'),
             'user_mes' => filter_input(INPUT_POST,'mes'),
-            'user_year' => filter_input(INPUT_POST,'year'),
+            'user_year' => filter_input(INPUT_POST,'anio'),
             'user_sexo' => filter_input(INPUT_POST,'sexo') == 'f' ? '0' : 1,
             'user_pais' => strtoupper(filter_input(INPUT_POST,'pais')),
             'user_estado' => filter_input(INPUT_POST,'estado'),
@@ -52,7 +52,7 @@ class psRegistro{
             'password2' => 'Las dos contrase&ntilde;as deben ser iguales.',
             'email' => 'El formato del email debe ser nombre@ejemplo.com',
             'email2' => 'El email escogido ya se encuentra registrado.',
-            'captcha' => 'El c&oacute;digo de verificaci&oacute;n es incorrecto.'
+            //'captcha' => 'El c&oacute;digo de verificaci&oacute;n es incorrecto.'
         ];
         //cargamos los datos del captcha
         //colocamos el comentario aqui por ejemplo para evitar que se nos olvide implementarlo
@@ -71,19 +71,26 @@ class psRegistro{
 
         //comprobamos en la base de datos si el nick o el email existen
         $valores = ['nick' => $psDatos['user_nick'], 'email' => $psDatos['user_email']];
-        $consulta = "SELECT user_name, user_email FROM u_miembros WHERE LOWER(user_name) = :nick OR LOWER(user_email) = :email LIMIT 1";
+        $consulta = "SELECT user_name, user_email FROM u_miembros WHERE LOWER(user_name) = :nick OR LOWER(user_email) = :email";
         if($psDb->db_execute($consulta,$valores,'rowCount') > 0 || !filter_var($psDatos['user_email'],FILTER_VALIDATE_EMAIL) || $psCore->settings['c_reg_active'] == 0){
             exit("0: Lo sentimos, no ha sido posible registrarle, puede haber campos vac&iacute;os, no v&aacute;lidos o no esta permitido el registro de usuarios en estos momentos.");
         }
         //insertamos los datos en la base de datos
         $pass = md5($psDatos['user_password']);
-        $valores2 = ['nick' => $psDatos['user_nick'],'pass' => $pass, 'email' => $psDatos['user_email'], 'rango' => (empty($psCore->settings['c_reg_rango']) ? 3 : $psCore->settings['c_reg_rango']),'registro' => $psDatos['user_registro']];
+        $valores2 = array(
+            'nick' => $psDatos['user_nick'],
+            'pass' => $pass, 
+            'email' => $psDatos['user_email'], 
+            'rango' => (empty($psCore->settings['c_reg_rango']) ? 3 : $psCore->settings['c_reg_rango']),
+            'registro' => $psDatos['user_registro'],
+        );
         $consulta2 = "INSERT INTO u_miembros (user_name, user_password, user_email, user_rango, user_registro) VALUES (:nick, :pass, :email, :rango, :registro)";
 
         if($psDb->db_execute($consulta2,$valores2)){
-            $psDatos['user_id'] = getLastInsertId();
+            $q = $psDb->db_execute('SELECT user_id FROM u_miembros WHERE user_name = :nick',array('nick'=>$psDatos['user_nick']), 'fetch_num');
+            $psDatos['user_id'] = $q[0]; 
             //insertamos los datos del perfil del usuario en la base de datos
-            $valores3 = ['user_id' => $psDatos['user_nick'], 'user_dia' => $psDatos['user_dia'], 'user_mes' => $psDatos['user_mes'], 'user_ano' => $psDatos['user_year'], 'pais' => $psDatos['user_pais'],'estado' => $psDatos['user_estado'],'sexo' => $psDatos['user_sexo']];
+            $valores3 = ['user_id' => $psDatos['user_id'], 'user_dia' => $psDatos['user_dia'], 'user_mes' => $psDatos['user_mes'], 'user_ano' => $psDatos['user_year'], 'pais' => $psDatos['user_pais'],'estado' => $psDatos['user_estado'],'sexo' => $psDatos['user_sexo']];
             $psDb->db_execute("INSERT INTO u_perfil (user_id, user_dia, user_mes, user_ano, user_pais, user_estado, user_sexo) VALUES (:user_id, :user_dia, :user_mes, :user_ano, :pais, :estado, :sexo)",$valores3);
             $valores4 = ['user' => $psDatos['user_id']];
             $psDb->db_execute("INSERT INTO u_portal (user_id) VALUES (:user)",$valores4);
@@ -113,7 +120,7 @@ class psRegistro{
         if($bienvenido > 0 && $bienvenido < 4){
             $mensaje = $psCore->settings['c_message_welcome'];
             $sexo = "Bienvenid".($psDatos['user_sexo'] == 1 ? "o" : "a");
-            $men_bienvenido = $sexo.$psDatos['user_nick']." a ".$psCore-settings['titulo'];
+            $men_bienvenido = $sexo.$psDatos['user_nick']." a ".$psCore->settings['titulo'];
             switch($bienvenido){
                 case 1:
                     $valores = ['user_id' => $psDatos['user_id'],'date' => date(),'mensaje' => $men_bienvenido];
@@ -178,8 +185,8 @@ class psRegistro{
             $psUser->activate($psDatos['user_id'], $psDatos['user_registro']);
             //iniciamos sesión en la cuenta del usuario
             $psUser->login($psDatos['user_nick'], $psDatos['user_password'], true);
-            return '<div class="box_cuerpo" style="padding: 10px 20px; border-top:1px solid black">
-            Bienvenido a <b>'.$psCore->settings['titulo'].'</b>, Ahora est&aacute;s registrado y tu cuenta ha sido activada, podr&aacute;s disfrutar de esta comunidad inmediatamente.<br><br>&iexcl;Muchas gracias y bienvenido! :)</div>';
+            return '2: <div class="box_cuerpo" style="padding: 10px 20px; border-top:1px solid black">
+            Bienvenido a <b>'.$psCore->settings['titulo'].'</b>, Ahora est&aacute;s registrado y tu cuenta ha sido activada, podr&aacute;s disfrutar de esta comunidad inmediatamente.<br><br>&iexcl;Muchas gracias y bienvenido!</div>';
         }
     }
 
@@ -191,15 +198,15 @@ class psRegistro{
     function validarEmailUser(){
         global $psDb, $psCore;
         //obtenemos los datos del formulario
-        $nick = strtolower(filter_input(INPUT_POST, 'nick'));
-        $email = strtolower(filter_input(INPUT_POST, 'email'));
+        $nick = strtolower($_POST['nick']);
+        $email = strtolower($_POST['email']);
         $validar = empty($nick) ? 'email' : 'nick';
         //comprobamos
         if(!empty($nick) || !empty($email)){
-            if($validar = 'email'){
+            if($validar == 'email'){
                 $consulta = "SELECT user_id FROM u_miembros WHERE LOWER(user_email) = :email";
                 $valores = array('email' => $email);
-            }else if($validar = 'nick'){
+            }else if($validar == 'nick'){
                 $consulta = "SELECT user_id FROM u_miembros WHERE LOWER(user_name) = :nick";
                 $valores = array('nick' => $nick);
             }
@@ -213,7 +220,7 @@ class psRegistro{
                 'type2' => 4,
                 'value2' => $email
             );
-            if($psDb->db_execute($consulta2, $valores2, 'rowCount'){
+            if($psDb->db_execute($consulta2, $valores2, 'rowCount')){
                 return '0: Parte del '.$validar.' no est&aacute; permitido en esta comunidad.';
             }
         }else{

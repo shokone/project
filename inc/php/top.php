@@ -28,7 +28,7 @@ $psAjax = empty(filter_input(INPUT_GET['ajax'])) ? 0 : 1;
 $psContinue = true;
 
 //incluimos el header
-include("../../header.php");
+include("../header.php");
 
 //cargamos el titulo de la pagina actual
 $psTitle = $psCore->settings['titulo']." - ".$psCore->settigns['slogan'];
@@ -85,5 +85,5 @@ if(empty($psAjax)){
     //asignamos el titulo de la pagina actual
     $smarty->assign("psTitle",$psTitle);
     //incluimos el footer
-    include("../../footer.php");
+    include(PS_ROOT.'/footer.php');
 }
