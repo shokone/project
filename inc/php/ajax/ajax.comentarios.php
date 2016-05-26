@@ -108,7 +108,7 @@ switch($action){
         $smarty->assign("psPost", array('postid' => $psPost, 'autor' => $psAutor));
 		break;
 	case 'comentario-pages':
-        $_GET['ts'] = true;
+        $_GET['ps'] = true;
 		$total = filter_input(INPUT_POST, 'total']);
 		$psPages = $psCore->getPages($total, $psCore->settings['c_max_com']);
 		$psPages['post_id'] = filter_input(INPUT_POST, 'postid');
@@ -116,3 +116,4 @@ switch($action){
 		$smarty->assign("psPages", $psPages);
 		break;
 }
+$_GET['ps'] = true;

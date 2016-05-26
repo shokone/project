@@ -22,7 +22,7 @@ $psPage = "pages";
 $psLevel = 0;
 
 //comprobamos si la respuesta se realiza por ajax
-$psAjax = empty(filter_input(INPUT_GET['ajax'])) ? 0 : 1;
+$psAjax = empty($_GET['ajax']) ? 0 : 1;
 
 //creamos la variable para comprobar si continuamos con el script
 $psContinue = true;
@@ -44,7 +44,7 @@ if($psLevelVer != 1){
 }
 
 if($psContinue){
-	$seccion = fiter_input(INPUT_GET, 'action');
+	$seccion = $_GET['action'];
 	switch($action){
 		case 'ayuda': break;
         case 'contact': break;
@@ -52,9 +52,9 @@ if($psContinue){
         case 'terminos-y-condiciones': break;
         case 'privacidad': break;
         case 'dmca': break;
-        default: $tsCore->redirectTo($tsCore->settings['url']); break;
+        default: $psCore->redirectTo($psCore->settings['url']); break;
 	}
-	$smarty->assign('psAction', $accion);
+	$smarty->assign('psAction', $action);
 }
 
 //ahora agregamos los datos generados a smarty

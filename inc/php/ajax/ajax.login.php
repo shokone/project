@@ -15,7 +15,6 @@ if (!defined('PS_HEADER')) {
 $niveles = array(
 	'login-user' => array('n' => 1, 'p' => ''),
 	'login-activar' => array('n' => 1, 'p' => ''),
-	'login-salir' => array('n' => 1, 'p' => '')
 );
 
 //variables locales
@@ -63,6 +62,6 @@ switch($action){
 		break;
 	case 'login-salir':
 		//desconectamos de la sesión al usuario
-		$psUser->logout($psUser->user_id, $psCore->settings['url']);
+		echo $psUser->logout($psUser->user_id, $psCore->settings['url']);
 		break;
 }

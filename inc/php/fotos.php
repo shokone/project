@@ -18,10 +18,10 @@ $psLevel = 2;//nivel de acceso
 $psAjax = empty($_GET['ajax']) ? 0 : 1;//comprobamos si la respuesta se realiza por ajax
 $psContinue = true;//comprobamos si continuamos ejecutando el script
 //incluimos el header
-include (PS_ROOT.'header.php');
+include ('../../header.php');
 $psTitle = $psCore->settings['titulo'] . " - " . $psCore->settings['slogan'];
 
-$action = htmlspecialchars($_GET['action']);		
+$action = htmlspecialchars($_GET['action']);	
 if($psCore->settings['c_fotos_private'] == '0') {	
 	if($action == '' || $action == 'ver'){
 		$psLevel = 0;		
@@ -109,8 +109,8 @@ if($psContinue){
                 $psPage = 'aviso';
                 $smarty->assign("psAviso",array('titulo' => 'Error', 'mensaje' => 'Este usuario no existe.', 'but' => 'Ir a Fotos', 'link' => "{$psCore->settings['url']}/fotos/"));
             }else{
-                $tsFotoAlbum = $psFotos->getFotos($user_id);
-                $smarty->assign("psFotos", $tsFotoAlbum);
+                $psFotoAlbum = $psFotos->getFotos($user_id);
+                $smarty->assign("psFotos", $psFotoAlbum);
                 $smarty->assign("psFotoUser", array($user_id, $username));
             }
         	break;
@@ -121,5 +121,5 @@ if($psContinue){
 //ahora agregamos los datos generados a smarty
 if(empty($psAjax)){
 	$smarty->assign("psTitle", $psTitle);
-	include (PS_ROOT.'footer.php');
+	include('../../footer.php');
 }

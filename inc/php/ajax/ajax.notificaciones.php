@@ -58,3 +58,4 @@ switch($action){
 		echo $psMonitor->setActFiltro();
 		break;
 }
+$_GET['ps'] = true;

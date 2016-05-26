@@ -21,7 +21,7 @@ $niveles = array(
 );
 
 //variables locales
-$psPage = 'php_files/p.rgistro.' . $niveles[$action]['p'];
+$psPage = 'php_files/p.registro.' . $niveles[$action]['p'];
 $psLevel = $niveles[$action]['n'];
 $psAjax = empty($niveles[$action]['p']) ? 1 : 0;
 
@@ -32,7 +32,8 @@ if($mensaje != 1){
 	die;
 }
 //obtenemos las clases necesarias 
-require '../class/c.registro.php';
+require('../class/c.registro.php');
+$psRegistro =& psRegistro::getInstance();
 switch($action){
 	case 'registro-form':
 		//obtenemos el formulario de registro
@@ -59,14 +60,14 @@ switch($action){
 	case 'registro-check-nick':
 	case 'registro-check-email':
 		//estos dos se cargan desde la misma función
-		$psRegistro->validarEmailUser();
+		echo $psRegistro->validarEmailUser();
 		break;
 	case 'registro-geo':
 		//añadimos los datos geográficos de los estados
 		include '../extra/estados.php';
-		$pais = htmlspecialchars(filter_input(INPUT_POST, 'pais_code'));
+		$pais = htmlspecialchars($_GET['pais_code']);
 		if($pais){
-			$mensaje = '1:';
+			$mensaje = '1: ';
 		}else{
 			$mensaje = '0: Te as dejado sin rellenar el campo <strong>pais</strong>.';
 		}

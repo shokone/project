@@ -26,7 +26,7 @@ $psAjax = empty($_GET['ajax']) ? 0 : 1;
 //creamos el booleano para comprobar si debemos continuar con el script
 $psContinue = true;
 //damos un nombre al titulo de la pagina
-$psTitle = $psCore->settings['titulo'].' - '.$tsCore->settings['slogan'];
+$psTitle = $psCore->settings['titulo'].' - '.$psCore->settings['slogan'];
 
 /**
  * validamos el nivel y los permisos de acceso
@@ -75,7 +75,7 @@ if($psContinue){
 		} else {
             $borrador = $psPosts->getEditarPost();
             if(!is_array($borrador)){
-                $tsPage = 'aviso';
+                $psPage = 'aviso';
                 $smarty->assign("tsAviso",array('titulo' => 'Error!', 'mensaje' => $borrador, 'but' => 'Ir a pagina principal', 'link' => "{$psCore->settings['url']}"));
             }else{
             	$smarty->assign("psBorrador", $borrador);

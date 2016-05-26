@@ -58,15 +58,15 @@ switch($action){
 		break;
 	case 'posts-generar':
 		//obtenemos datos 
-		$accion = htmlspecialchars(filter_input(INPUT_GET, 'do'));
-		$datos = filter_input(INPUT_POST, 'q');
+		$action = htmlspecialchars($_GET['do']);
+		$datos = $_POST['q'];
 		//si accion = search buscamos los post relacionados
-		if($accion == 'search'){
+		if($action == 'search'){
 			$smarty->assign('psPosts', $psPosts->postRelacionados($datos));
-		}else if($accion == 'generador'){//si es igual a generador generamos los tags del post
+		}else if($action == 'generador'){//si es igual a generador generamos los tags del post
 			$tags = $psPosts->generarTags($datos);
-			$smarty->assign('psAccion', $accion);
+			$smarty->assign('psAccion', $action);
 		}
-		$smarty->assign('psAccion', $accion);
+		$smarty->assign('psAccion', $action);
 		break;
 }

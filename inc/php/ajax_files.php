@@ -30,12 +30,12 @@ $archivo = './ajax/ajax.' . $type . '.php';
 if(file_exists($archivo)){
 	include($archivo);
 }else{
-	die('El archivo solicitado no existe o no ha sido posible encontrarlo.');
+	die('0: El archivo solicitado no existe o no ha sido posible encontrarlo.');
 }
 
 //ahora agregamos los datos generados a smarty
 if(empty($psAjax)){
 	$smarty->template_ps = false;
 	$smarty->assign("psTitle", $psTitle);
-	include (PS_ROOT.'footer.php');
+	include('../../footer.php');
 }

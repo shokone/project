@@ -26,7 +26,7 @@ $psAjax = empty($_GET['ajax']) ? 0 : 1;
 //creamos el booleano para comprobar si debemos continuar con el script
 $psContinue = true;
 //damos un nombre al titulo de la pagina
-$psTitle = $psCore->settings['titulo'].' - '.$tsCore->settings['slogan'];
+$psTitle = $psCore->settings['titulo'].' - '.$psCore->settings['slogan'];
 
 /**
  * validamos el nivel y los permisos de acceso
@@ -60,11 +60,11 @@ if($psContinue){
     $smarty->assign("psType", "noticias");
     //
     $smarty->assign("psCategorias",$psPortal->getConfigPost());
-    //$tsPosts = $tsPortal->getMyPosts();
-    //$smarty->assign("tsPosts",$tsPosts['data']);
-    //$smarty->assign("tsPages",$tsPosts['pages']);
+    //$psPosts = $psPortal->getMyPosts();
+    //$smarty->assign("tsPosts",$psPosts['data']);
+    //$smarty->assign("tsPages",$psPosts['pages']);
     //
-    $smarty->assign("psLastPostVisit",$tsPortal->getLastPost());
+    $smarty->assign("psLastPostVisit",$psPortal->getLastPost());
     $smarty->assign("psFavoritos",$psPortal->getFavoritos());
     // FOTOS
     $psImages = $psPortal->getFotos();

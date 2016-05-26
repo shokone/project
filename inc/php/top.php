@@ -22,13 +22,13 @@ $psPage = "tops";
 $psLevel = 0;
 
 //comprobamos si la respuesta se realiza por ajax
-$psAjax = empty(filter_input(INPUT_GET['ajax'])) ? 0 : 1;
+$psAjax = empty($_GET['ajax']) ? 0 : 1;
 
 //creamos la variable para comprobar si continuamos con el script
 $psContinue = true;
 
 //incluimos el header
-include("../header.php");
+include("../../header.php");
 
 //cargamos el titulo de la pagina actual
 $psTitle = $psCore->settings['titulo']." - ".$psCore->settigns['slogan'];

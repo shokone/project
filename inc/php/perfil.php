@@ -24,8 +24,10 @@ $psLevel = 0;
 $psAjax = empty($_GET['ajax']) ? 0 : 1;
 //creamos el booleano para comprobar si debemos continuar con el script
 $psContinue = true;
+
+include('../../header.php');
 //damos un nombre al titulo de la pagina
-$psTitle = $psCore->settings['titulo'].' - '.$tsCore->settings['slogan'];
+$psTitle = $psCore->settings['titulo'].' - '.$psCore->settings['slogan'];
 
 /**
  * validamos el nivel y los permisos de acceso
@@ -43,7 +45,7 @@ if($psLevelVer != 1){
  * solo si el script puede continuar
  */
 if($psContinue){
-	$username = filter_input(INPUT_GET, 'user'));
+	$username = $_GET['user'];
 	//obtenemos los datos de la db
 	$consulta = "SELECT user_id, user_name, user_activo, user_baneado FROM u_miembros WHERE LOWER(user_name) = :uname";
 	$valores = array('uname' => $username);
@@ -55,9 +57,9 @@ if($psContinue){
 		$smarty->assign("psAviso", array(
 			'titulo' => 'Error!', 
 			'mensaje' => (empty($usuario['user_id']) ? 'El usuario no existe' : 'La cuenta de '.$usuario['user_name'].' se encuentra suspendida' ), 
-			'but' => 'Ir a la p&aacute;gina principal'),
+			'but' => 'Ir a la p&aacute;gina principal',
 			'link' => "{$psCore->settings['url']}"
-		);
+		));
 	}else{
 		include '../class/c.cuenta.php';
 		$psCuenta =& psCuenta::getInstance();
@@ -67,8 +69,8 @@ if($psContinue){
 	    $psInfo['uid'] = $usuario['user_id'];
 		//comprobamos si el usuario está online
 	    $online = (time() - ($psCore->settings['c_last_active'] * 60));
-	    $inactive = ($online * 2)); //inactivo será el doble del online
-	    //
+	    $inactive = ($online * 2); //inactivo será el doble del online
+	    
 	    if($psInfo['user_lastactive'] > $online){
 	    	$psInfo['status'] = array('t' => 'Online', 'css' => 'online');
 	    }elseif($psInfo['user_lastactive'] > $inactive){
@@ -80,7 +82,7 @@ if($psContinue){
 	    }
 
 		//cargamos la información general
-		$tsGeneral = $psCuenta->cargarInfoGeneral($usuario['user_id']);
+		$psGeneral = $psCuenta->cargarInfoGeneral($usuario['user_id']);
 	    $psInfo['nick'] = $psInfo['user_name'];
 	    $psInfo = array_merge($psInfo, $psGeneral);
 	    //obtenemos el país
@@ -102,7 +104,7 @@ if($psContinue){
 	    if($privado['m']['v'] == true){
 	        // CARGAR HISTORIA
 	        if(!empty($_GET['pid'])) {
-	            $pub = filter_input(INPUT_GET, 'pid'));
+	            $pub = $_GET['pid'];
 	            $story = $psMuro->getHistoria($pub, $usuario['user_id']);
 	            //
 	            if(!is_array($story)){
@@ -111,8 +113,8 @@ if($psContinue){
 	                	'titulo' => 'Error!', 
 	                	'mensaje' => $story, 
 	                	'but' => 'Ir a pagina principal', 
-	                	'link' => "{$psCore->settings['url']}")
-	                );
+	                	'link' => "{$psCore->settings['url']}"
+	                ));
 	            }else{
 	                $story['data'][1] = $story;
 	                $smarty->assign("psMuro", $story);
