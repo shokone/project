@@ -2,14 +2,14 @@
 
 /**
  * controlador de los mensajes
- * @requisitos: 
+ * @requisitos:
  * cargamos los datos necesarios para ejecutar la seccion de post
  * a su vez será también el home de los mensajes
  * verificamos el nivel de acceso a la pagina
  * establecemos las variables importantes al archivo
  * asignamos las tareas necesarias que se realizaran en la seccion post
  * asignamos el valor de las variables a smarty
- * 
+ *
  * @name mensajes.php
  * @author Iván Martínez Tutor
  */
@@ -25,6 +25,9 @@ $psLevel = 2;
 $psAjax = empty($_GET['ajax']) ? 0 : 1;
 //creamos el booleano para comprobar si debemos continuar con el script
 $psContinue = true;
+
+include '../../header.php';
+
 //damos un nombre al titulo de la pagina
 $psTitle = $psCore->settings['titulo'].' - '.$psCore->settings['slogan'];
 

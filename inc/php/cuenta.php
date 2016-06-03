@@ -7,7 +7,7 @@
  * verificaremos el nivel de acceso a la pagina
  * añadimos las instrucciones de codigo necesarias
  * agregamos los datos generados a smarty
- * 
+ *
  * @name cuenta.php
  * @author Iván Martínez Tutor
  */
@@ -18,7 +18,7 @@ $psLevel = 2;//nivel de acceso
 $psAjax = empty($_GET['ajax']) ? 0 : 1;//comprobamos si la respuesta se realiza por ajax
 $psContinue = true;//comprobamos si continuamos ejecutando el script
 //incluimos el header
-include (PS_ROOT.'header.php');
+include ('../../header.php');
 $psTitle = $psCore->settings['titulo'] . " - " . $psCore->settings['slogan'];
 
 //verificamos el nivel de acceso
@@ -60,7 +60,7 @@ if($psLevelVer != 1){
 		$smarty->assign("psMeses", $psMeses);
         //cargamos usuarios bloqueados
         $smarty->assign("psBloqueos", $psCuenta->cargarBaneos());
-        
+
 	} elseif($action == 'save'){
 		echo $psCore->setJson($psCuenta->guardarPerfil());
 	} elseif($action == 'desactivate'){

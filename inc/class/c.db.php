@@ -68,6 +68,8 @@ class psDb extends PDOStatement{
                     return $consulta->fetch(PDO::FETCH_ASSOC);
                 case 'lastInsertId':
                     return $consulta->lastInsertId();
+                case 'both':
+                    return $consulta->fetch(PDO::FETCH_BOTH);
             }
         }catch(PDOException $e){
             die("Error al realizar la consulta, error: ".$e->getMessage());
@@ -79,8 +81,8 @@ class psDb extends PDOStatement{
      * @funcionalidad obtenemos el último id autoincrementativo insertado en la base de datos
      * @return type devolvemos el id
      */
-    function getLastInsertId($consulta){
-        return PDO::lastInsertId($consulta);
+    function getLastInsertId(){
+        return $this->conexion->lastInsertId();
     }
 
     function executeSqlFile($sql){
@@ -105,12 +107,12 @@ class psDb extends PDOStatement{
      * @return type devolvemos un array con los datos obtenidos en la consulta
      */
     function resultadoArray($consulta){
-        $array = [];
-        if($consulta->fetch()){
+        $array = array();
+        //if($consulta->fetch()){
             while($f = $consulta->fetch()){
                 $array[]=$f;
             }
-        }
+        //}
         return $array;
     }
 

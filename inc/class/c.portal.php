@@ -26,7 +26,7 @@ class psPortal{
 
     /**
      * @funcionalidad obtenemos los últimos post para la home
-     * @param  [type] $type tipo de post que queremos obtener 
+     * @param  [type] $type tipo de post que queremos obtener
      * @return [type] devolvemos un array con los datos obtenidos
      */
     function getLastPost($type = 'visited'){
@@ -41,7 +41,7 @@ class psPortal{
         $visitado = unserialize($dato[$valores['last']]);
         ksort($visitado);//ordenamos el array
         foreach($visitado as $key => $valor){
-            $consulta2 = "SELECT p.post_id, p.post_user, p.post_category, p.post_title, p.post_date, p.post_puntos, p.post_private, u.user_name, c.c_nombre, c.c_seo, c.c_img FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON p.post_category = c.cid WHERE p.post_status = :status AND p.post_id = :id";
+            $consulta2 = "SELECT p.post_id, p.post_user, p.post_category, p.post_title, p.post_date, p.post_puntos, p.post_private, u.user_name, c.c_nombre, c.c_seo, c.c_img FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON p.post_category = c.cid WHERE p.post_status = :status AND p.post_id = :id ORDER BY p.post_id DESC";
             $valores2 = array('status' => 0, 'id' => $valor);
             $datos[] = $psDb->db_execute($consulta2, $valores2, 'fetch_assoc');
         }
@@ -52,12 +52,12 @@ class psPortal{
      * @funcionalidad obtenemos los post del usuario logueado
      * @return [type] devolvemos un array con los datos si todo ha salido bien
      */
-    function getPostPropios(){  
+    function getPostPropios(){
         global $psDb, $psUser, $psCore;
         $consulta = "SELECT last_posts_cats FROM u_portal WHERE user_id = :uid";
         $valores = array('uid' => $psUser->user_id);
         $datos = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
-        //obtenemos las categorias 
+        //obtenemos las categorias
         $cat = unserialize($datos['last_posts_cats']);
         //comprobamos
         if(is_array($cat)){
@@ -75,7 +75,7 @@ class psPortal{
             //obtenemos datos de los post
             $consulta3 = "SELECT p.post_id, p.post_category, p.post_title, p.post_date, p.post_puntos, p.post_private, u.user_name, c.c_nombre, c.c_seo, c.c_img FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = :status AND p.post_category IN (:cats) ORDER BY p.post_id DESC LIMIT :limite";
             $valores3 = array(
-                'status' => 0, 
+                'status' => 0,
                 'cats' => '{$cat}',
                 'limite' => $pages['limit']
             );
@@ -114,7 +114,7 @@ class psPortal{
         global $psUser, $psDb, $psCore;
         $consulta = "SELECT last_posts_cats FROM u_portal WHERE user_id = :uid";
         $valores = array('uid' => $psUser->user_id);
-        $datos = $psDb->db_execute($consulta, $valores, 'fetch_asso');
+        $datos = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
         //unserializamos el array de categorías
         $datos = unserialize($datos['last_posts_cats']);
         foreach($psCore->settings['categorias'] as $key => $valor){
@@ -223,7 +223,7 @@ class psPortal{
             $consulta2 = "SELECT COUNT(DISTINCT session_ip) AS s FROM u_sessions WHERE session_time > :session_time";
             $valores2 = array('session_time' => $online);
             $query = $psDb->db_execute($consulta2, $valores2, 'fetch_num');
-        }   
+        }
         $datos['stats_online'] = $query[0];
         if($datos['stats_online'] > $datos['stats_max_online']){
             $consulta3 = "UPDATE w_stats SET stats_time = :stats_time, stats_time_cache = :stats_time_cache, stats_miembros = :stats_miembros, stats_posts = :stats_posts, stats_fotos = :stats_fotos, stats_comments = :stats_comments, stats_foto_comments = :stats_foto_comments, stats_max_online = :stats_max_online, stats_max_time = :stats_max_time, stats_max_online = :stats_max_online, stats_max_time = :stats_max_time";

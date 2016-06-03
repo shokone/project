@@ -2,14 +2,14 @@
 
 /**
  * controlador del portal
- * @requisitos: 
+ * @requisitos:
  * cargamos los datos necesarios para ejecutar la seccion de post
  * a su vez será también el home del portal
  * verificamos el nivel de acceso a la pagina
  * establecemos las variables importantes al archivo
  * asignamos las tareas necesarias que se realizaran en la seccion post
  * asignamos el valor de las variables a smarty
- * 
+ *
  * @name portal.php
  * @author Iván Martínez Tutor
  */
@@ -55,14 +55,14 @@ if($psContinue){
     	$psAfiliados->urlInterna();
     }
     //asignamos datos a smarty
-    $smarty->assign("psMuro", $psPortal->getNovedades());
-    $smarty->assign("psInfo",array('uid' => $psUser->user_id));
+    $smarty->assign("psMuro", $psPortal->getNoticias());
+    $smarty->assign("psInfo", array('uid' => $psUser->user_id));
     $smarty->assign("psType", "noticias");
     //
     $smarty->assign("psCategorias",$psPortal->getConfigPost());
-    //$psPosts = $psPortal->getMyPosts();
-    //$smarty->assign("tsPosts",$psPosts['data']);
-    //$smarty->assign("tsPages",$psPosts['pages']);
+    $psPosts = $psPortal->getPostPropios();
+    $smarty->assign("psPosts", $psPosts['data']);
+    $smarty->assign("psPages", $psPosts['pages']);
     //
     $smarty->assign("psLastPostVisit",$psPortal->getLastPost());
     $smarty->assign("psFavoritos",$psPortal->getFavoritos());
@@ -73,7 +73,8 @@ if($psContinue){
     // STATS
     $smarty->assign("psStats",$psPortal->getStats());
     // AFILIADOS
-    $smarty->assign("psAfiliados",$psAfiliados->getAfiliados());
+    //
+    $smarty->assign("psAfiliados", $psAfiliados->getAfiliados());
 }
 
 //si todo ok y no vamos por ajax asignamos en smarty

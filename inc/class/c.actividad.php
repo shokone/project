@@ -77,7 +77,7 @@ class psActividad{
      */
     private function obtenerFecha($fecha){
         $tiempo = time() - $fecha;
-        $dias = rount($tiempo / 86400);
+        $dias = round($tiempo / 86400);
         //obtenemos valor dependiendo de los dias
         if($dias < 1){
             return 'hoy';
@@ -102,7 +102,7 @@ class psActividad{
             case 1:case 2:case 3:case 4:case 5:case 6:case 7:
                 $valores = ['obj_uno' => $datos['obj_uno']];
                 $array = [
-                    0 => "SELECT p.post_id, p.post_title, c.c_seo FROM p_posts AS p LEFT JOIN p_categorias AS c ON p.post_category = c.cid WHERE p.post_id = :obj_uno LIMIT 1",
+                    0 => "SELECT p.post_id, p.post_title, c.c_seo FROM p_posts AS p LEFT JOIN p_categorias AS c ON p.post_category = c.cid WHERE p.post_id = :obj_uno",
                     1 => $valores
                 ];
                 return $array;
@@ -110,7 +110,7 @@ class psActividad{
                 //el usuario está siguiendo a
                 $valores = ['obj_uno' => $datos['obj_uno']];
                 $array = [
-                    0 => "SELECT user_id AS avatar, user_name FROM u_miembros WHERE user_id = :obj_uno LIMIT 1",
+                    0 => "SELECT user_id AS avatar, user_name FROM u_miembros WHERE user_id = :obj_uno",
                     1 => $valores
                 ];
                 return $array;
@@ -118,7 +118,7 @@ class psActividad{
                 //el usuario subió una foto
                 $valores = ['obj_uno' => $datos['obj_uno']];
                 $array = [
-                    "SELECT f.foto_id, f.f_title, u.user_name FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.foto_id = :obj_uno LIMIT 1",
+                    "SELECT f.foto_id, f.f_title, u.user_name FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.foto_id = :obj_uno",
                     $valores
                 ];
             case 10:case 11:
@@ -126,13 +126,13 @@ class psActividad{
                 $valores = ['obj_uno' => $datos['obj_uno']];
                 if($datos['obj_dos'] == 0 || $datos['obj_dos'] == 2){
                     $array = [
-                        "SELECT p.pub_id, u.user_name FROM u_muro AS p LEFT JOIN u_miembros AS u ON p.p_user = u.user_id WHERE p.pub_id = :obj_uno LIMIT 1",
+                        "SELECT p.pub_id, u.user_name FROM u_muro AS p LEFT JOIN u_miembros AS u ON p.p_user = u.user_id WHERE p.pub_id = :obj_uno ",
                         $valores
                     ];
                     return $array;
                 }else{
                     $array = [
-                        "SELECT c.pub_id, c.c_body, u.user_name FROM u_muro_comentarios AS c LEFT JOIN u_muro AS p ON c.pub_id = p.pub_id LEFT JOIN u_miembros AS u ON p.p_user = u.user_id WHERE cid = :obj_uno LIMIT 1",
+                        "SELECT c.pub_id, c.c_body, u.user_name FROM u_muro_comentarios AS c LEFT JOIN u_muro AS p ON c.pub_id = p.pub_id LEFT JOIN u_miembros AS u ON p.p_user = u.user_id WHERE c.cid = :obj_uno",
                         $valores
                     ];
                     return $array;
@@ -150,16 +150,14 @@ class psActividad{
      * @return boolean devolvemos un booleano con el resultado de la consulta
      */
     public function setActividad($type, $var1, $var2 = 0){
-        global $psDb;
-        //creamos las variables globales
-        global $psUser, $psCore;
+        global $psDb, $psUser, $psCore;
         //creamos la variable local de tiempo
         $actividad_fecha = time();
         //buscamos las actividades en la base de datos
-        $valores = [
-            'user_id' => $psUser->uid
-        ];
-        $consulta = $psDb->db_execute("SELECT ac_id FROM u_actividad WHERE user_ id = :user_id ORDER BY ac_date DESC",$valores);
+        $valores = array(
+            'user_id' => $psUser->user_id
+        );
+        $consulta = $psDb->db_execute("SELECT ac_id FROM u_actividad WHERE user_id = :user_id ORDER BY ac_date DESC",$valores);
         $resultado = $psDb->resultadoArray($consulta);
 
         //obtenemos el total de notificaciones de actividad en curso
@@ -170,17 +168,17 @@ class psActividad{
         //comprobamos si hemos llegado al límite de notificaciones de actividad
         //si es así borramos la última
         if($acTotal >= $psCore->settings['c_max_acts']){
-            $psDb->db_execute("DELETE FROM u_actividad WHERE ac_id = ".$lastNot);
+            $psDb->db_execute("DELETE FROM u_actividad WHERE ac_id = :acid", array('acid' => $lastNot));
         }
-        $valores = [
-            'user_id' => $psUser->uid,
+        $valores2 = array(
+            'user_id' => $psUser->user_id,
             'obj_uno' => $var1,
             'obj_dos' => $var2,
             'ac_type' => $type,
             'ac_date' => $actividad_fecha
-        ];
+        );
         //insertamos los datos
-        $consulta2 = $psDb->db_execute("INSERT INTO u_actividad (user_id, obj_uno, obj_dos, ac_type, ac_date) VALUES(:user_id, :obj_uno, :obj_doc, :ac_type, :ac_date)",$valores);
+        $consulta2 = $psDb->db_execute("INSERT INTO u_actividad (user_id, obj_uno, obj_dos, ac_type, ac_date) VALUES(:user_id, :obj_uno, :obj_dos, :ac_type, :ac_date)",$valores2);
         //comprobamos si la consulta se ha ejecutado correctamente
         if($consulta2){
             return true;
@@ -209,7 +207,7 @@ class psActividad{
             case 1:case 2:case 4:case 7:
                 $frase['text'] = $this->actividad[$type]['text'];
                 $frase['link'] = $url."/posts/".$datos['c_seo']."/".$datos['post_id']."/".$datos['post_title'].".html";
-                $frase['title'] = $datos['post_title'];
+                $frase['ltext'] = $datos['post_title'];
                 break;
             case 3:case 5:case 6://
                 if($type == 3){//dejo puntos en el post
@@ -228,10 +226,10 @@ class psActividad{
                     }
                 }
                 //obtenemos el texto
-                $frase['text'] = $this->actividad[$type][0]."<strong>{$etext}</strong>".$this->actividad[$type]['text'][1];
+                $frase['text'] = $this->actividad[$type][0]."<strong>{$extra_text}</strong>".$this->actividad[$type]['text'][1];
                 //obtenemos la url
                 $frase['link'] = $url."/posts/".$datos['c_seo']."/".$datos['post_id']."/".$datos['post_title'].".html";
-                $frase['title'] = $datos['post_title'];
+                $frase['ltext'] = $datos['post_title'];
                 //obtenemos el estilo
                 if($type == 6){
                     $frase['css'] = 'com_voto'.$etext;
@@ -246,13 +244,13 @@ class psActividad{
                 //obtenemos la frase
                 $frase['text'] = $avatar1." ".$this->actividad[$type]['text']." ".$avatar2;
                 $frase['link'] = $url."/perfil/".$datos['user_name'];
-                $frase['title'] = $datos['user_name'];
+                $frase['ltext'] = $datos['user_name'];
                 $frase['css'] = '';
                 break;
             case 9://subio una foto nueva
                 $frase['text'] = $this->actividad[$type]['text'];
                 $frase['link'] = $url."/fotos/".$datos['user_name']."/".$datos['foto_id']."/".$datos['f_title'].".html";
-                $frase['title'] = $datos['f_title'];
+                $frase['ltext'] = $datos['f_title'];
                 break;
             case 10://tipo de seccion
                 $typeSeccion = $datos['obj_dos'];
@@ -261,9 +259,9 @@ class psActividad{
                 $frase['text'] = $this->actividad[$type][$typeSeccion]['text'];
                 $frase['link'] = $url."/perfil/".$datos['user_name']."/".$datos['pub_id'];
                 if(empty($texto_enlace)){
-                    $frase['title'] = $datos['user_name'];
+                    $frase['ltext'] = $datos['user_name'];
                 }else{
-                    $frase['title'] = $texto_enlace;
+                    $frase['ltext'] = $texto_enlace;
                 }
                 $frase['css'] = $this->actividad[$type][$typeSeccion]['css'];
                 break;
@@ -276,14 +274,14 @@ class psActividad{
                 $frase['link'] = $url."/perfil/".$datos['user_name']."?pid=".$datos['pub_id'];
                 if($datos['obj_dos'] == 0 || $datos['obj_dos'] == 2){
                     if(empty($texto_enlace)){
-                        $frase['title'] = $datos['user_name'];
+                        $frase['ltext'] = $datos['user_name'];
                     }else{
                         if(strlen($datos['c_body']) > 35){
                             $fin = "...";
                         }else{
                             $fin = "";
                         }
-                        $frase['title'] = substr($datos['c_body'],0,30).$fin;
+                        $frase['ltext'] = substr($datos['c_body'],0,30).$fin;
                     }
                 }
                 break;
@@ -300,12 +298,12 @@ class psActividad{
         global $psDb;
         $actividad = [
             'total' => count($datos),
-            'datos' => [
-                'hoy' => ['title' => 'Hoy','datos' => []],
-                'ayer' => ['title' => 'Ayer','datos' => []],
-                'semana' => ['title' => 'D&iacute;as anteriores','datos' => []],
-                'mes' => ['title' => 'Semanas anteriores','datos' => []],
-                'historico' => ['title' => 'Actividad m&aacute;s antigua','datos' => []]
+            'data' => [
+                'hoy' => ['title' => 'Hoy','data' => []],
+                'ayer' => ['title' => 'Ayer','data' => []],
+                'semana' => ['title' => 'D&iacute;as anteriores','data' => []],
+                'mes' => ['title' => 'Semanas anteriores','data' => []],
+                'historico' => ['title' => 'Actividad m&aacute;s antigua','data' => []]
             ]
         ];
         //creamos una consulta para cada valor obtenido
@@ -323,7 +321,7 @@ class psActividad{
                 //obtenemos la fecha de la actividad
                 $fecha = $this->obtenerFecha($valor['ac_date']);
                 //colocamos la actividad
-                $actividad['datos'][$fecha]['datos'][] = $frase;
+                $actividad['data'][$fecha]['data'][] = $frase;
             }
         }
         return $actividad;
@@ -336,30 +334,26 @@ class psActividad{
      * @param type $comienzo obtenemos la fecha desde la que queremos empezar
      * @return type devolvemos la actividad montada
      */
-    public function getActividad($u_id, $type = 0, $comienzo = 0){
+    public function getActividad($uid, $type = 0, $comienzo = 0){
         global $psDb;
         //primero creamos la actividad
         $this->crearActividad();
         //obtenemos el tipo de actividad
+        $consulta = "SELECT ac_id, user_id, obj_uno, obj_dos, ac_type, ac_date FROM u_actividad WHERE user_id = :user_id";
         if($type != 0){
-            $type2 = "AND ac_type = :type2";
-            $valores = [
-                'user_id' => $u_id,
-                'type' => $type2,
-                'type2' => $type,
-                'comienzo' => $comienzo
-            ];
-        }else{
-            $type = "";
-            $valores = [
-                'user_id' => $u_id,
+            $consulta .= " AND ac_type = :type";
+            $valores = array(
+                'user_id' => $uid,
                 'type' => $type,
-                'comienzo' => $comienzo
-            ];
+            );
+        }else{
+            $valores = array(
+                'user_id' => $uid,
+            );
         }
+        $consulta .= " ORDER BY ac_date DESC";
         //realizamos la consulta en la base de datos
-        $consulta = $psDb->db_execute("SELECT ac_id, user_id, obj_uno, obj_dos, ac_type, ac_date FROM u_actividad WHERE user_id = :user_id :type ORDER BY ac_date DESC LIMIT :comienzo, 25", $valores);
-        $resultado = $psDb->resultadoArray($consulta);
+        $resultado = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
 
         //montamos y devolvemos la actividad
         return $this->montarActividad($resultado);
@@ -380,7 +374,7 @@ class psActividad{
         $consulta = "SELECT user_id FROM u_actividad WHERE ac_id = :ac_id";
         $resultado = $psDb->db_execute($consulta,$valores,'fetch_assoc');
         //comprobamos que es correcto
-        if($datos['user_id'] == $psUser->uid){
+        if($datos['user_id'] == $psUser->user_id){
             if($consulta){
                 return "1: Actividad eliminada";
             }
@@ -401,7 +395,7 @@ class psActividad{
         if($com > 90){
             return array('total' => -1);
         }
-        $valores = ['user_id' => $psUser->uid];
+        $valores = ['user_id' => $psUser->user_id];
         $consulta = $psDb->db_execute("SELECT f_id FROM u_follows WHERE f_user = :user_id AND f_type = 1",$valores);
         $resultado = $psDb->resultadoArray($consulta);
 
@@ -410,12 +404,12 @@ class psActividad{
             $seguidores[] = "'".$valor['f_id']."'";
         }
         //agregado en lista de seguidores
-        $seguidores[] = $psUser->uid;
+        $seguidores[] = $psUser->user_id;
         //obtenemos un string mediante la conversión del array
         $seguidores = implode(', '.$seguidores);
         //consultamos a la bd por las últimas publicaciones
-        $valores2 = ['seguidores' => $seguidores, 'start' => $com];
-        $consulta2 = $psDb->db_execute("SELECT ua.*, u.user_name AS usuario FROM u_actividad AS ua LEFT JOIN u_miembros AS u ON ua.user_id = u.user_id WHERE ua.user_id IN :seguidores ORDER BY ua.ac_date DESC LIMIT :start, 25", $valores2);
+        $valores2 = ['seguidores' => $seguidores];
+        $consulta2 = $psDb->db_execute("SELECT ua.*, u.user_name AS usuario FROM u_actividad AS ua LEFT JOIN u_miembros AS u ON ua.user_id = u.user_id WHERE ua.user_id IN :seguidores ORDER BY ua.ac_date DESC", $valores2);
         $resultado2 = $psDb->resultadoArray($consulta2);
 
         //montamos la actividad resultante

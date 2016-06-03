@@ -17,7 +17,7 @@ class psAfiliados{
 		if(is_null($instancia)){
 			$instancia = new psAfiliados();
 		}
-		return $afiliados;
+		return $instancia;
 	}
 
 	/**
@@ -46,10 +46,9 @@ class psAfiliados{
      */
 	function getAfiliados($type = 'home'){
 		global $psDb;
-		echo 'hla';
 		if($type == 'home'){//comprobamos si estamos en la seccion home
-			$consulta = "SELECT aid, a_titulo, a_url, a_banner, a_descripcion FROM w_afiliados WHERE a_active = :active ORDER BY RAND() LIMIT :limite";
-			$valores = array('active' => 1, 'limite' => 5);
+			$consulta = "SELECT aid, a_titulo, a_url, a_banner, a_descripcion FROM w_afiliados WHERE a_active = :active ORDER BY RAND()";
+			$valores = array('active' => 1);
 			$datos = $psDb->db_execute($consulta, $valores);
 		}else if($type == 'admin'){//comprobamos si estamos en la seccion admin
 			$consulta = "SELECT aid, a_titulo, a_url, a_banner, a_descripcion, a_sid, a_hits_in, a_hits_out, a_date, a_active FROM w_afiliados";
@@ -60,7 +59,7 @@ class psAfiliados{
 
 	/**
      * @funcionalidad añadimos un nuevo afiliado y mandamos un mensaje al administrador y al usuario
-     * @return [type]              [description] devolvemos un string con el mensaje a enviar o un string con el error 
+     * @return [type]              [description] devolvemos un string con el mensaje a enviar o un string con el error
      */
 	function newAfiliado(){
 		global $psCore, $psDb, $psMonitor;
@@ -154,7 +153,7 @@ class psAfiliados{
 	/**
      * @funcionalidad borramos un afiliado
      * @param  [type]  $aid        [description] id del afiliado
-     * @return [type]              [description] 
+     * @return [type]              [description]
      */
 	function delAfiliado($aid){
 		global $psUser, $psDb;
@@ -200,7 +199,7 @@ class psAfiliados{
 	}
 
 	/**
-     * @funcionalidad redireccionamos a la url externa 
+     * @funcionalidad redireccionamos a la url externa
      */
 	function urlExterna(){
 		global $psCore, $psDb;

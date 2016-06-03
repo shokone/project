@@ -443,12 +443,12 @@ class psMonitor{
                 return array('consulta' => $consulta, 'valores' => $valores);
             //asignar medallas
             case 16:
-                $consulta = "SELECT p.post_id, p.post_title, c.c_seo, m.medal_id, m.m_title, m.m_image, a.medal_for FROM w_medallas_asign AS a LEFT JOIN p_posts AS p ON p.post_id = a.medal_for LEFT JOIN p_categorias AS c ON c.cid = p.post_category LEFT JOIN w_medallas AS m ON m.medal_id = a.medal_id WHERE m.medal_id = :mid AND p.post_id = :pid";
+                $consulta = "SELECT p.post_id, p.post_title, c.c_seo, m.medal_id, m.m_title, m.m_image, a.medal_for FROM w_medallas_assign AS a LEFT JOIN p_posts AS p ON p.post_id = a.medal_for LEFT JOIN p_categorias AS c ON c.cid = p.post_category LEFT JOIN w_medallas AS m ON m.medal_id = a.medal_id WHERE m.medal_id = :mid AND p.post_id = :pid";
                 $valores = array('mid' => $datos['obj_uno'], 'pid' => $datos['obj_dos']);
                 return array('consulta' => $consulta, 'valores' => $valores);
             //fotos
             case 17:
-                $consulta = "SELECT f.foto_id, f.f_title, f.f_user, m.medal_id, m.m_title, m.m_image, a.medal_for, u.user_id, u.user_name FROM w_medallas_asign AS a LEFT JOIN f_fotos AS f ON f.foto_id = a.medal_for LEFT JOIN u_miembros AS u ON u.user_id = f.f_user LEFT JOIN w_medallas AS m ON m.medal_id = a.medal_id WHERE m.medal_id = :mid AND f.foto_id = :fid";
+                $consulta = "SELECT f.foto_id, f.f_title, f.f_user, m.medal_id, m.m_title, m.m_image, a.medal_for, u.user_id, u.user_name FROM w_medallas_assign AS a LEFT JOIN f_fotos AS f ON f.foto_id = a.medal_for LEFT JOIN u_miembros AS u ON u.user_id = f.f_user LEFT JOIN w_medallas AS m ON m.medal_id = a.medal_id WHERE m.medal_id = :mid AND f.foto_id = :fid";
                 $valores = array('mid' => $datos['obj_uno'], 'fid' => $datos['obj_dos']);
                 return array('consulta' => $consulta, 'valores' => $valores);
         }
@@ -736,26 +736,26 @@ class psMonitor{
                 $datos['data'] = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
                 break;
             case 'siguiendo':
-                $consulta = "SELECT u.user_id, u.user_name, p.user_pais, p.p_mensaje, f.follow_id FROM u_miembros AS u LEFT JOIN u_perfil AS p ON u.user_id = p.user_id LEFT JOIN u_follow AS f ON p.user_id = f.f_id WHERE f.f_user = :uid AND f.f_type = :type ORDER BY f.f_date DESC";
+                $consulta = "SELECT u.user_id, u.user_name, p.user_pais, p.p_mensaje, f.follow_id FROM u_miembros AS u LEFT JOIN u_perfil AS p ON u.user_id = p.user_id LEFT JOIN u_follows AS f ON p.user_id = f.f_id WHERE f.f_user = :uid AND f.f_type = :type ORDER BY f.f_date DESC";
                 $valores = array('uid' => $uid, 'type' => 1);
                 $total = $psDb->db_execute($consulta, $valores, 'rowCount');
                 //obtenemos las páginas
                 $pages = $psCore->getPagination($total, 15);
                 $datos['pages'] = $pages;
-                $consulta .= ' LIMIT :limite';
-                $valores['limite'] = $pages['limit'];
+                //$consulta .= ' LIMIT :limite';
+                //$valores['limite'] = $pages['limit'];
                 //guardamos los datos
                 $datos['data'] = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
                 break;
             case 'seguidores':
-                $consulta = "SELECT u.user_id, u.user_name, p.user_pais, p.p_mensaje, f.follow_id FROM u_miembros AS u LEFT JOIN u_perfil AS p ON u.user_id = p.user_id LEFT JOIN u_follow AS f ON p.user_id = f.f_user WHERE f.f_id = :uid AND f.f_type = :type ORDER BY f.f_date DESC";
+                $consulta = "SELECT u.user_id, u.user_name, p.user_pais, p.p_mensaje, f.follow_id FROM u_miembros AS u LEFT JOIN u_perfil AS p ON u.user_id = p.user_id LEFT JOIN u_follows AS f ON p.user_id = f.f_user WHERE f.f_id = :uid AND f.f_type = :type ORDER BY f.f_date DESC";
                 $valores = array('uid' => $uid, 'type' => 1);
                 $total = $psDb->db_execute($consulta, $valores, 'rowCount');
                 //obtenemos las páginas
                 $pages = $psCore->getPagination($total, 15);
                 $datos['pages'] = $pages;
-                $consulta .= ' LIMIT :limite';
-                $valores['limite'] = $pages['limit'];
+                //$consulta .= ' LIMIT :limite';
+                //$valores['limite'] = $pages['limit'];
                 //guardamos los datos
                 $dato = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
                 //comprobamos si seguimos o nos siguen y rellenamos el array

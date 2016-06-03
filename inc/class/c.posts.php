@@ -6,7 +6,7 @@ if(!defined('PS_HEADER')){
 /**
  * clase psPosts
  * clase destinada al control de las funciones de los posts
- * 
+ *
  * @name c.posts.php
  * @author Iván Martínez Tutor
  */
@@ -22,7 +22,7 @@ class psPosts{
         }
         return $instancia;
     }
-    
+
     /**
      * @funcionalidad obtenemos todos los datos necesarios del post
      * @return type devolvemos un array con todos los datos obtenidos
@@ -119,7 +119,7 @@ class psPosts{
                 'type' => 2
             );
             $query8 = $psDb->db_execute($consulta8, $valores8, 'fetch_num');
-            $post['follow'] = $query8[0];   
+            $post['follow'] = $query8[0];
         }
         //obtenemos los últimos visitantes
         if($postData['post_visitantes']){
@@ -222,7 +222,7 @@ class psPosts{
             $consulta19 = "SELECT last_posts_visited FROM u_portal WHERE user_id = :uid";
             $valores19 = array('uid' => $psUser->user_id);
             $datos = $psDb->db_execute($consulta19, $valores19, 'fetch_assoc');
-            
+
             $visitado = unserialize($datos['last_posts_visited']);
             if(!is_array($visitado)){
                 $visitado = array();
@@ -320,8 +320,8 @@ class psPosts{
         }
         $consulta3 .= $stic1;
         $valores3['stic2'] = $stic2;
-        $consulta3 .= ' GROUP BY p.post_id ORDER BY :order';
-        $valores3['order'] = $order;
+        $consulta3 .= ' GROUP BY p.post_id ORDER BY ';
+        $consulta3 .= $order.' DESC';
         //$consulta3 .= ' DESC LIMIT :start, :fin';
         //$valores3['start'] = (int)$start;echo $start.' '.$fin;
         //$valores3['fin'] = (int)$fin;
@@ -363,7 +363,7 @@ class psPosts{
             // estos sólo están disponibles para administradores y modderadores
             if(empty($psUser->admod)  && $psUser->permisos['most'] == false) {
                 $post['sponsored'] = 0;
-                $post['sticky'] = 0;   
+                $post['sticky'] = 0;
             } else {
                 $post['sponsored'] = empty($_POST['patrocinado']) ? 0 : 1;
                 $post['sticky'] = empty($_POST['sticky']) ? 0 : 1;
@@ -380,13 +380,15 @@ class psPosts{
                 //comprobamos si existe la categoría
                 $consulta2 = "SELECT cid FROM p_categorias WHERE cid = :cid";
                 $valores2 = array('cid' => $post['category']);
-                if($psDb->db_execute($consulta2, $valores2, 'rowCount')){
+                if(!$psDb->db_execute($consulta2, $valores2, 'rowCount')){
                     return 'La categor&iacute;a seleccioanda no existe.';
                 }
                 //validamos la ip
-                if(!filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_URL)){
-                    return 'Su ip no pudo validarse correctamente.';
-                }
+                /*if(!filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_URL)){
+                    if(!filter_var($_SERVER['HTTP_X_FORWARDED_FOR'], FILTER_VALIDATE_URL)){
+                        return 'Su ip no pudo validarse correctamente.';
+                    }
+                }*/
                 //insertamos los datos
                 $consulta3 = "INSERT INTO p_posts (post_user, post_category, post_title, post_body, post_date, post_tags, post_ip, post_private, post_block_comments, post_sponsored, post_sticky, post_smileys, post_visitantes, post_status) VALUES (:user, :cat, :title, :body, :dates, :tags, :ip, :private, :bcom, :sponsored, :sticky, :smileys, :visitantes, :status)";
                 $valores3 = array(
@@ -408,8 +410,9 @@ class psPosts{
                 if($psDb->db_execute($consulta3, $valores3)){
                     $pid = $psDb->getLastInsertId();
                     //comprobamos si está oculto, y lo añadimos al historial
+                    //print_r($psCore->settings);
                     if(!$psUser->admod && ($psCore->settings['c_desapprove_post'] == 1 || $psUser->permisos['gorpap'] == true)){
-                        $consulta4 = "INSERT INTO w_historial (pofid, action, type, mod, reason, date, mod_ip) VALUES (:id, :action, :type, :mod, :reason, :dates, :ip)";
+                        $consulta4 = "INSERT INTO w_historial (pofid, action, type, mod, reason, `date`, mod_ip) VALUES (:id, :action, :type, :mod, :reason, :dates, :ip)";
                         $valores4 = array(
                             'id' => $pid,
                             'action' => 3,
@@ -435,6 +438,7 @@ class psPosts{
                     $psActividad->setActividad(1, $pid);
                     //comprobamos si el usuario sube de rango
                     $this->subirRango($psUser->user_id);
+                    return $pid;
                 }else{
                     return 'Error al intentar insertar los datos en la db.';
                 }
@@ -485,7 +489,7 @@ class psPosts{
         // estos sólo están disponibles para administradores y modderadores
         if(empty($psUser->admod)  && $psUser->permisos['most'] == false) {
             $post['sponsored'] = $datos['post_sponsored'];
-            $post['sticky'] = $datos['post_sticky']; 
+            $post['sticky'] = $datos['post_sticky'];
         } else {
             $post['sponsored'] = empty($_POST['patrocinado']) ? 0 : 1;
             $post['sticky'] = empty($_POST['sticky']) ? 0 : 1;
@@ -544,7 +548,7 @@ class psPosts{
         }else if($datos['post_status'] != 0 && $psUser->admod == 0 && $psUser->permisos['moedpo'] == false){
             return 'El post seleccionado no puede ser editado o no tienes permisos suficientes.';
         }else if($psUser->user_id != $datos['post_user'] &&$psUser->admod == 0 && $psUser->permisos['moedpo'] == false){
-            return 'No puedes editar un post a no ser que sea tuyo.'; 
+            return 'No puedes editar un post a no ser que sea tuyo.';
         }
         //cambiamos el prefijo de los datos para que sea más fácil guardar en borradores
         foreach($datos as $key => $valor){
@@ -587,7 +591,7 @@ class psPosts{
                         'title' => $datos['post_title'],
                         'body' => $datos['post_body'],
                         'tags' => '',
-                        'category' => $datos['post_category'], 
+                        'category' => $datos['post_category'],
                         'status' => 2,
                         'causa' => ''
                     );
@@ -716,9 +720,9 @@ class psPosts{
         }
         return $datos;
     }
-    
+
     /**
-     * @funcionalidad dara al usuario la posibilidad de seleccionar un post aleatorio, 
+     * @funcionalidad dara al usuario la posibilidad de seleccionar un post aleatorio,
      *  el post siguiente o el post anterior al que se encuentra
      */
     public function setModePost(){
@@ -819,8 +823,8 @@ class psPosts{
                     if($psCore->settings['c_allow_points'] > 0){
                         $max = $psCore->settings['c_allow_points'];
                     }else if($psCore->settings['c_allow_points'] == '-1'){//podemos dar todos los puntos disponibles
-                        $max = $psUser->info['user_puntosxdar']; 
-                    }else if($psCore->settings['c_allow_points'] == '-2'){//podemos dar todos los puntos que queramos 
+                        $max = $psUser->info['user_puntosxdar'];
+                    }else if($psCore->settings['c_allow_points'] == '-2'){//podemos dar todos los puntos que queramos
                         $max = 99999999;
                     }else{
                         $max = $psUser->permisos['gopfp'];
@@ -874,7 +878,7 @@ class psPosts{
                             }else{
                                 return 'Error. No puedes dar '.$puntos.' puntos, el m&aacute;ximo es '.$max;
                             }
-                        }else{  
+                        }else{
                             return 'Tienes que marcar algún punto.';
                         }
                     }else{
@@ -898,18 +902,16 @@ class psPosts{
      */
     function postRelacionados($dato){
         global $psDb, $psCore, $psUser;
-        $consulta = "SELECT p.post_id, p.post_title, c.c_seo FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = :status :admod AND MATCH(p.post_title) AGAINST(:dato IN BOOLEAN NODE) ORDER BY :rand DESC LIMIT :limite";
+        $consulta = "SELECT p.post_id, p.post_title, c.c_seo FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = :status ";
         $valores['status'] = 0;
-        if($psUser->admod && $psCore->settings['c_see_mod'] == 1){
-            $valores['admod'] = '';
-        }else{
-            $valores['admod'] = 'AND u.user_activo = :activo AND u.user_baneado = :ban';
+        if(!$psUser->admod && $psCore->settings['c_see_mod'] != 1){
+            $consulta .= 'AND u.user_activo = :activo AND u.user_baneado = :ban';
             $valores['activo'] = 1;
             $valores['ban'] = 0;
         }
+        $consulta .= " AND MATCH(p.post_title) AGAINST(:dato IN BOOLEAN MODE) ORDER BY :rand DESC";
         $valores['dato'] = $dato;
         $valores['rand'] = RAND();
-        $valores['limite'] = 5;
         $datos = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
         return $datos;
     }
@@ -937,7 +939,7 @@ class psPosts{
         $datos = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
         return $datos;
     }
-    
+
     /*****************************************************************************************/
     /******************************** TAGS ***************************************************/
     /*****************************************************************************************/
@@ -1008,7 +1010,7 @@ class psPosts{
         $valores['pid'] = (int)$pid;
         $valores2['cid'] = (int)$pid;
         if($psUser->admod){//si es admin no consultamos más datos
-            $consulta .= ' ORDER BY c.cid';
+            $consulta .= ' ORDER BY c.cid DESC';
         }else{
             $consulta .= 'AND c.c_status = :status AND u.user_activo = :activo AND u.user_baneado = :baneado';
             $valores['status'] = 0;
@@ -1020,7 +1022,8 @@ class psPosts{
         }
         $query = $psDb->db_execute($consulta, $valores);
         $comentarios = $psDb->resultadoArray($query);
-        $datos['num'] = $psDb->db_execute($consulta2, $valores2, 'rowCount');
+        $datos['num'] = count($comentarios);
+        $i = 0;
         foreach($comentarios as $comentario){
             if($comentario['c_votos'] != 0){
                 $consulta3 = 'SELECT voto_id FROM p_votos WHERE tid = :cid AND tuser = :user AND type = :type';
@@ -1030,7 +1033,7 @@ class psPosts{
                     'type' => 2,
                 );
                 $query = $psDb->db_execute($consulta3, $valores3, 'rowCount');
-                
+
             }else{
                 $votado = 0;
             }
@@ -1040,16 +1043,17 @@ class psPosts{
                 'user' => $comentario['c_user'],
                 'buser' => $psUser->user_id
             );
-            $datos['block'] = $psDb->db_execute($consulta4, $valores4, 'rowCount');
+            $datos['block'] = count($psDb->db_execute($consulta4, $valores4));
             $datos['data'][$i] = $comentario;
             $datos['data'][$i]['votado'] = $votado;
             $datos['data'][$i]['c_html'] = $psCore->badWords($datos['data'][$i]['c_body'], true);
+            $i++;
         }
         return $datos;
     }
 
     /**
-     * @funcionalidad obtenemos los últimos comentarios 
+     * @funcionalidad obtenemos los últimos comentarios
      * @return type devolvemos un array con los datos obtenidos
      */
     function getLastComentarios(){
@@ -1079,14 +1083,14 @@ class psPosts{
         global $psDb, $psCore, $psUser, $psActividad;
         //ponemos un límite al total de caracteres del comentario
         $comentario = substr(filter_input(INPUT_POST, 'comentario'), 0, 1000);//1000 de límite, espero que nadie llegue a tanto
-        $pid = fiter_input(INPUT_POST, 'postid');
+        $pid = filter_input(INPUT_POST, 'postid');
         //obtenemos los datos del dueño del post
         $consulta = "SELECT post_user, post_block_comments FROM p_posts WHERE post_id = :pid";
         $valores = array('pid' => $pid);
         $datos = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
         $mostrar_resp = filter_input(INPUT_POST, 'mostrar_resp');
         $fecha = time();
-        //comprobamos 
+        //comprobamos
         if($datos['post_user']){
             if($datos['post_block_comments'] != 1 || $datos['post_user'] == $psUser->user_id || $psUser->admod || $psUser->permisos['mocepc']){
                 //comprobamos rango y permisos
@@ -1095,7 +1099,9 @@ class psPosts{
                 }
                 //comprobamos la ip
                 if(!filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_URL)){
-                    return 'Lo sentimos, su ip no pudo validarse correctamente.';
+                    if(!filter_var($_SERVER['HTTP_REFERER'], FILTER_VALIDATE_URL)){
+                        return 'Lo sentimos, su ip no pudo validarse correctamente.';
+                    }
                 }
                 $consulta2 = "INSERT INTO p_comentarios (c_post_id, c_user, c_date, c_body, c_ip) VALUES (:pid, :user, :cdate, :body, :ip)";
                 $valores2 = array(
@@ -1125,12 +1131,12 @@ class psPosts{
                     $psActividad->setActividad(5, $pid);
                     if(!empty($mostrar_resp)){//comprobamos si está activada la opción de mostrar la respuesta del comentario
                         return array(
-                            $cid, 
+                            $cid,
                             $psCore->badWords($comentario, true),
-                            $comentario, 
-                            $fecha, 
+                            $comentario,
+                            $fecha,
                             filter_input(INPUT_POST, 'auser'),
-                            '', 
+                            '',
                             $_SERVER['REMOTE_ADDR']);
                     }else{
                         return 'Tu comentario fue agregado correctamente.';
@@ -1173,7 +1179,7 @@ class psPosts{
     }
 
     /**
-     * @funcionalidad borramos el comentario 
+     * @funcionalidad borramos el comentario
      * @return type devolvemos un string con el resultado de las consultas
      */
     function borrarComentario(){
@@ -1186,7 +1192,7 @@ class psPosts{
         //comprobamos si el comentario existe en la db
         if(!$psDb->db_execute($consulta, $valores, 'rowCount')){
             return 'El comentario seleccionado no existe. Por favor, recargue la p&aacute;gina e int&eacute;ntelo de nuevo.';
-        }        
+        }
         //realizamos la consulta para comprobar si el comentario es de un post mio
         $consulta2 = "SELECT post_id FROM p_posts WHERE post_id = :pid AND post_user = :user";
         $valores2 = array('pid' => $pid, 'user' => $psUser->user_id);
@@ -1226,9 +1232,9 @@ class psPosts{
     }
 
     /**
-     * @funcionalidad 
-     * @param type 
-     * @return type 
+     * @funcionalidad
+     * @param type
+     * @return type
      */
     function ocultarComentario(){
         global $psDb, $psCore, $psUser;
@@ -1356,7 +1362,7 @@ class psPosts{
         if(!in_array($puser, $id)){
             $psMonitor->setNotificacion(2, $puser, $psUser->user_id, $pid);
         }
-        //enviamos notificaciones a los que siguen el post 
+        //enviamos notificaciones a los que siguen el post
         $psMonitor->setNotificacion(7, 2, $psUser->user_id, $pid, 0, $id);
         return true;
     }
@@ -1404,7 +1410,7 @@ class psPosts{
         $consulta2 = "SELECT medal_id, m_cant, m_cond_post FROM w_medallas WHERE m_type = :type ORDER BY m_cant DESC";
         $valores2 = array('type' => 2);
         $datosMedallas = $psDb->resultadoArray($psDb->db_execute($consulta2, $valores2));
-        
+
         //obtenemos los datos para dar la medalla
         foreach($datosMedallas as $medalla){
             // DarMedalla
@@ -1631,43 +1637,55 @@ class psPosts{
      */
     function getBuscador(){
         global $psDb, $psUser, $psCore;
-        $texto = filter_input(INPUT_GET, 'q');
-        $cat = filter_input(INPUT_GET, 'cat');
-        $autor = filter_input(INPUT_GET, 'autor');
-        $extra = filter_input(INPUT_GET, 'e');
+        $texto = $_GET['q'];
+        $cat = $_GET['cat'];
+        $autor = $_GET['autor'];
+        $extra = $_GET['e'];
+
+        //establecemos los filtros para las consultas
+        $consulta = "SELECT COUNT(p.post_id) AS total FROM p_posts AS p WHERE p.post_status = :status";
+        $consulta2 = "SELECT p.post_id, p.post_user, p.post_category, p.post_title, p.post_date, p.post_comments, p.post_favoritos, p.post_puntos, u.user_name, c.c_seo, c.c_nombre, c.c_img FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = :status";
         $valores['status'] = 0;
-        //establecemos los filtros
         if($cat > 0){
-            $valores['cat1'] = 'AND p.post_category = :cat2';
-            $valores['cat2'] = $cat;
+            $consulta .= ' AND p.post_category = :cat';
+            $consulta2 .= ' AND p.post_category = :cat';
+            $valores['cat'] = (int)$cat;
         }
-        $valores['search'] = 'AND MATCH(:on) AGAINST(:txt IN BOOLEAN MODE)';
-        if($extra == 'tags'){
-            $valores['on'] = 'p.post_tags';
-        }else{
-            $valores['on'] = 'p.post_title';
-        }
-        $valores['txt'] = $texto;
         //seleccionamos usuario
-        if(!empty($autor)){
+        if(empty($autor)){
+            $consulta .= ' AND MATCH(';
+            $consulta2 .= ' AND MATCH(';
+            if($extra == 'tags'){
+                $consulta .= 'p.post_tags';
+                $consulta2 .= 'p.post_tags';
+            }else{
+                $consulta .= 'p.post_title';
+                $consulta2 .= 'p.post_title';
+            }
+            $consulta .= ") AGAINST(:txt IN BOOLEAN MODE)";
+            $consulta2 .= ") AGAINST(:txt IN BOOLEAN MODE)";
+            $valores['txt'] = $texto;
+        }else{
             $uid = $psUser->getUid($autor);
             //buscamos en los post del usuario sin criterio de búsqueda
             if(empty($texto) && $uid > 0){
-                $valores['search'] = 'AND p.post_user = :txt';
-                $valores['txt'] = $uid;
+                $consulta .= ' AND p.post_user = :puser';
+                $consulta2 .= ' AND p.post_user = :puser';
+                $valores['puser'] = $uid;
             }else if($uid >= 1){//buscamos en los post del usuario con criterio de búsqueda
-                $valores['autor'] = 'AND p.post_user = :puser';
+                $consulta .= ' AND p.post_user = :puser';
+                $consulta2 .= ' AND p.post_user = :puser';
                 $valores['puser'] = $uid;
             }
         }
         //obtenemos las páginas
-        $consulta = "SELECT COUNT(p.post_id) AS total FROM p_posts AS p WHERE p.post_status = :status :cat1 :search :autor ORDER BY p.post_date";
+        $consulta .= " ORDER BY p.post_date DESC";
+        $consulta2 .= " ORDER BY p.post_date DESC";
         $total = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
         $total = $total['total'];
         $datos['pages'] = $psCore->getPagination($total, 15);
-        $valores['limite'] = $datos['pages']['limit'];
+        //$valores['limite'] = $datos['pages']['limit'];
         //obtenemos los datos de la búsqueda
-        $consulta2 = "SELECT p.post_id, p.post_user, p.post_category, p.post_title, p.post_date, p.post_comments, p.post_favoritos, p.post_puntos, u.user_name, c.c_seo, c.c_nombre, c.c_img FROM p_posts AS p LEFT JOIN u_miembros AS u ON u.user_id = p.post_user LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = :status :cat1 :search :autor ORDER BY p.post_date DESC LIMIT :limite";
         $datos['data'] = $psDb->resultadoArray($psDb->db_execute($consulta2, $valores));
         //obtenemos los actuales
         $total = explode(',', $datos['pages']['limit']);

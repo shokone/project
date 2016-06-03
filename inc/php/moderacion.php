@@ -2,13 +2,13 @@
 
 /**
  * controlador de la moderacion
- * @requisitos: 
+ * @requisitos:
  * cargamos los datos necesarios para ejecutar la seccion de moderacion
  * verificamos el nivel de acceso a la pagina
  * establecemos las variables importantes al archivo
  * asignamos las tareas necesarias que se realizaran en la seccion moderación
  * asignamos el valor de las variables a smarty
- * 
+ *
  * @name moderacion.php
  * @author Iván Martínez Tutor
  */
@@ -26,6 +26,8 @@ $psAjax = empty($_GET['ajax']) ? 0 : 1;
 $psContinue = true;
 //damos un nombre al titulo de la pagina
 $psTitle = $psCore->settings['titulo'].' - '.$psCore->settings['slogan'];
+
+include '../../header.php';
 
 /**
  * validamos el nivel y los permisos de acceso
@@ -87,15 +89,15 @@ if($psContinue){
 				$metodo = filter_input(INPUT_POST, 'm');
 				$tipo = filter_input(INPUT_POST, 't');
 				$psCore->redirectTo($psCore->settings['url'].'/moderacion/buscador/'.$metodo.'/'.$tipo.'/'.$texto);
-			}		
+			}
 		}elseif($action2 == 'search'){
 			if($_POST['buscar']){
 				$texto = filter_input(INPUT_POST, 'texto');
 				$metodo = filter_input(INPUT_POST, 'm');
 				$tipo = filter_input(INPUT_POST, 't');
 				$psCore->redirectTo($psCore->settings['url'].'/moderacion/buscador/'.$metodo.'/'.$tipo.'/'.$texto);
-			}		
-	        $smarty->assign("psContenido", $psModeracion->getContenido()); 
+			}
+	        $smarty->assign("psContenido", $psModeracion->getContenido());
 		}
 	}
 

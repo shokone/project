@@ -2,14 +2,14 @@
 
 /**
  * controlador del monitor
- * @requisitos: 
+ * @requisitos:
  * cargamos los datos necesarios para ejecutar la seccion de post
  * a su vez será también el home del monitor
  * verificamos el nivel de acceso a la pagina
  * establecemos las variables importantes al archivo
  * asignamos las tareas necesarias que se realizaran en la seccion post
  * asignamos el valor de las variables a smarty
- * 
+ *
  * @name monitor.php
  * @author Iván Martínez Tutor
  */
@@ -25,9 +25,11 @@ $psLevel = 2;
 $psAjax = empty($_GET['ajax']) ? 0 : 1;
 //creamos el booleano para comprobar si debemos continuar con el script
 $psContinue = true;
+
+include '../../header.php';
+
 //damos un nombre al titulo de la pagina
 $psTitle = $psCore->settings['titulo'].' - '.$psCore->settings['slogan'];
-
 /**
  * validamos el nivel y los permisos de acceso
  */
@@ -44,13 +46,13 @@ if($psLevelVer != 1){
  * solo si el script puede continuar
  */
 if($psContinue){
-	$action = htmlspecialchars($_GET['action']);       
+	$action = htmlspecialchars($_GET['action']);
 
 	if(empty($action)){
-        $psMonitor->mostrarTipo = 2;
+    $psMonitor->mostrarTipo = 2;
 		$notificaciones = $psMonitor->getNotificaciones();
 		$smarty->assign("psDatos", $notificaciones);
-        $smarty->assign("psStatus", $_COOKIE);
+    $smarty->assign("psStatus", $_COOKIE);
 	} else {
 		$smarty->assign("psDatos", $psMonitor->getFollows($action));
 	}

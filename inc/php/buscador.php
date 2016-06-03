@@ -7,7 +7,7 @@
  * verificaremos el nivel de acceso a la pagina
  * añadimos las instrucciones de codigo necesarias
  * agregamos los datos generados a smarty
- * 
+ *
  * @name buscador.php
  * @author Iván Martínez Tutor
  */
@@ -37,27 +37,25 @@ if($psLevelVer != 1){
  if($psContinue){
  	$buscador = htmlspecialchars($_GET['q']);
  	$web = htmlspecialchars($_GET['e']);
- 	$cat = htmlspecialchars($_GET['cat']);
+ 	$cat = (int)$_GET['cat'];
  	$autor = htmlspecialchars($_GET['autor']);
 
- 	include '../../class/c.posts.php');
-	include '../../class/c.buscador.php');
+ 	include '../class/c.posts.php';
 	$psPosts =& psPosts::getInstance();
-	$psBuscador =& psBuscador::getInstance();
 
 
  	if(!empty($buscador) || !empty($autor) && $web != 'google'){
- 		$smarty->assign("psResults", $psBuscador->getQuery());
- 	}	 
+ 		$smarty->assign("psResults", $psPosts->getBuscador());
+ 	}
 
  	$smarty->assign("psQuery", $buscador);
     $smarty->assign("psEngine", $web);
     $smarty->assign("psCategory", $cat);
-    $smarty->assign("psAutor", $autor);	
+    $smarty->assign("psAutor", $autor);
  }
 
 //ahora agregamos los datos generados a smarty
 if(empty($psAjax)){
 	$smarty->assign("psTitle", $psTitle);
-	include (PS_ROOT.'footer.php');
+	include ('../../footer.php');
 }

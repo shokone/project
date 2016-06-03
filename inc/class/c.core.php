@@ -72,9 +72,10 @@ class psCore{
         if($type == true){
             $consulta .= ' WHERE type = :type';
             $valores['type'] = 0;
-            $query = $psDb->db_execute($consulta, $valores);
+            $query = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
+
         }else{
-            $query = $psDb->db_execute($consulta);
+            $query = $psDb->resultadoArray($psDb->db_execute($consulta));
         }
         foreach($query as $badWord){
             $search = empty($badWord['method']) ? $badWord['word'] : $badword['word']." ";
@@ -106,7 +107,7 @@ class psCore{
     public function getCategorias(){
         global $psDb;
         $consulta = "SELECT cid, c_orden, c_nombre, c_seo, c_img FROM p_categorias ORDER BY c_orden";
-        $resultado = $psDb->db_execute($consulta);
+        $resultado = $psDb->resultadoArray($psDb->db_execute($consulta));
         return $resultado;
     }
 

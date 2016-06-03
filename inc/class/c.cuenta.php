@@ -479,13 +479,13 @@ class psCuenta{
 		}
 		$is_visited = $psDb->db_execute($consulta5, $valores5, 'rowCount');
 		if(($psUser->member && $is_visited == 0 && $psUser->user_id != $uid) || ($psCore->settings['c_hits_guets'] == 1 && !$psUser->member && !$is_visited)){//si todo ok insertamos nuevos datos
-			$consulta6 = "INSERT INTO w_visitas (user, `for`, type, `date`, ip) VALUES (:user, :for, :type, :dates, :ip)";
+			$consulta6 = "INSERT INTO w_visitas (user, `for`, type, `date`, ip) VALUES (:user, :fore, :type, :dates, :ip)";
 			$valores6 = array(
 				'user' => $psUser->user_id,
-				'for' => $uid,
+				'fore' => $uid,
 				'type' => 1,
-				'date' => time(),
-				'ip' => $_SERVER['REMOTE_ADDR']
+				'dates' => time(),
+				'ip' => $_SERVER['REMOTE_ADDR'],
 			);
 			$psDb->db_execute($consulta6, $valores6);
 		}else{//si no actualizamos los ya existentes
@@ -535,6 +535,7 @@ class psCuenta{
 			$query12 = $psDb->db_execute($consulta12, $valores8, 'fetch_num');
 			$datos['stats']['user_fotos'] = $query12[0];
 		}
+		return $datos;
 	}
 
 	/**
@@ -593,7 +594,7 @@ class psCuenta{
      */
 	function cargarMedallas($uid){
 		global $psDb;
-		$consulta = "SELECT m.*, a.* FROM w_medallas AS m LEFT JOIN w_medallas_asign AS a ON m.medal_id = a.medal_id WHERE a.medal_for = :uid AND m.m_type = :type ORDER BY a.medal_date DESC";
+		$consulta = "SELECT m.*, a.* FROM w_medallas AS m LEFT JOIN w_medallas_assign AS a ON m.medal_id = a.medal_id WHERE a.medal_for = :uid AND m.m_type = :type ORDER BY a.medal_date DESC";
 		$valores = array(
 			'uid' => $uid,
 			'type' => 1
@@ -614,7 +615,7 @@ class psCuenta{
 		$consulta = "SELECT p.post_id, p.post_title, p.post_puntos, c.c_seo, c.c_img FROM p_posts AS p LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = :status AND p.post_user = :uid ORDER BY p.post_date DESC";
 		$valores = array(
 			'status' => 0,
-			'uid' => $uid,
+			'uid' => (int)$uid,
 		);
 		$query = $psDb->db_execute($consulta, $valores);
 		$datos['posts'] = $psDb->resultadoArray($query);

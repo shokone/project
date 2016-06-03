@@ -6,7 +6,7 @@ if(!defined('PS_HEADER')){
 /**
  * clase psModeracion
  * clase destinada al control de las funciones de la moderacion
- * 
+ *
  * @name c.moderacion.php
  * @author Iván Martínez Tutor
  */
@@ -24,14 +24,14 @@ class psModeracion{
         }
         return $instancia;
     }
-	
+
     /**
      * @funcionalidad obtenemos los datos de todos los usuarios con rango moderador
      * @return type devolvemos un array con todos los datos obtenidos
      */
     public function getModeradores(){
         global $psDb;
-        $consulta = "SELECT user_id, user_name, FROM u_miembros WHERE user_rango = :rango ORDER BY user_id";
+        $consulta = "SELECT user_id, user_name FROM u_miembros WHERE user_rango = :rango ORDER BY user_id";
         $valores = array('rango' => 2);
         return $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
     }
@@ -128,7 +128,7 @@ class psModeracion{
 
     /**
      * @funcionalidad obtenemos una vista previa del post antes de evaluarlo
-     * @param  [type] $pid obtenemos el id del post del que obtener la vista previa 
+     * @param  [type] $pid obtenemos el id del post del que obtener la vista previa
      * @return type devolvemos un array con los datos obtenidos
      */
     public function getVistaPrevia($pid){
@@ -438,7 +438,7 @@ class psModeracion{
 
     /**
      * @funcionalidad eliminamos el mensaje
-     * @param  [type] $mid obtenemos el id del mensaje 
+     * @param  [type] $mid obtenemos el id del mensaje
      * @return type devolvemos un string con el resultado obtenido
      */
     public function borrarMensajePrivado($mid){
@@ -512,7 +512,7 @@ class psModeracion{
         $limite = $psCore->setPagLimite($max, true);
         //obtenemos el total de fotos para obtener las páginas
         $consulta = "SELECT COUNT(*) FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user LEFT JOIN w_historial AS h ON h.pofid = f.foto_id  WHERE h.type = :type AND h.action = :action AND f.f_status = :status";
-        $valores = array('type' => 2, 'action' => 2), 'status' => 2;
+        $valores = array('type' => 2, 'action' => 2, 'status' => 2);
         list($total) = $psDb->db_execute($consulta, $valores, 'fetch_num');
         $datos['pages'] = $psCore->inicioPages($psCore->settings['url'].'/moderacion/fopelera?', $_GET['start'], $total, $max);
         //obtenemos los datos
@@ -608,14 +608,14 @@ class psModeracion{
                 $valores = array('type' => 4, 'status' => 2);
                 $datos = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
                 break;
-            
+
         }
         return $datos;
     }
 
     /**
      * @funcionalidad obtenemos el historial de acciones del moderador
-     * @param  [type] $type obtenemos el tipo de accion a comprobar (post o foto) 
+     * @param  [type] $type obtenemos el tipo de accion a comprobar (post o foto)
      * @return type devolvemos un array con los datos obtenidos
      */
     public function getHistorial($type){
@@ -723,7 +723,7 @@ class psModeracion{
 
     /**
      * @funcionalidad cambiamos un post a sticky(patrocinado) y viceversa
-     * @param  [type] $pid obtenemos el id del post 
+     * @param  [type] $pid obtenemos el id del post
      * @return type devolvemos un string con el resultado obtenido
      */
     public function setSticky($pid){
@@ -752,7 +752,7 @@ class psModeracion{
 
     /**
      * @funcionalidad cambiamos el estado de un post de abierto a cerrado y viceversa
-     * @param  [type] $pid obtenemos el id del post 
+     * @param  [type] $pid obtenemos el id del post
      * @return type devolvemos un string con el resultado obtenido
      */
     public function setOpenClosedPost($pid){
@@ -822,7 +822,7 @@ class psModeracion{
 
     /**
      * @funcionalidad baneamos al usuario seleccionado
-     * @param  [type] $uid obtenemos el id del usuario 
+     * @param  [type] $uid obtenemos el id del usuario
      * @return type devolvemos un string con el resultado obtenido
      */
     public function banearUser($uid){

@@ -34,18 +34,18 @@ if($mensaje != 1){
 //obtenemos las clases necesarias del archivo header.php
 switch($action){
 	case 'mensajes-validar':
-        echo $psMensaje->getValidUser();
+        echo $psMensajes->getValidUser();
 		break;
     case 'mensajes-enviar':
-        echo $psMensaje->nuevoMensaje();
+        echo $psMensajes->nuevoMensaje();
 		break;
     case 'mensajes-respuesta':
-       $smarty->assign("mp",$psMensaje->nuevaRespuesta());
+       $smarty->assign("mp",$psMensajes->nuevaRespuesta());
 		break;
     case 'mensajes-lista':
-        $smarty->assign("psMensajes",$psMensaje->getMensajes(1, false, 'monitor'));
+        $smarty->assign("psMensajes", $psMensajes->getMensajes(1, false, 'monitor'));
 		break;
     case 'mensajes-editar':
-        echo $psMensaje->editarMensaje();
+        echo $psMensajes->editarMensaje();
 		break;
 }

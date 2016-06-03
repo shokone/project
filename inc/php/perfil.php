@@ -50,6 +50,7 @@ if($psContinue){
 	$consulta = "SELECT user_id, user_name, user_activo, user_baneado FROM u_miembros WHERE LOWER(user_name) = :uname";
 	$valores = array('uname' => $username);
 	$usuario = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
+
 	//comprobamos si el usuario existe
 	if(empty($usuario['user_id']) || ($usuario['user_activo'] != 1 && !$psUser->permisos['movcud'] && !$psUser->admod) || ($usuario['user_baneado'] != 0 && !$psUser->permisos['movcus'] && !$psUser->admod)){
 		$psPage = 'aviso';
@@ -65,6 +66,7 @@ if($psContinue){
 		$psCuenta =& psCuenta::getInstance();
 
 		include '../extra/datos.php';
+
 		$psInfo = $psCuenta->cargarInfo($usuario['user_id']);
 	    $psInfo['uid'] = $usuario['user_id'];
 		//comprobamos si el usuario está online
@@ -83,7 +85,7 @@ if($psContinue){
 
 		//cargamos la información general
 		$psGeneral = $psCuenta->cargarInfoGeneral($usuario['user_id']);
-	    $psInfo['nick'] = $psInfo['user_name'];
+	    $psInfo['nick'] = $psInfo['stats']['user_name'];
 	    $psInfo = array_merge($psInfo, $psGeneral);
 	    //obtenemos el país
 		$psInfo['user_pais'] = $psPaises[$psInfo['user_pais']];

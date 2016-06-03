@@ -31,7 +31,7 @@ if($mensaje != 1){
 	die;
 }
 //obtenemos las clases necesarias
-include '../class/c.borradores.php';
+include '../class/c.boradores.php';
 $psBorradores =& psBorradores::getInstance();
 switch($action){
 	case 'borradores':

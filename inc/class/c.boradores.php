@@ -10,7 +10,7 @@ if(!defined('PS_HEADER')){
  * @name c.borradores.php
  * @author Iván Martínez Tutor
  */
-class psBorradores{
+class psBorradores {
 	//primero de todo instanciamos la clase
 	public static function &getInstance(){
 		static $instancia;
@@ -120,7 +120,7 @@ class psBorradores{
 						'b_causa' => '',
 					);
 					if($psDb->db_execute($consulta2, $valores2)){
-						return $psDb->getLastInsertId();
+						return '1: '.$psDb->getLastInsertId();
 					}else{
 						return 'Error al insertar los datos del borrador en la base de datos.';
 					}
@@ -131,7 +131,7 @@ class psBorradores{
 		}else{
 			$campo = 't&iacute;tulo';
 		}
-		return 'El campo <b>'.$campo.'</b> es obligatorio para poder guardar el borrador.';
+		return '0: El campo <b>'.$campo.'</b> es obligatorio para poder guardar el borrador.';
 	}
 
 	/**

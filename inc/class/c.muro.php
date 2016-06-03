@@ -159,7 +159,7 @@ class psMuro{
         }
         //realizamos la acción según el tipo de publicación
         switch($type){
-            //publicar estado 
+            //publicar estado
             case 'status':
                 //reemplazamos los saltos de línea y las tabulaciones
                 $texto = str_replace(array('\n', '\t', ' '), '', $datos);
@@ -184,13 +184,13 @@ class psMuro{
                     //obtenemos el tipo, estado o publicacion en el muro
                     $type = $pid == $psUser->user_id ? 'status' : 'mpub';
                     $datos = array(
-                        'pub_id' => $pub, 
-                        'p_user' => $pid, 
-                        'p_user_pub' => $psUser->user_id, 
-                        'p_body' => $psCore->badWords($psCore->setMenciones($datos), true), 
-                        'p_date' => time(), 
-                        'p_likes' => 0, 
-                        'p_type' => 1, 
+                        'pub_id' => $pub,
+                        'p_user' => $pid,
+                        'p_user_pub' => $psUser->user_id,
+                        'p_body' => $psCore->badWords($psCore->setMenciones($datos), true),
+                        'p_date' => time(),
+                        'p_likes' => 0,
+                        'p_type' => 1,
                         'likes' => array('link' => 'Me gusta esto!')
                     );
                 }
@@ -224,13 +224,13 @@ class psMuro{
                         //obtenemos el tipo
                         $type = 'menlace';
                         $datos = array(
-                            'pub_id' => $pub, 
-                            'p_user' => $pid, 
-                            'p_user_pub' => $psUser->user_id, 
-                            'p_body' => $psCore->setMenciones($datos), 
-                            'p_date' => time(), 
-                            'p_likes' => 0, 
-                            'p_type' => 3, 
+                            'pub_id' => $pub,
+                            'p_user' => $pid,
+                            'p_user_pub' => $psUser->user_id,
+                            'p_body' => $psCore->setMenciones($datos),
+                            'p_date' => time(),
+                            'p_likes' => 0,
+                            'p_type' => 3,
                             'likes' => array('link' => 'Me gusta esto!'),
                             'a_title' => $enlace['title'],
                             'a_url' => $enlace['url']
@@ -267,13 +267,13 @@ class psMuro{
                         //obtenemos el tipo
                         $type = 'mfoto';
                         $datos = array(
-                            'pub_id' => $pub, 
-                            'p_user' => $pid, 
-                            'p_user_pub' => $psUser->user_id, 
-                            'p_body' => $psCore->setMenciones($datos), 
-                            'p_date' => time(), 
-                            'p_likes' => 0, 
-                            'p_type' => 2, 
+                            'pub_id' => $pub,
+                            'p_user' => $pid,
+                            'p_user_pub' => $psUser->user_id,
+                            'p_body' => $psCore->setMenciones($datos),
+                            'p_date' => time(),
+                            'p_likes' => 0,
+                            'p_type' => 2,
                             'likes' => array('link' => 'Me gusta esto!'),
                             'a_url' => $foto,
                             'a_img' => $foto
@@ -306,8 +306,8 @@ class psMuro{
                     //ahora añadimos en la tabla adjuntos el video
                     $insert2 = "INSERT INTO u_muro_adjuntos (pub_id, a_title, a_url, a_img, a_desc) VALUES (:pid, :title, :url, :img, :des)";
                     $valores2 = array(
-                        'pid' => $pub, 
-                        'title' => $video['title'], 
+                        'pid' => $pub,
+                        'title' => $video['title'],
                         'url' => $video['id'],
                         'img' => '',
                         'des' => $psCore->badWords($video['desc'])
@@ -316,13 +316,13 @@ class psMuro{
                         //obtenemos el tipo
                         $type = 'menlace';
                         $datos = array(
-                            'pub_id' => $pub, 
-                            'p_user' => $pid, 
-                            'p_user_pub' => $psUser->user_id, 
-                            'p_body' => $psCore->setMenciones($datos), 
-                            'p_date' => time(), 
-                            'p_likes' => 0, 
-                            'p_type' => 4, 
+                            'pub_id' => $pub,
+                            'p_user' => $pid,
+                            'p_user_pub' => $psUser->user_id,
+                            'p_body' => $psCore->setMenciones($datos),
+                            'p_date' => time(),
+                            'p_likes' => 0,
+                            'p_type' => 4,
                             'likes' => array('link' => 'Me gusta esto!'),
                             'a_title' => $video['title'],
                             'a_url' => $video['id'],
@@ -344,8 +344,8 @@ class psMuro{
     }
 
     /**
-     * @funcionalidad 
-     * @return [type]  
+     * @funcionalidad
+     * @return [type]
      */
     function rePubMuro(){
         global $psDb, $psMonitor, $psUser, $psCore, $psActividad;
@@ -389,7 +389,7 @@ class psMuro{
                 return array(
                     'cid' => $cid,
                     'c_body' => $psCore->badWords($texto, true),
-                    'c_date' => time(), 
+                    'c_date' => time(),
                     'c_user' => $psUser->user_id,
                     'c_likes' => 0,
                     'like' => 'Me gusta esto!',
@@ -405,7 +405,7 @@ class psMuro{
 
     /**
      * @funcionalidad comprobamos la url introducida por el usuario ya sea una foto, un video o una url de una página
-     * @param  [type] $ret devolvemos texto html si es false y un array con los datos si es true 
+     * @param  [type] $ret devolvemos texto html si es false y un array con los datos si es true
      * @param  [type] $urlin url introducida por el usuario
      * @return [type] devolvemos un array o un texto html según el valor de la variable $ret
      */
@@ -413,7 +413,7 @@ class psMuro{
         global $psDb, $psCore;
         //obtenemos el tipo de comprobación
         $type = filter_input(INPUT_GET, 'type');
-        $url = empty($urlinterna) ? filter_input(INPUT_POST, 'url') : $urlin; 
+        $url = empty($urlinterna) ? filter_input(INPUT_POST, 'url') : $urlin;
         switch($type){
             //comprobamos una foto ingresada por url
             case 'foto':
@@ -481,7 +481,7 @@ class psMuro{
                     return '0: El video ha sido eliminado o la url es incorrecta.';
                 }else{
                     $desc = str_replace('<br>', '', html_entity_decode($datos['description']));
-                    //devolvemos los valores 
+                    //devolvemos los valores
                     if($ret == false){
                         return '1: <div><img src="http://img.youtube.com/vi/'.$video_id.'/0.jpg" /><div><strong><a href="http://www.youtube.com/watch?v='.$video.'" target="_blank">'.$datos['title'].'</a></strong><div>'.$desc.'</div></div></div>';
                     }else{
@@ -521,10 +521,11 @@ class psMuro{
         //unimos el array formando un único string
         $seguidores = implode(', ', $seguidores);
         //obtenemos los datos de la db
-        $consulta2 = "SELECT m.*, u.user_name FROM u_muro AS m LEFT JOIN u_miembros AS u ON m.p_user_pub = u.user_id WHERE m.p_user IN(:seguidores) AND m.p_user = m.p_user_pub ORDER BY m.p_date DESC LIMIT :min, :max";
-        $valores2 = array('seguidores' => $seguidores, 'min' => $start, 'max' => $limite);
+        $consulta2 = "SELECT m.*, u.user_name FROM u_muro AS m LEFT JOIN u_miembros AS u ON m.p_user_pub = u.user_id WHERE m.p_user IN(:seguidores) AND m.p_user = m.p_user_pub ORDER BY m.p_date DESC";
+        $valores2 = array('seguidores' => $seguidores);
         //comprobamos los datos obtenidos
-        while($row = $psDb->db_execute($consulta2, $valores2, 'fetch_assoc')){
+        $rows = $psDb->resultadoArray($psDb->db_execute($consulta2, $valores2));
+        foreach($rows as $row){
             //cargamos los comentarios
             if($row['p_comments'] > 0){
                 $row['comments'] = $this->getExtrasPubMuro($row['pub_id'], 'comments', 2);
@@ -553,7 +554,7 @@ class psMuro{
 
     /**
      * @funcionalidad obtenemos las últimas publicaciones del muro del usuario
-     * @param  [type] $uid id del usuario 
+     * @param  [type] $uid id del usuario
      * @param  [type] $start primera publicación a mostrar
      * @return [type] devolvemos un array con los datos obtenidos
      */
@@ -562,7 +563,8 @@ class psMuro{
         //obtenemos las publicaciones del usuario
         $consulta = "SELECT m.*, u.user_name FROM u_muro AS m LEFT JOIN u_miembros AS u ON m.p_user_pub = u.user_id WHERE m.p_user = :user ORDER BY m.pub_id DESC";
         $valores = array('user' => $uid);
-        while($row = $psDb->db_execute($consulta, $valores, 'fetch_assoc')){
+        $rows = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
+        foreach($rows as $row){
             //cargamos los comentarios
             if($row['p_comments'] > 0){
                 $row['comments'] = $this->getExtrasPubMuro($row['pub_id'], 'comments', 2);
@@ -583,8 +585,6 @@ class psMuro{
             }else{
                 $datos[] = $row;
             }
-            //cargamos las menciones
-            $row['p_body'] = $psCore->badWords($psCore->setMenciones($row['p_body']), true);
         }
         return array('total' => count($datos), 'data' => $datos);
     }
@@ -598,8 +598,8 @@ class psMuro{
     function getHistoria($pid, $uid){
         global $psUser, $psDb;
         //obtenemos datos de la base de datos
-        $consulta = "SELECT m.*, u.user_name FROM u_muro AS m LEFT JOIN u_miembros AS u ON p.p_user_pub = u.user_id WHERE p.pub_id = :pid";
-        $valores = array('pid' => $pid);exit('jaja');
+        $consulta = "SELECT m.*, u.user_name FROM u_muro AS m LEFT JOIN u_miembros AS u ON m.p_user_pub = u.user_id WHERE m.pub_id = :pid";
+        $valores = array('pid' => $pid);
         $publicacion = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
         //comprobamos los datos obtenidos
         if(empty($publicacion['pub_id'])){
@@ -611,7 +611,7 @@ class psMuro{
         if($publicacion['p_comments'] > 0){
             $publicacion['comments'] = $this->getExtrasPubMuro($publicacion['pub_id'], 'comments');
         }
-        //cargamos me gustas    
+        //cargamos me gustas
         if($publicacion['p_likes'] > 0){
             $publicacion['likes'] = $this->getExtrasPubMuro($publicacion['pub_id'], 'likes', $publicacion['p_likes']);
         }else{
@@ -765,7 +765,7 @@ class psMuro{
         $status = 'ok';
         //comprobamos si la publicación existe
         if($type == 1){
-            $consulta = "SELECT p_user AS user FROM u_muro WHERE pub_id = :pid";     
+            $consulta = "SELECT p_user AS user FROM u_muro WHERE pub_id = :pid";
         }else{
             $consulta = "SELECT c_user AS user FROM u_muro_comentarios WHERE cid = :pid";
         }
@@ -814,12 +814,12 @@ class psMuro{
                     $update = "UPDATE u_muro SET p_likes = p_likes + :lik WHERE pub_id = :pid";
                     $valores4 = array('lik' => 1, 'pid' => $pid);
                     $psDb->db_execute($update, $valores4);
-                    $atype = $existe['user'] == $psUser->user_id ? 0 : 2; 
+                    $atype = $existe['user'] == $psUser->user_id ? 0 : 2;
                 }else{//sumamos like en comentario
                     $update = "UPDATE u_muro_comentarios SET c_likes = c_likes + :lik WHERE cid = :pid";
                     $valores4 = array('lik' => 1, 'pid' => $pid);
                     $psDb->db_execute($update, $valores4);
-                    $atype = $existe['user'] == $psUser->user_id ? 1 : 3; 
+                    $atype = $existe['user'] == $psUser->user_id ? 1 : 3;
                 }
                 //enviamos la notificación
                 $psMonitor->setNotificacion(14, $existe['user'], $psUser->user_id, $pid, $type);
@@ -848,7 +848,7 @@ class psMuro{
      * @funcionalidad obtenemos los me gustas y los comentarios de una publicación del muro
      * @param  [type] $pid id de la publicación
      * @param  [type] $type obtenemos el tipo de dato a obtener
-     * @param  [type] $likes obtenemos el total de me gustas 
+     * @param  [type] $likes obtenemos el total de me gustas
      * @return [type] devolvemos un array con los datos obtenidos
      */
     function getExtrasPubMuro($pid, $type = 'likes', $likes = 0){
@@ -857,9 +857,10 @@ class psMuro{
         switch($type){
             case 'comments':
                 //obtenemos los datos
-                $consulta = "SELECT c.*, u.user_name FROM u_muro_comentarios AS c LEFT JOIN u_miembros AS u ON c.c_user =  = u.user_id WHERE c.pub_id = :pid ORDER BY c.c_date DESC LIMIT :likes";
-                $valores = array('pid' => $pid, 'likes' => $likes);
-                while($row = $psDb->db_execute($consulta, $valores, 'fetch_assoc')){
+                $consulta = "SELECT c.*, u.user_name FROM u_muro_comentarios AS c LEFT JOIN u_miembros AS u ON c.c_user = u.user_id WHERE c.pub_id = :pid ORDER BY c.c_date DESC";
+                $valores = array('pid' => $pid);
+                $rows = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
+                foreach($rows as $row){
                     $row['c_body'] = $psCore->badWords($psCore->setMenciones($row['c_body']), true);
                     $row['like'] = 'Me gusta';
                     //comprobamos si me gusta

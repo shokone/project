@@ -2,14 +2,14 @@
 
 /**
  * controlador de posts
- * @requisitos: 
+ * @requisitos:
  * cargamos los datos necesarios para ejecutar la seccion de post
  * a su vez será también el home del portal
  * verificamos el nivel de acceso a la pagina
  * establecemos las variables importantes al archivo
  * asignamos las tareas necesarias que se realizaran en la seccion post
  * asignamos el valor de las variables a smarty
- * 
+ *
  * @name posts.php
  * @author Iván Martínez Tutor
  */
@@ -78,9 +78,9 @@ if($psContinue){
             $psRelacionados = $psPosts->getRelacionados($psPost['post_tags']);
             $smarty->assign('psRelacionados', $psRelacionados);
             //comentarios y paginas de comentarios
-            $psComentarios = $psPosts->getComentarios($psPost['post_id']);
-            $psComentarios = array('num' => $psComentarios['num'], 'data' => $psComentarios['data']);
-            $smarty->assign('psComentarios', $psComentarios);
+            //$psComentarios = $psPosts->getComentarios($psPost['post_id']);
+            //$psComentarios = array('num' => $psComentarios['num'], 'data' => $psComentarios['data']);
+            //$smarty->assign('psComentarios', $psComments);
             //y las páginas de los comentarios
             $total = $psPost['post_comments'];
             $psPages = $psCore->getPages($total, $psCore->settings['c_max_com']);
@@ -145,7 +145,7 @@ if($psContinue){
         //obtenemos las fotos
         $psImages = $psFotos->getLastFotos();
         $smarty->assign("psImages",$psImages);
-        $smarty->assign("psImagesTotal",count($psImages)); 
+        $smarty->assign("psImagesTotal",count($psImages));
         //obtenemos los afiliados
         //$smarty->assign("psAfiliados", $psAfiliados->getAfiliados());
         //obtenemos el menu

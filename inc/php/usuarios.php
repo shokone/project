@@ -23,7 +23,7 @@ $psPage = "usuarios";
 $psLevel = 0;
 
 //comprobamos si la respuesta se realiza por ajax
-$psAjax = empty(filter_input(INPUT_GET['ajax'])) ? 0 : 1;
+$psAjax = empty($_GET['ajax']) ? 0 : 1;
 
 //creamos la variable para comprobar si continuamos con el script
 $psContinue = true;
@@ -50,11 +50,12 @@ if($psLevelVer != 1){
  */
 if($psContinue){
     //paises
-    include(PS_EXTRA.'datos.php');
+    include('../extra/datos.php');
     //asignamos los paises a smarty
     $smarty->assign("psPaises",$psPaises);
     
     //usuarios
+
     $psUsers = $psUser->getUsuarios();
     //agregamos usuarios a smarty
     $smarty->assign("psUsers",$psUsers['data']);
@@ -64,16 +65,17 @@ if($psContinue){
     //filtros
     //obtenemos los datos online, avatar, sexo, pais y rango del usuario
     $smarty->assign("psFiltro", array(
-        'online' => filter_input(INPUT_GET['online']), 
-        'avatar' => filter_input(INPUT_GET['avatar']), 
-        'sex' => filter_input(INPUT_GET['sexo']),
-        'pais' => filter_input(INPUT_GET['pais']),
-        'rango' => filter_input(INPUT_GET['rango']))
+        'online' => $_GET['online'], 
+        'avatar' => $_GET['avatar'], 
+        'sex' => $_GET['sexo'],
+        'pais' => $_GET['pais'],
+        'rango' => $_GET['rango']
+        )
     );
 
     //obtenemos los rangos de los usuarios
-    $consulta = $psDb->db_execute("SELECT rango_id, r_name FROM u_rangos ORDER BY rango_id");
-    $smarty->assign("psRangos", resultadoArray($consulta));
+    $consulta = "SELECT rango_id, r_name FROM u_rangos ORDER BY rango_id DESC";
+    $smarty->assign("psRangos", $psDb->resultadoArray($psDb->db_execute($consulta)));
 }
 
 /**

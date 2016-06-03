@@ -70,7 +70,7 @@ class psFotos{
     $datos['foto']['follow'] = $psDb->db_execute($consulta4, $valores4, 'rowCount');
 
     //obtenemos a los usuarios que me siguen
-    $consulta5 = "SELECT s.f_id, f.foto_id, f.f_title, f.f_url, u.user_name FROM u_follows AS s LEFT JOIN f_fotos AS f ON s.f_id = f.f_user LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE s.f_user = :user AND s.f_type = :type AND f.f_last = :last LIMIT 6";
+    $consulta5 = "SELECT s.f_id, f.foto_id, f.f_title, f.f_url, u.user_name FROM u_follows AS s LEFT JOIN f_fotos AS f ON s.f_id = f.f_user LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE s.f_user = :user AND s.f_type = :type AND f.f_last = :last";
     $valores5 = array('user' => $datos['foto']['f_user'], 'type' => 1, 'last' => 1);
     $datos['amigos'] = $psDb->resultadoArray($psDb->db_execute($consulta5, $valores5));
 
@@ -91,23 +91,23 @@ class psFotos{
 
     //obtenemos a los usuarios que han visitado esta foto recientemente
     if($datos['foto']['f_visitas']){
-      $consulta7 = "SELECT v.*, u.user_id, u.user_name FROM w_visitas AS v LEFT JOIN u_miembros AS u ON v.user = u.user_id WHERE v.for = :for AND v.type = :type AND v.user > :user ORDER BY v.date LIMIT :limite";
-      $valores7 = array('for' => $fid, 'type' => 3, 'user' => 0, 'limite' => 10);
+      $consulta7 = "SELECT v.*, u.user_id, u.user_name FROM w_visitas AS v LEFT JOIN u_miembros AS u ON v.user = u.user_id WHERE v.for = :for AND v.type = :type AND v.user > :user ORDER BY v.date";
+      $valores7 = array('for' => $fid, 'type' => 3, 'user' => 0);
     }
 
     //obtenemos las medallas que tiene la foto
-    $consulta8 = "SELECT m.*, a.* FROM w_medallas AS m LEFT JOIN w_medallas_assign AS a ON m.medal_id = a.medal_id WHERE a.medal_for = :for AND m.m_type = :type ORDER BY a.medal_date DESC LIMIT :limite";
-    $valores8 = array('for' => $fid, 'type' => 3, 'limite' => 10);
+    $consulta8 = "SELECT m.*, a.* FROM w_medallas AS m LEFT JOIN w_medallas_assign AS a ON m.medal_id = a.medal_id WHERE a.medal_for = :for AND m.m_type = :type ORDER BY a.medal_date DESC";
+    $valores8 = array('for' => $fid, 'type' => 3);
     $datos['medallas'] = $psDb->resultadoArray($psDb->db_execute($consulta8, $valores8));
     $datos['m_total'] = count($datos['medallas']);
 
     //obtenemos las últimas fotos que subió el usuario
     if($psUser->admod || $psCore->settings['c_see_mod']){
-      $consulta9 = "SELECT f.foto_id, f.f_title, f.f_date, f.f_status, f.f_url, u.user_name, u.user_activo FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.f_user = :user ORDER BY f.foto_id DESC LIMIT :limite";
-      $valores9 = array('user' => $datos['foto']['f_user'], 'limite' => 6);
+      $consulta9 = "SELECT f.foto_id, f.f_title, f.f_date, f.f_status, f.f_url, u.user_name, u.user_activo FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.f_user = :user ORDER BY f.foto_id DESC";
+      $valores9 = array('user' => $datos['foto']['f_user']);
     }else{
-      $consulta9 = "SELECT f.foto_id, f.f_title, f.f_date, f.f_status, f.f_url, u.user_name, u.user_activo FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.f_user = :user AND f.f_status = :status AND u.user_activo = :activo AND u.user_baneado = :ban ORDER BY f.foto_id DESC LIMIT :limite";
-      $valores9 = array('user' => $datos['foto']['f_user'], 'status' => 0, 'activo' => 1, 'ban' => 0,'limite' => 6);
+      $consulta9 = "SELECT f.foto_id, f.f_title, f.f_date, f.f_status, f.f_url, u.user_name, u.user_activo FROM f_fotos AS f LEFT JOIN u_miembros AS u ON f.f_user = u.user_id WHERE f.f_user = :user AND f.f_status = :status AND u.user_activo = :activo AND u.user_baneado = :ban ORDER BY f.foto_id DESC";
+      $valores9 = array('user' => $datos['foto']['f_user'], 'status' => 0, 'activo' => 1, 'ban' => 0);
     }
     $datos['last'] = $psDb->resultadoArray($psDb->db_execute($consulta9, $valores9));
     //actualizamos la base de datos
@@ -139,7 +139,7 @@ class psFotos{
   }
 
   /**
-   * @funcionalidad obtenemos las fotos del usuario 
+   * @funcionalidad obtenemos las fotos del usuario
    * @param  [type] $uid obtenemos el id del usuario
    * @return [type] devolvemos un array con los datos obtenidos
    */
@@ -147,10 +147,10 @@ class psFotos{
     global $psDb, $psUser, $psCore;
     //realizamos la consulta
     if($psUser->admod && $psCore->settings['c_see_mod'] == 1){
-      $consulta = "SELECT f.foto_id, f.f_title, f.f_date, f.f_descripcion, f.f_url, f.f_status, u.user_name, u.user_activo FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user WHERE f.f_user = :uid ORDER BY f.foto_id DESC";
+      $consulta = "SELECT f.foto_id, f.f_title, f.f_date, f.f_description, f.f_url, f.f_status, u.user_name, u.user_activo FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user WHERE f.f_user = :uid ORDER BY f.foto_id DESC";
       $valores = array('uid' => $uid);
     }else{
-      $consulta = "SELECT f.foto_id, f.f_title, f.f_date, f.f_descripcion, f.f_url, f.f_status, u.user_name, u.user_activo FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user WHERE f.f_user = :uid AND f.f_status = :status AND u.user_activo = :activo AND u.user_baneado = :ban ORDER BY f.foto_id DESC";
+      $consulta = "SELECT f.foto_id, f.f_title, f.f_date, f.f_description, f.f_url, f.f_status, u.user_name, u.user_activo FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user WHERE f.f_user = :uid AND f.f_status = :status AND u.user_activo = :activo AND u.user_baneado = :ban ORDER BY f.foto_id DESC";
       $valores = array(
         'uid' => $uid,
         'status' => 0,
@@ -162,21 +162,21 @@ class psFotos{
     //obtenemos la paginación
     $pages = $psCore->getPagination($total, 15);
     $datos['pages'] = $pages;
-    $consulta .= 'LIMIT :limite';
-    $valores['limite'] = $pages['limit'];
+    //$consulta .= 'LIMIT :limite';
+    //$valores['limite'] = $pages['limit'];
     $datos['data'] = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
     return $datos;
   }
 
   /**
    * @funcionalidad obtenemos las últimas fotos y un listado con la paginación de todas ellas
-   * @return [type] devolvemos un array con los datos obtenidos 
+   * @return [type] devolvemos un array con los datos obtenidos
    */
   function getLastFotos(){
     global $psDb, $psCore, $psUser;
     $max = 15;//obtenemos el total de fotos a mostrar por página
     //realizamos una consulta para obtener el total de fotos
-    if($psUser->admod && $psCore->settings['c_see_mod']){//si el usuario tiene permisos no restringimos 
+    if($psUser->admod && $psCore->settings['c_see_mod']){//si el usuario tiene permisos no restringimos
       $consulta = "SELECT COUNT(f.foto_id) FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user";
     }else{
       $consulta = "SELECT COUNT(f.foto_id) FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user WHERE f.f_status = :status AND u.user_activo = :activo AND u.user_baneado = :ban";
@@ -200,7 +200,7 @@ class psFotos{
         'ban' => 0,
       );
     }
-    
+
     $datos['data'] = $psDb->resultadoArray($psDb->db_execute($consulta2, $valores2));
     return $datos;
   }
@@ -227,7 +227,7 @@ class psFotos{
       //comprobamos los campos obligatorios
       if(empty($foto['titulo'])){
         $vacio['titulo'] = true;
-      }      
+      }
       //comprobamos si está permitida la subida de archivos y cargamos la clase update
       require 'c.upload.php';
       $psUpload =& psUpload::getInstance();
@@ -477,9 +477,9 @@ class psFotos{
           //ahora insertamos los datos del voto
           $insert = "INSERT INTO f_fotos (v_foto_id, v_user, v_type, v_date) VALUES (:fid, :user, :type, :dat)";
           $ivalores = array(
-            'fid' => $fid, 
-            'user' => $psUser->user_id, 
-            'type' => $type, 
+            'fid' => $fid,
+            'user' => $psUser->user_id,
+            'type' => $type,
             'dat' => time()
           );
           if($psDb->db_execute($insert, $ivalores)){
@@ -594,7 +594,7 @@ class psFotos{
         //realizamos la consulta para borrar el comentario
         $consulta2 = "DELETE FROM f_comentarios WHERE cid = :cid";
         if($psDb->db_execute($consulta2, $valores)){
-          //si todo ok actualizamos los datos 
+          //si todo ok actualizamos los datos
           $consulta3 = "UPDATE w_stats SET stats_foto_comments = stats_foto_comments - :stats WHERE stats_no = :no";
           $valores3 = array('stats' => 1, 'no' => 1);
           $psDb->db_execute($consulta3, $valores3);

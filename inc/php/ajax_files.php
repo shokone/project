@@ -7,7 +7,7 @@
  * verificaremos el nivel de acceso a la pagina
  * añadimos las instrucciones de codigo necesarias
  * agregamos los datos generados a smarty
- * 
+ *
  * @name ajax_files.php
  * @author Iván Martínez Tutor
  */
