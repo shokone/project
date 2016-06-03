@@ -1,5 +1,5 @@
 {include file='secciones/main_header.tpl'}
-	<script type="text/javascript" src="{$tsConfig.js}/cuenta.js"></script>
+	<script type="text/javascript" src="{$psConfig.js}/cuenta.js"></script>
     {literal}
 	<script type="text/javascript">
     $(document).ready(function(){

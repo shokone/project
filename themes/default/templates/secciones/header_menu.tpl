@@ -9,13 +9,13 @@
       </button>
       <a class="navbar-brand" href="#">Logotipo</a>
   </div>
- 
+
   <!-- Agrupar los enlaces de navegación, los formularios y cualquier
        otro elemento que se pueda ocultar al minimizar la barra -->
   <div class="collapse navbar-collapse navbar-ex1-collapse">
       <!-- menu izquierda -->
       <ul class="nav navbar-nav">
-          {if $psConfig.c_allow_portal && $psUser->member == true}
+          {if $psConfig.c_allow_portal && $psUser->member == 1}
               <li class="{if $psPage == 'mi'}active{else}{/if}">
                   <a title="Ir a mi portal" href="{$psConfig.url}/mi/">Mi</a>
               </li>
@@ -36,45 +36,45 @@
                   {/if}
               </ul>
           </li>
-          {if $psConfig.c_fotos_private == 1 && !$psUser->member}{else}
+          {if $psConfig.c_fotos_private == 1 && $psUser->member == 0}{else}
               <li class="{if $psPage == 'fotos'}active{else}{/if}">
                   <a class="dropdown-toggle" data-toggle="dropdown" title="Ir a fotos" href="{$psConfig.url}/fotos/">Fotos <b class="caret"></b></a>
                   <ul class="dropdown-menu">
-                      <li><a title="Inicio fotos" href="{$tsConfig.url}/fotos/">Inicio</a></li>
+                      <li><a title="Inicio fotos" href="{$psConfig.url}/fotos/">Inicio</a></li>
                       {if $psAction == 'album' && $psFUser.0 != $psUser->user_id}
-                          <li><a title="&Aacute;lbum de {$tsFUser.1}" href="{$tsConfig.url}/fotos/{$tsFUser.1}">&Aacute;lbum de {$tsFUser.1}</a></li>
+                          <li><a title="&Aacute;lbum de {$psFUser.1}" href="{$psConfig.url}/fotos/{$psFUser.1}">&Aacute;lbum de {$psFUser.1}</a></li>
                       {/if}
                       {if $psUser->admod || $psUser->permisos.gopf}
-                          <li><a title="Agregar Foto" href="{$tsConfig.url}/fotos/agregar.php">Agregar Foto</a></li>
+                          <li><a title="Agregar Foto" href="{$psConfig.url}/fotos/agregar.php">Agregar Foto</a></li>
                       {/if}
-                      
-                      <li><a title="Mis Fotos" href="{$tsConfig.url}/fotos/{$tsUser->nick}">Mis Fotos</a></li>
+
+                      <li><a title="Mis Fotos" href="{$psConfig.url}/fotos/{$psUser->nick}">Mis Fotos</a></li>
                   </ul>
               </li>
           {/if}
           <li class="{if $psPage == 'top'}active{else}{/if}">
               <a class="dropdown-toggle" data-toggle="dropdown" title="Ir a tops" href="{$psConfig.url}/top/">Tops <b class="caret"></b></a>
               <ul class="dropdown-menu">
-                  <li><a title="Top posts" href="{$tsConfig.url}/top/posts/">Top posts</a></li>
-                  <li><a title="Top usuarios" href="{$tsConfig.url}/top/usuarios/">Top usuarios</a></li>
+                  <li><a title="Top posts" href="{$psConfig.url}/top/posts/">Top posts</a></li>
+                  <li><a title="Top usuarios" href="{$psConfig.url}/top/usuarios/">Top usuarios</a></li>
               </ul>
           </li>
-          {if $psUser->member}
+          {if $psUser->member == 1}
               {if $psUser->admod == 1}
                   <li class="{if $psPage == 'admin'}active{else}{/if}">
                       <a title="Ir a administraci&oacute;n" href="{$psConfig.url}/admin/">Admin </a>
                   </li>
               {/if}
-          {/if} 
-      </ul> 
+          {/if}
+      </ul>
       <!-- menu derecha -->
-      <ul class="nav navbar-nav navbar-right">
-          {if $psUser->member}
+      <ul class="nav navbar-nav navbar-right userInfoMenu">
+          {if $psUser->member == 1}
               <li class="monitor">
-                  <a href="{$psConfig.url}/monitor/" onclick="notifica.last(); return false" title="Monitor del usuario" name="monitor">
+                  <a href="{$psConfig.url}/monitor/" onclick="notifica.last(); return false" title="Monitor del usuario" name="Monitor">
                       <span class="iconos monitor"></span>
                   </a>
-                  <div class="noti_lista" id="monitor_lista">
+                  <div class="noti_lista nodisplay" id="monitor_lista">
                       <div>
                           <strong onclick="location.href='{$psConfig.url}/monitor/'">Notificaciones</strong>
                       </div>
@@ -83,10 +83,10 @@
                   </div>
               </li>
               <li class="mensajes">
-                  <a href="{$psConfig.url}/mensajes/" onclick="mensaje.last(); return false" title="Mensajes" name="mensajes">
+                  <a href="{$psConfig.url}/mensajes/" onclick="mensaje.last(); return false" title="Mensajes" name="Mensajes">
                       <span class="iconos mensajes"></span>
                   </a>
-                  <div class="noti_lista" id="mensajes_lista">
+                  <div class="noti_lista nodisplay" id="mensajes_lista">
                       <div>
                           <strong onclick="location.href='{$psConfig.url}/mensajes/'">Mensajes</strong>
                       </div>
@@ -142,13 +142,13 @@
                               <label>Contraseña</label>
                               <input type="password" class="inlogin" id="password" name="pass" maxlength="64">
                               <label for="rem">Recordar usuario</label>
-                              <input type="checkbox" id="rem" name="rem" value="true" checked="checked" /> 
+                              <input type="checkbox" id="rem" name="rem" value="true" checked="checked" />
                               <input type="submit" title="Entrar" value="Entrar" class="btn btnOk">
                           </form>
                           <div class="login_footer">
                               <a href="#" onclick="remind_password();">&#191;Olvidaste tu contrase&#241;a?</a><br/>
                               <a href="#" onclick="resend_validation();">&#191;No te ha llegado el correo de validaci&oacute;n?</a><br/>
-                              <a onclick="open_login(); registro_load_form(); return false" href="">
+                              <a onclick="open_login(); registro_load_form(); return false" href="#">
                                 <strong>Registrarme!</strong>
                               </a>
                           </div>

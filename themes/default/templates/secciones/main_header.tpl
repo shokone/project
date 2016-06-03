@@ -18,6 +18,10 @@
 		<script type="text/javascript" src="{$psConfig.js}/bootstrap.min.js"></script>
 		<script type="text/javascript" src="{$psConfig.js}/npm.js"></script>
 		<script type="text/javascript" src="{$psConfig.js}/acciones.js"></script>
+		<script type="text/javascript" src="{$psConfig.js}/ckeditor/ckeditor.js"></script>
+		{if $psUser->member == 0}
+			<script type="text/javascript" src="{$psConfig.js}/registro.js"></script>
+		{/if}
 		<script type="text/javascript">
 		// {literal}
 		var global_data = {
@@ -36,8 +40,9 @@
 		</script>
 	</head>
 	<body>
-		<div id="loading"><img src="{$psConfig.tema.t_url}/images/ajax-loader.gif" />Cargando...</div>
-		<div id="myActions"></div>
+		<div id="loading"><img src="{$psConfig.tema.t_url}/images/ajax-loader.gif" width="50" height="50"/>Cargando...</div>
+		<div id="myActions" class="nodisplay"></div>
+		<div class="UIBeeper" id="BeeperBox"></div>
 		<header>
 			<div id="logo">
             	<a id="logoi" title="{$psConfig.titulo}" href="{$psConfig.url}">
@@ -50,3 +55,4 @@
 	        {include file='secciones/header_noticias.tpl'}
 		</nav>
 		<section class="container">
+		<span class="irArriba icon-arrow-up"></span>

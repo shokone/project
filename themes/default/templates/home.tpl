@@ -1,7 +1,7 @@
 {include file="secciones/main_header.tpl"}
 {$psInstall}
 	<div class="row">
-		<div class="col-md-8" style="border:1px black solid !important;">
+		<div class="col-md-8">
       {include file='modulos/m.home_cats.tpl'}
 			{include file='modulos/m.home_last_posts.tpl'}
 		</div>

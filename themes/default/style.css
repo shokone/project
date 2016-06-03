@@ -9,11 +9,21 @@ body {
   margin: 0;
   padding: 0;
 }
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  list-style-position: inside;
+  list-style-type: disc;
+}
+.both {
+  clear: both;
+}
 /* cabecera */
 header {
   width: 100%;
   height: 100px;
-  background-color: green;
+  background-color: #009900;
   margin-bottom: 10px;
 }
 #logo {
@@ -21,6 +31,18 @@ header {
   height: 48px;
   float: left;
   margin: 10px 0 10px 15px;
+}
+.irArriba {
+  display: none;
+  padding: 32px;
+  cursor: pointer;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 5;
+}
+.icon-arrow-up {
+  background-image: url('images/flecha-hacia-arriba.png');
 }
 /* menu */
 .nodisplay {
@@ -30,27 +52,27 @@ header {
 .iconos {
   width: 16px;
   height: 16px;
-  background-image: url('images/big2v1.png');
+  background-image: url('images/sprite2.png');
   background-repeat: no-repeat;
   display: block;
 }
-.iconos.monitor {
+.monitor {
   background-position: 0 -929px;
 }
-.iconos.mensajes {
+.mensajes {
   background-position: 0 -856px;
 }
-.iconos.favoritos {
+.favoritos {
   background-position: 0 -946px;
 }
-.iconos.micuenta {
+.micuenta {
   background-position: 0 -874px;
 }
-.iconos.borradores {
+.borradores {
   background-position: 0 -1470px;
   margin-top: -1px;
 }
-.iconos.logout {
+.logout {
   background-position: 0 -964px;
 }
 #loading {
@@ -59,8 +81,8 @@ header {
   left: 44%;
   width: 120px;
   text-align: center;
-  background: #444;
-  background: rgba(0, 0, 0, 0.7);
+  background: transparent;
+  background-color: transparent;
   color: white;
   font-size: 14px;
   padding: 8px 10px;
@@ -71,4 +93,263 @@ header {
   -webkit-border-radius: 5px 5px 5px 5px;
   z-index: 10003;
   display: none;
+}
+footer {
+  clear: both;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+  padding: 40px 20px;
+  background-color: #009900;
+  text-align: center;
+  margin-top: 15px;
+}
+footer a {
+  text-decoration: none;
+  color: #fff;
+  font-weight: bold;
+}
+.filterCategoria {
+  margin: 10px 10px 0 0;
+}
+.filterCategoria span {
+  font-size: 14px;
+}
+.filterCategoria select {
+  padding: 2px;
+}
+/* last posts */
+.lastPosts {
+  padding: 10px;
+  background-color: #F9F9F9;
+  border-radius: 5px 5px 5px 5px;
+  -moz-border-radius: 5px 5px 5px 5px;
+  -ms-border-radius: 5px 5px 5px 5px;
+  -o-border-radius: 5px 5px 5px 5px;
+  -webkit-border-radius: 5px 5px 5px 5px;
+  border: 1px #CCC solid;
+  -moz-border: 1px #CCC solid;
+  -webkit-border: 1px #CCC solid;
+  -o-border: 1px #CCC solid;
+  -ms-border: 1px #CCC solid;
+  margin-bottom: 10px;
+}
+.lastPosts .headerLast {
+  padding: 2px 0 7px 2px;
+  border-bottom: 1px solid #CCC;
+}
+.lastPosts .headerLast .caja_txt {
+  width: 300px;
+}
+.lastPosts .headerLast .caja_img {
+  display: inline-block;
+}
+.form-line {
+  position: relative;
+}
+/* myActions */
+#myActions {
+  position: absolute;
+  padding: 10px;
+  z-index: 5;
+  top: 20%;
+  left: 30%;
+  background-color: #fff;
+  border-radius: 10px 10px 10px 10px;
+  -moz-border-radius: 10px 10px 10px 10px;
+  -ms-border-radius: 10px 10px 10px 10px;
+  -o-border-radius: 10px 10px 10px 10px;
+  -webkit-border-radius: 10px 10px 10px 10px;
+  border: 3px #009900 solid;
+  -moz-border: 3px #009900 solid;
+  -webkit-border: 3px #009900 solid;
+  -o-border: 3px #009900 solid;
+  -ms-border: 3px #009900 solid;
+}
+#myActions #cuerpo {
+  position: relative;
+}
+#myActions #procesando {
+  display: none;
+  background: white;
+  opacity: 0.9;
+  filter: alpha(opacity=90);
+  z-index: 50;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+#myActions #procesando #mensaje {
+  color: #222;
+  position: relative;
+  height: 100%;
+}
+#myActions #procesando #mensaje img {
+  left: 44%;
+  margin-right: 10px;
+  position: absolute;
+  top: 29%;
+  vertical-align: middle;
+  width: 25px;
+}
+#myActions #procesando #mensaje div {
+  font-size: 20px;
+  font-weight: bold;
+  margin-left: -25px;
+  margin-top: 25px;
+  text-align: center;
+}
+#myActions #buttons {
+  padding: 15px 0;
+  text-align: center;
+  width: 100%;
+}
+#myActions .guardarBtn {
+  background: #b0de27;
+  border: 1px #607f08 solid;
+  -moz-border: 1px #607f08 solid;
+  -webkit-border: 1px #607f08 solid;
+  -o-border: 1px #607f08 solid;
+  -ms-border: 1px #607f08 solid;
+  padding: 5px 15px;
+  font-weight: normal;
+  font-size: 14px;
+  cursor: pointer;
+  color: #222222;
+}
+#myActions .guardarBtn .disabled {
+  opacity: 0.2;
+  filter: alpha(opacity=20);
+  background: #CCC;
+  border: 1px #333 solid;
+  -moz-border: 1px #333 solid;
+  -webkit-border: 1px #333 solid;
+  -o-border: 1px #333 solid;
+  -ms-border: 1px #333 solid;
+}
+#myActions .cancelarBtn {
+  background: #d8d8d8;
+  border: 1px #c4c4c4 solid;
+  -moz-border: 1px #c4c4c4 solid;
+  -webkit-border: 1px #c4c4c4 solid;
+  -o-border: 1px #c4c4c4 solid;
+  -ms-border: 1px #c4c4c4 solid;
+  padding: 5px 15px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #222222;
+}
+/* fin myActions */
+.pasoDos {
+  display: none;
+}
+.pasoDos select {
+  width: 120px;
+  margin-bottom: 5px;
+}
+.registro #myAction #myActionsBody {
+  text-align: left!important;
+  padding: 0!important;
+}
+.registro #myAction #myActionsBody #RegistroForm {
+  padding: 0 35px 0 35px;
+}
+.registro #myAction #myActionsBody .footerReg {
+  font-size: 11px;
+  margin: 15px 0 5px 0;
+}
+.registro #myAction .unsocial #myActionsBody #RegistroForm {
+  padding: 35px 35px 0 35px;
+}
+.registro #myAction label {
+  display: block;
+  font-weight: bold;
+  margin: 0 0 5px;
+  text-shadow: 0 1px 0 #CCC;
+}
+.registro #myAction label .list-label {
+  display: inline!important;
+  font-weight: normal!important;
+  text-shadow: none!important;
+}
+.registro #myAction select {
+  display: block;
+  margin-right: 5px;
+}
+.registro #myAction input {
+  width: 110px!important;
+}
+.registro #myAction input .checkbox {
+  margin: 0 0 5px 0!important;
+  width: auto!important;
+}
+.registro #myAction input .btn {
+  width: auto!important;
+}
+.registro #myAction input .radio {
+  width: auto!important;
+}
+.registro #myAction .pasoUno select {
+  float: left;
+}
+/** botones **/
+.btn {
+  color: #FFF;
+  background-color: #009900;
+  font-size: 12px;
+  border-radius: 5px 5px 5px 5px;
+  -moz-border-radius: 5px 5px 5px 5px;
+  -ms-border-radius: 5px 5px 5px 5px;
+  -o-border-radius: 5px 5px 5px 5px;
+  -webkit-border-radius: 5px 5px 5px 5px;
+  padding: 5px 15px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 5px;
+  padding: 5px 10px;
+}
+.btn :active {
+  background: #9a9a9a url(images/btnRainbow.gif) repeat-x scroll left -265px !important;
+  border: 1px #009900 solid;
+  -moz-border: 1px #009900 solid;
+  -webkit-border: 1px #009900 solid;
+  -o-border: 1px #009900 solid;
+  -ms-border: 1px #009900 solid;
+  text-shadow: 0 -1px 0 #111111 !important;
+}
+.btn .bigF {
+  font-size: 14px;
+  padding: 5px 15px;
+}
+.btn .btnOk {
+  border: 1px #009900 solid;
+  -moz-border: 1px #009900 solid;
+  -webkit-border: 1px #009900 solid;
+  -o-border: 1px #009900 solid;
+  -ms-border: 1px #009900 solid;
+  background: #2e8af5 url('images/btnRainbow.gif') top left repeat-x;
+  text-shadow: 0 1px 0 #91c6f9;
+  width: auto;
+}
+.btn .btnDelete {
+  background: #b30100 url('images/btnRainbow.gif') left -205px repeat-x;
+  border: 1px #009900 solid;
+  -moz-border: 1px #009900 solid;
+  -webkit-border: 1px #009900 solid;
+  -o-border: 1px #009900 solid;
+  -ms-border: 1px #009900 solid;
+  color: #290202;
+  text-shadow: 0 1px 0 #fb6d6d;
+  width: auto;
+}
+.btn .btnCancel {
+  border: 1px #009900 solid;
+  -moz-border: 1px #009900 solid;
+  -webkit-border: 1px #009900 solid;
+  -o-border: 1px #009900 solid;
+  -ms-border: 1px #009900 solid;
+  background: #bdbdbd url('images/btnRainbow.gif') left -105px repeat-x;
+  color: #656262;
+  text-shadow: 0 1px 0 #EEE;
+  width: auto;
 }

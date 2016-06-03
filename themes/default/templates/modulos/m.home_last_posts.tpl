@@ -1,8 +1,8 @@
-<div>
-	{if $psPostSticky != null}
-		<div>
-			<div>Posts destacados en {$psConfig.titulo}</div>
-			<div>
+<div class="lastPosts">
+	{if $psPostStickys}
+		<div class="headerLast">
+			<div class="caja_txt ult_post">Posts destacados en {$psConfig.titulo}</div>
+			<div class="caja_img">
 				<img src="{$psConfig.default}/images/icons/note.png"/>
 			</div>
 		</div>
@@ -30,10 +30,10 @@
 			</ul>
 		</div>
 	{/if}
-	<div>
-		<div>&Uacute;ltimos posts en {$psConfig.titulo}</div>
-		<div>
-			<span></span>
+	<div  class="headerLast">
+		<div  class="caja_txt ult_post">&Uacute;ltimos posts en {$psConfig.titulo}</div>
+		<div class="caja_img">
+			<img src=""/>
 		</div>
 	</div>
 
@@ -55,7 +55,7 @@
 		                {elseif $p.user_activo == 0}title="La cuenta del usuario est&aacute; desactivada"
 		                {elseif $p.user_baneado == 1}title="La cuenta del usuario est&aacute; suspendida"
 		                {/if} class="title {if $p.post_private}categoria privado{/if}" alt="{$p.post_title}" title="{$p.post_title}" target="_self" href="{$psConfig.url}/posts/{$p.c_seo}/{$p.post_id}/{$p.post_title|seo}.html">{$p.post_title|truncate:70}</a>
-		                <span>{$p.post_date|hace} &raquo; <a href="{$tsConfig.url}/perfil/{$p.user_name}" uid="{$p.post_user}"><strong>@{$p.user_name}</strong></a> &middot; Puntos <strong>{$p.post_puntos}</strong> &middot; Comentarios <strong>{$p.post_comments}</strong></span>
+		                <span>{$p.post_date|hace} &raquo; <a href="{$psConfig.url}/perfil/{$p.user_name}" uid="{$p.post_user}"><strong>@{$p.user_name}</strong></a> &middot; Puntos <strong>{$p.post_puntos}</strong> &middot; Comentarios <strong>{$p.post_comments}</strong></span>
 		                <span class="floatR"><a href="{$psConfig.url}/posts/{$p.c_seo}/">{$p.c_nombre}</a></span>
 		            </li>
 	            {/foreach}

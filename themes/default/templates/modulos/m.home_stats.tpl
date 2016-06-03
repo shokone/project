@@ -7,7 +7,7 @@
         <table>
             <tr>
             	<td><a class="usuarios_online" href="{$psConfig.url}/usuarios/?online=true">
-                <span class="qtip" title="R&eacute;cord conectados: {$tsStats.stats_max_online} {$tsStats.stats_max_time|fecha}">{$psStats.stats_online} online</span></a>
+                <span class="qtip" title="R&eacute;cord conectados: {$psStats.stats_max_online} {$psStats.stats_max_time|fecha}">{$psStats.stats_online} online</span></a>
                 </td>
                 <td><a href="{$psConfig.url}/usuarios/">{$psStats.stats_miembros} miembros</a></td>
             </tr>
