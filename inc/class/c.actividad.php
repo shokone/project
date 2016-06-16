@@ -395,9 +395,9 @@ class psActividad{
         if($com > 90){
             return array('total' => -1);
         }
-        $valores = ['user_id' => $psUser->user_id];
-        $consulta = $psDb->db_execute("SELECT f_id FROM u_follows WHERE f_user = :user_id AND f_type = 1",$valores);
-        $resultado = $psDb->resultadoArray($consulta);
+        $valores = array('user_id' => $psUser->user_id, 'type' => 1);
+        $consulta = "SELECT f_id FROM u_follows WHERE f_user = :user_id AND f_type = :type";
+        $resultado = $psDb->resultadoArray($psDb->db_execute($consulta,$valores));
 
         //ordenamos el array de datos obtenido
         foreach($resultado as $indice => $valor){
@@ -408,9 +408,10 @@ class psActividad{
         //obtenemos un string mediante la conversión del array
         $seguidores = implode(', '.$seguidores);
         //consultamos a la bd por las últimas publicaciones
-        $valores2 = ['seguidores' => $seguidores];
-        $consulta2 = $psDb->db_execute("SELECT ua.*, u.user_name AS usuario FROM u_actividad AS ua LEFT JOIN u_miembros AS u ON ua.user_id = u.user_id WHERE ua.user_id IN :seguidores ORDER BY ua.ac_date DESC", $valores2);
-        $resultado2 = $psDb->resultadoArray($consulta2);
+        $consulta2 = "SELECT a.*, u.user_name AS usuario FROM u_actividad AS a LEFT JOIN u_miembros AS u ON a.user_id = u.user_id WHERE a.user_id IN ";
+        $consulta2 .= $seguidores;exit($seguidores);
+        $consulta2 .= " ORDER BY a.ac_date DESC";
+        $resultado2 = $psDb->resultadoArray($psDb->db_execute($consulta2));
 
         //montamos la actividad resultante
         if(empty($resultado2)){

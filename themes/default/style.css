@@ -32,6 +32,9 @@ header {
   float: left;
   margin: 10px 0 10px 15px;
 }
+#logo img {
+  max-width: 300px;
+}
 .irArriba {
   display: none;
   padding: 32px;
@@ -293,7 +296,7 @@ footer a {
   float: left;
 }
 /** botones **/
-.btn {
+.btnn {
   color: #FFF;
   background-color: #009900;
   font-size: 12px;
@@ -308,7 +311,7 @@ footer a {
   margin: 5px;
   padding: 5px 10px;
 }
-.btn :active {
+.btnn :active {
   background: #9a9a9a url(images/btnRainbow.gif) repeat-x scroll left -265px !important;
   border: 1px #009900 solid;
   -moz-border: 1px #009900 solid;
@@ -317,11 +320,11 @@ footer a {
   -ms-border: 1px #009900 solid;
   text-shadow: 0 -1px 0 #111111 !important;
 }
-.btn .bigF {
+.btnn .bigF {
   font-size: 14px;
   padding: 5px 15px;
 }
-.btn .btnOk {
+.btnn .btnOk {
   border: 1px #009900 solid;
   -moz-border: 1px #009900 solid;
   -webkit-border: 1px #009900 solid;
@@ -331,7 +334,7 @@ footer a {
   text-shadow: 0 1px 0 #91c6f9;
   width: auto;
 }
-.btn .btnDelete {
+.btnn .btnDelete {
   background: #b30100 url('images/btnRainbow.gif') left -205px repeat-x;
   border: 1px #009900 solid;
   -moz-border: 1px #009900 solid;
@@ -342,7 +345,7 @@ footer a {
   text-shadow: 0 1px 0 #fb6d6d;
   width: auto;
 }
-.btn .btnCancel {
+.btnn .btnCancel {
   border: 1px #009900 solid;
   -moz-border: 1px #009900 solid;
   -webkit-border: 1px #009900 solid;
@@ -352,4 +355,165 @@ footer a {
   color: #656262;
   text-shadow: 0 1px 0 #EEE;
   width: auto;
+}
+.home-stats {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+.list-group a {
+  color: #009900 !important;
+}
+.width-3 {
+  width: 33% !important;
+}
+.ads {
+  margin: 10px 0;
+}
+.ads img,
+.ads iframe {
+  max-width: 100%;
+}
+/** buttons **/
+.btn-danger a,
+.btn-success a,
+.btn-info a,
+.btn-warning a {
+  color: #fff !important;
+}
+.menu-compartir-post {
+  list-style: none;
+}
+.menu-compartir-post li {
+  display: inline-block;
+  margin-right: 10px;
+  top: 0;
+}
+.share-it {
+  width: 74px;
+  height: 18px;
+  border-radius: 5px 5px 5px 5px;
+  -moz-border-radius: 5px 5px 5px 5px;
+  -ms-border-radius: 5px 5px 5px 5px;
+  -o-border-radius: 5px 5px 5px 5px;
+  -webkit-border-radius: 5px 5px 5px 5px;
+  display: block;
+  background: url('images/share-it.png') bottom left no-repeat;
+}
+.share-it-count {
+  background: url("images/bubble.png") no-repeat scroll left top transparent;
+  display: block;
+  padding: 10px;
+  font: bold 16px Arial, Helvetica, sans-serif;
+  height: 40px;
+  position: absolute;
+  text-align: center;
+  width: 82px;
+  margin-top: -40px;
+}
+.post-acciones ul {
+  list-style: none;
+}
+.post-acciones ul li {
+  display: inline-block;
+  margin-right: 5px;
+  margin-left: 5px;
+}
+.post-estadisticas {
+  list-style: none;
+}
+.post-estadisticas li {
+  display: inline-block;
+  margin-right: 5px;
+  margin-left: 5px;
+}
+.editor_coment {
+  width: 100%;
+  margin-left: 70px;
+}
+.editor_coment #editor_comentarios {
+  width: 80%;
+}
+.comment-box {
+  margin-left: 60px !important;
+}
+.bot-list-option ul {
+  list-style: none;
+}
+.bot-list-option ul li {
+  display: inline-block;
+  margin-right: 5px;
+  margin-left: 5px;
+}
+.bot-list-option ul li button {
+  margin-top: -40px;
+}
+.textarea-edit {
+  width: 100%;
+  margin-bottom: 10px;
+}
+.avatar-box {
+  z-index: 99;
+}
+/**** notificaciones *****/
+.notificacion-detail li {
+  padding: 10px;
+  border-bottom: 1px dotted #CCC;
+  font-size: 12px;
+  width: 100%;
+}
+.notificacion-detail li a {
+  font-weight: bold;
+  color: #116fcf;
+}
+.notificacion-detail li .unread {
+  background: #ffffcc;
+}
+.notificacion-detail .notificacion-info span .time {
+  color: #808080;
+  font-size: 11px;
+}
+.notificacion-detail .notificacion-info span a {
+  font-size: 13px;
+}
+.notificacion-detail .notificacion-info span .action {
+  color: #000;
+  font-size: 13px;
+  display: block;
+  margin-top: 5px;
+}
+.notificacion-detail .avatar-box {
+  float: left;
+  margin-right: 10px;
+  margin-left: 10px;
+}
+.categoriaList ul {
+  list-style: none;
+}
+.search-mensajes {
+  margin-top: -40px;
+}
+.search-mensajes input {
+  padding: 5px 5px;
+  border-radius: 5px 5px 5px 5px;
+  -moz-border-radius: 5px 5px 5px 5px;
+  -ms-border-radius: 5px 5px 5px 5px;
+  -o-border-radius: 5px 5px 5px 5px;
+  -webkit-border-radius: 5px 5px 5px 5px;
+}
+#monitor_lista ul,
+#mensajes_lista ul {
+  list-style: none;
+}
+.mensaje {
+  padding: 5px;
+}
+.mensaje-img {
+  margin-right: 10px;
+}
+.loader {
+  text-align: center;
+  padding: 191px 0 192px;
+  display: none;
 }

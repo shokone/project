@@ -1,10 +1,10 @@
-<div id="webStats">
+<div id="webStats" class="container-fluid home-stats">
     <div>
         <div>
-            <span class="" title="Actualizado: {$psStats.stats_time|hace}">Estad&iacute;sticas</span>
+            <span class="" title="Actualizado: {$psStats.stats_time|hace}"><strong>Estad&iacute;sticas</strong></span>
         </div>
         <div class="box_cuerpo">
-        <table>
+        <table class="table">
             <tr>
             	<td><a class="usuarios_online" href="{$psConfig.url}/usuarios/?online=true">
                 <span class="qtip" title="R&eacute;cord conectados: {$psStats.stats_max_online} {$psStats.stats_max_time|fecha}">{$psStats.stats_online} online</span></a>

@@ -61,6 +61,9 @@ header{
   	height: 48px;
 	float:left;
 	margin: 10px 0 10px 15px;
+	img{
+		max-width: 300px;
+	}
 }
 
 .irArriba{
@@ -294,7 +297,7 @@ footer{
 }
 
 /** botones **/
-.btn {
+.btnn {
 	color: #FFF;
 	background-color: #009900;
 	font-size: 12px;
@@ -334,4 +337,189 @@ footer{
 		text-shadow: 0 1px 0 #EEE;
 		width: auto;
 	}
+}
+
+.home-stats{
+	padding-top: 15px;
+	padding-bottom: 15px;
+	margin-top: auto;
+	margin-bottom: auto;
+}
+
+.list-group{
+	a{
+		color:#009900 !important;
+	}
+}
+
+.width-3{
+	width: 33% !important;
+}
+
+.ads{
+	margin:10px 0;
+	img, iframe{
+		max-width: 100%;
+	}
+}
+
+/** buttons **/
+.btn-danger, .btn-success, .btn-info, .btn-warning{
+	a{
+		color:#fff !important;
+	}
+}
+
+.menu-compartir-post{
+	list-style: none;
+	li{
+		display:inline-block;
+		margin-right: 10px;
+		top: 0;
+	}
+}
+.share-it{
+	width:74px;
+	height: 18px;
+	.boxRadius(5px,5px,5px,5px);
+	display: block;
+	background: url('images/share-it.png') bottom left no-repeat; 
+}
+.share-it-count {
+	background:url("images/bubble.png") no-repeat scroll left top transparent;
+	display:block;
+	padding: 10px;
+	font:bold 16px Arial,Helvetica,sans-serif;
+	height:40px;
+	position: absolute;
+	text-align:center;
+	width:82px;
+	margin-top: -40px;
+}
+
+.post-acciones{
+	ul{
+		list-style:none;
+		li{
+			display:inline-block;
+			margin-right:5px;
+			margin-left:5px;
+		}
+	}
+}
+
+.post-estadisticas{
+	list-style:none;
+	li{
+		display:inline-block;
+		margin-right:5px;
+		margin-left:5px;
+	}
+}
+
+.editor_coment{
+	width: 100%;
+	margin-left: 70px;
+	#editor_comentarios{
+		width: 80%;
+	}
+}
+
+.comment-box{
+	margin-left: 60px !important;
+}
+
+.bot-list-option{
+	ul{
+		list-style:none;
+		li{
+			display:inline-block;
+			margin-right:5px;
+			margin-left:5px;
+			button{
+				margin-top: -40px;
+			}
+		}
+	}
+}
+
+.textarea-edit{
+	width: 100%;
+	margin-bottom: 10px;
+}
+
+.avatar-box{
+	z-index: 99;
+}
+
+/**** notificaciones *****/
+.notificacion-detail{
+	li {
+		padding: 10px;
+		border-bottom: 1px dotted #CCC;
+		font-size: 12px;
+		width: 100%;
+		a {
+			font-weight: bold;
+			color: #116fcf;
+		}
+		.unread {
+			background: #ffffcc
+		}
+	}
+	.notificacion-info {
+		span{
+			.time {
+				color: #808080;
+				font-size: 11px;
+			}
+			a {
+				font-size: 13px;
+			}
+			.action {
+				color: #000;
+				font-size: 13px;
+				display:block;
+				margin-top:5px;
+			}
+		}
+	}
+	.avatar-box {
+		float: left;
+		margin-right: 10px;
+		margin-left: 10px;
+	}
+}
+	
+.categoriaList{
+	ul{
+		list-style:none;
+	}
+}
+
+.search-mensajes{
+	margin-top: -40px;
+	input{
+		padding: 5px 5px;
+		.boxRadius(5px, 5px, 5px, 5px);
+	}
+}
+
+#monitor_lista, #mensajes_lista{
+	ul{
+		list-style: none;
+	}
+}
+
+.mensaje{
+	padding: 5px;
+}
+.mensaje-img{
+	margin-right: 10px;
+}
+
+.loader{
+	text-align: center;
+    padding: 191px 0 192px;
+    display: none;
 }

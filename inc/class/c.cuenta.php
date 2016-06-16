@@ -34,15 +34,13 @@ class psCuenta{
 		$consulta = "SELECT p.*, u.user_registro, u.user_lastactive FROM u_perfil AS p LEFT JOIN u_miembros AS u ON p.user_id = u.user_id WHERE p.user_id = :uid";
 		$valores = array('uid' => $uid);
 		$info = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
-		$info = array(
-			'p_gustos' => unserialize($info['p_gustos']),
-			'p_tengo' => unserialize($info['p_tengo']),
-			'p_idiomas' => unserialize($info['p_idiomas']),
-			'p_socials' => array('f' => $info['p_socials'][0]),
-			'p_socials' => array('t' => $info['p_socials'][1]),
-			'p_configs' => unserialize($info['p_configs']),
-			'p_total' => unserialize($info['p_total'])
-		);
+		$info['p_gustos'] = unserialize($info['p_gustos']);
+		$info['p_tengo'] = unserialize($info['p_tengo']);
+		$info['p_idiomas'] = unserialize($info['p_idiomas']);
+		$info['p_socials'] = array('f' => $info['p_socials'][0]);
+		$info['p_socials'] = array('t' => $info['p_socials'][1]);
+		$info['p_configs'] = unserialize($info['p_configs']);
+		$info['p_total'] = unserialize($info['p_total']);
 		$info['porcentaje'] = $this->getPorcentaje($info['p_total'], 40);
 		return $info;
 	}
@@ -66,7 +64,7 @@ class psCuenta{
 					'email' => filter_input(INPUT_POST, 'email'),
 					'pais' => filter_input(INPUT_POST, 'pais'),
 					'estado' => filter_input(INPUT_POST, 'estado'),
-					'sexo' => ($_POST['sexo']) ? 0 : 1,
+					'sexo' => ($_POST['sexo'] == 'mujer') ? 0 : 1,
 					'dia' => filter_input(INPUT_POST, 'dia'),
 					'mes' => filter_input(INPUT_POST, 'mes'),
 					'ano' => filter_input(INPUT_POST, 'ano'),
@@ -79,7 +77,7 @@ class psCuenta{
 					$mensaje = array('field' => 'email', 'error' => 'El formato de email introducido no es v&aacute;lido.');
 					//obtenemos el email anterior
 					$perfil['email'] = $psUser->info['email'];
-				}else if(!checkdate($perfil['dia'], $perfil['mes'], $perfil['ano']) || ($peril['ano'] > $ano || $perfil['ano'] < ($ano - 100))){
+				}else if(!checkdate($perfil['mes'], $perfil['dia'], $perfil['ano']) || ($peril['ano'] > $ano || $perfil['ano'] < ($ano - 100))){
 					//comprobamos la fecha de nacimiento
 					$mensaje = array('field' => 'fecha', 'error' => 'La fecha de nacimiento introducida no es v&aacute;lido.');
 					//obtenemos los datos anteriores que tenía el usuario
@@ -112,7 +110,7 @@ class psCuenta{
 				}
 				break;
 			case 2: //gustos, estado, hijos y algunos datos más del usuario
-				$sitio = input_filter(INPUT_POST, 'sitio');
+				$sitio = filter_input(INPUT_POST, 'sitio');
 				if(!empty($sitio)){
 					if(substr($sitio, 0, 7) != 'http://'){
 						$sitio = 'http://' . $sitio;
@@ -143,7 +141,7 @@ class psCuenta{
 				$tengo = array(filter_input(INPUT_POST, 't_0'), filter_input(INPUT_POST, 't_1'));
 				$perfil = array(
 					'altura' => filter_input(INPUT_POST, 'altura'),
-					'peso' => $filter_input(INPUT_POST, 'peso'),
+					'peso' => filter_input(INPUT_POST, 'peso'),
 					'pelo' => filter_input(INPUT_POST, 'pelo_color'),
 					'ojos' => filter_input(INPUT_POST, 'ojos_color'),
 					'fisico' => filter_input(INPUT_POST, 'fisico'),
@@ -210,7 +208,7 @@ class psCuenta{
 				break;
 			case 7: //configuración del muro del usuario
 				$firma = ($_POST['muro_firma'] > 4) ? 5 : filter_input(INPUT_POST, 'muro_firma');
-				$mps = ($_POST['rec_mps'] > 6) ? 5 : filter_input(INPUT_POST, 'rec_mps');
+				$mps = ($_POST['rec_mps'] > 4) ? 5 : filter_input(INPUT_POST, 'rec_mps');
 				$hits = ($_POST['last_hits'] == 1 || $_POST['last_hits'] == 2) ? 0 : filter_input(INPUT_POST, 'last_hits');
                 $datosMuro = array('m' => filter_input(INPUT_POST, 'muro'), 'mf' => $firma, 'rmp' => $mps, 'hits' => $hits);
                 //
@@ -287,8 +285,9 @@ class psCuenta{
 			$cg1 = "SELECT p_total FROM u_perfil WHERE user_id = :uid";
 			$vg1 = array('uid' => $psUser->user_id);
 			$porcentaje = $psDb->db_execute($cg1, $vg1, 'fetch_assoc');
-			$porcentaje = unserialize($porcenaje['p_total']);
-			$porcentaje_now = $this->getPorcentaje($porcentaje, 40);
+			$porcentaje = unserialize($porcentaje['p_total']);
+			$porcentaje[$id] = $total[$id];
+			$porcentaje_now = $this->getPorcentaje($porcentaje, 40);print_r($porcentaje_now);exit;
 			$porcentaje = serialize($porcentaje);
 			$cg2 = "UPDATE u_perfil SET p_total = :total WHERE user_id = :uid";
 			$vg2 = array(
@@ -308,13 +307,19 @@ class psCuenta{
 			$actualizaciones = $psCore->getDatos($perfil, 'user_');
 			$datosActualizar = '';
 			foreach($actualizaciones['values'] as $key => $valor){
-				$datosActualizar .= $valor;
+				if($key != 'user_email'){
+					$datosActualizar .= $valor;
+				}
 			}
 			foreach($actualizaciones['values2'] as $key => $valor){
-				$updates2[$key] = $valor;
+				if($key != 'email'){
+					$updates2[$key] = $valor;
+				}
 			}
 			$updates2['uid'] = $psUser->user_id;
-			$consultaSave2 = "UPDATE u_perfil SET " . $datosActualizar . " WHERE user_id = :uid";
+			$consultaSave2 = "UPDATE u_perfil SET "; 
+			$consultaSave2 .= $datosActualizar; 
+			$consultaSave2 .= " WHERE user_id = :uid";
 			if(!$psDb->db_execute($consultaSave2, $updates2)){
 				return array('error' => 'Error al actualizar los datos del perfil en la base de datos');
 			}
@@ -329,10 +334,18 @@ class psCuenta{
 				$updates2[$key] = $valor;
 			}
 			$updates2['uid'] = $psUser->user_id;
-			$consultaSave = "UPDATE u_perfil SET :datosActualizar WHERE user_id = :uid";
-			if(!$psDb->db_execute($consultaSave, $updates2)){
+			$consultaSave2 = "UPDATE u_perfil SET "; 
+			$consultaSave2 .= $datosActualizar; 
+			$consultaSave2 .= " WHERE user_id = :uid";
+			if(!$psDb->db_execute($consultaSave2, $updates2)){
 				return array('error' => 'Error al actualizar los datos del perfil en la base de datos');
 			}
+		}
+		//comprobamos si hay algún mensaje de error
+		if(is_array($mensaje)){
+			return $mensaje;
+		}else{
+			return array('porc' => $porcentaje_now);
 		}
 	}
 
@@ -348,7 +361,7 @@ class psCuenta{
 			'uid' => $psUser->user_id,
 		);
 		if($psDb->db_execute($consulta, $valores)){
-			$psCore->redirectTo($psCore->settigns['url'] . '/logout.php');
+			$psCore->redirectTo($psCore->settings['url'] . '/login-salir.php');
 			return true;
 		}else{
 			return 'Error, no pudo desactivarse la cuenta del usuario.';
@@ -361,7 +374,7 @@ class psCuenta{
      * @return type devolvemos un valor booleano con el resultado de la validación
      */
 	function validarEmail($email){
-		if(preg_match('/^[_a-z0-9-]+(.[_a-z0-9-]+)*@[a-z0-9-]+(.[a-z0-9-]+)*(.[a-z]{2,4})/$', $email)){
+		if(preg_match('/[_a-z0-9-]+(.[_a-z0-9-]+)*@[a-z0-9-]+(.[a-z0-9-]+)*(.[a-z]{2,4})/', $email)){
 			return true;
 		}else{
 			return false;
@@ -376,7 +389,7 @@ class psCuenta{
      */
 	function getPorcentaje($valores, $porcentaje = 40){
 		$total = 0;
-		for($a = 0; $a < $valores.length; $a++){
+		for($a = 0; $a < count($valores); $a++){
 			$total += $valores[$a];
 		}
 		return round((100 * $total) / $porcentaje);
@@ -392,11 +405,11 @@ class psCuenta{
 		foreach($valores as $key => $valor){
 			$datos = unserialize($valor);
 			if(is_array($datos)){
-				$total2 = $this->gePorcentajeTotal($datos, count($datos));
+				$total2 = $this->getTotalPorcentaje($datos, count($datos));
 				if(empty($total2)){
 					$total--;
 				}
-			}else if(empty($valor)){
+			}elseif(empty($valor)){
 				$total--;
 			}
 		}

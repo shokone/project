@@ -43,7 +43,7 @@ class psBorradores {
      */
 	function getBorradores(){
 		global $psDb, $psUser;
-		$consulta = "SELECT c.cid, c.c_nombre, c.c_seo, c.c_img, b.bid, b.b_user, b.b_title, b.b_date, b.b_status, b.b_causa, b.b_category FROM p_categorias AS c LEFT JOIN p_borradores AS b ON c.cid = b.b_category WHERE b.b_user = :user ORDER BY b.b_date";
+		$consulta = "SELECT c.cid, c.c_nombre, c.c_seo, c.c_img, b.bid, b.b_user, b.b_title, b.b_body, b.b_date, b.b_status, b.b_causa, b.b_category FROM p_categorias AS c LEFT JOIN p_borradores AS b ON c.cid = b.b_category WHERE b.b_user = :user ORDER BY b.b_date";
 		$valores = array('user' => $psUser->info['user_id']);
 		$query = $psDb->db_execute($consulta, $valores);
 		$borradores = $psDb->resultadoArray($query);
@@ -89,17 +89,18 @@ class psBorradores {
 					foreach($actualizaciones['values'] as $key => $valor){
 						$datosActualizar .= $valor;
 					}
-					$valores['datosActualizar'] = $datosActualizar;
+					$consulta = "UPDATE p_borradores SET";
+					$consulta .= ' '.$datosActualizar;
 					foreach($actualizaciones['values2'] as $key => $valor){
 						$valores[$key] = $valor;
 					}
 					$valores['bid'] = $borrador_id;
 					$valores['user'] = $psUser->info['user_id'];
-					$consulta = "UPDATE p_borradores SET :datosActualizar WHERE bid = :bid AND b_user = :user";
+					$consulta .= " WHERE bid = :bid AND b_user = :user";
 					if($psDb->db_execute($consulta, $valores)){
-						return $borrador_id;
+						return '1: '.$borrador_id;
 					}else{
-						return 'Ocurri&oacute; un error al intentar actualizar el borrador.';
+						return '0: Ocurri&oacute; un error al intentar actualizar el borrador.';
 					}
 				}else{//si guardar vale false insertamos una nueva fila en la tabla de borradores
 					$consulta2 = "INSERT INTO p_borradores (b_user, b_date, b_title, b_body, b_tags, b_category, b_private, b_block_comments, b_sponsored, b_sticky, b_smileys, b_visitantes, b_status, b_causa) VALUES (:b_user, :b_date, :b_title, :b_body, :b_tags, :b_category, :b_private, :b_block_comments, :b_sponsored, :b_sticky, :b_smileys, :b_visitantes, :b_status, :b_causa)";
@@ -122,7 +123,7 @@ class psBorradores {
 					if($psDb->db_execute($consulta2, $valores2)){
 						return '1: '.$psDb->getLastInsertId();
 					}else{
-						return 'Error al insertar los datos del borrador en la base de datos.';
+						return '0: Error al insertar los datos del borrador en la base de datos.';
 					}
 				}
 			}else{
@@ -140,16 +141,16 @@ class psBorradores {
      */
 	function delBorrador(){
 		global $psUser, $psDb;
-		$borrador = intval($_GET['borrador_id']);
+		$borrador = (int)$_POST['borrador_id'];
 		$consulta = "DELETE FROM p_borradores WHERE bid = :bid AND b_user = :user";
 		$valores = array(
 			'bid' => $borrador,
 			'user' => $psUser->info['user_id'],
 		);
 		if($psDb->db_execute($consulta, $valores)){
-			return 'El borrador ha sido eliminado.';
+			return '1: El borrador ha sido eliminado.';
 		}else{
-			return 'Lo sentimos. Ocurri&oacute; un error al intentar eliminar el borrador.';
+			return '0: Lo sentimos. Ocurri&oacute; un error al intentar eliminar el borrador.';
 		}
 	}
 }

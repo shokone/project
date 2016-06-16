@@ -71,7 +71,7 @@ if($psContinue){
             if(empty($_GET['aid']) && empty($_GET['did'])){
                 $smarty->assign("psMensajes",$psMonitor->getAviso());
             } elseif($_GET['aid']) {
-                $smarty->assign("psMensaje",$psMonitor->leerAviso($_GET['aid']));
+                $smarty->assign("psMensaje", $psMonitor->leerAviso($_GET['aid']));
             } elseif($_GET['did']){
                 $borrado = $psMonitor->borrarAviso($_GET['did']);
                 if($borrado == true){

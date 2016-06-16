@@ -3,8 +3,8 @@ var perfil = {
     cache: new Array(),
     //cargamos la tabla seleccionada
     load_tab:function(type, obj){
-        $('#tabs_menu > li').removeClass('selected');
-        $(obj).parent().addClass('selected');
+        $('#tabs_menu > li').removeClass('active');
+        $(obj).parent().addClass('active');
         $('#perfil_content > div').fadeOut();
         $('#perfil_load').fadeIn();
         perfil.cargar(type);
@@ -519,7 +519,7 @@ var actividad = {
     total: 25,//máximo de actividades
     show: 25,//máximo de actividades a mostrar por página
     //cargamos la lista de actividades
-    cargar: function(id, ac_do, ac_type){
+    cargar: function(id, ac_do, ac_type){alert('hola');
         $('#last-activity-view-more').remove();
         if(ac_do == 'filtrar') actividad.total = 0;
         //enviamos los datos
@@ -528,6 +528,7 @@ var actividad = {
             url: global_data.url + '/perfil-actividad.php',
             data: 'pid=' + $('#info').attr('pid') + '&ac_type=' + ac_type + '&do=' + ac_do + '&start=' + actividad.total,
             success: function(valor){
+                alert(valor);
                 switch(valor.charAt(1)){
                     case '0': //si ha ocurrido un error
                         myActions.alert('Error', valor.substring(4));

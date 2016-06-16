@@ -22,7 +22,7 @@ $psPage = "admin";
 $psLevel = 4;
 
 //comprobamos si la respuesta se realiza por ajax
-$psAjax = empty(filter_input(INPUT_GET['ajax'])) ? 0 : 1;
+$psAjax = empty($_GET['ajax']) ? 0 : 1;
 
 //creamos la variable para comprobar si continuamos con el script
 $psContinue = true;
@@ -31,7 +31,7 @@ $psContinue = true;
 include("../../header.php");
 
 //cargamos el titulo de la pagina actual
-$psTitle = $psCore->settings['titulo']." - ".$psCore->settigns['slogan'];
+$psTitle = 'Administraci&oacute;n de '.$psCore->settings['titulo']." - ".$psCore->settigns['slogan'];
 
 //verificamos el nivel de acceso configurado previamente
 $psLevelVer = $psCore->setLevel($psLevel, true);
@@ -109,7 +109,7 @@ if($psContinue){
 		//temas del site
 		//ver los temas
 		if(empty($act)){
-			$smarty->assign("psTemas", $psAdmin->getThemes())
+			$smarty->assign("psTemas", $psAdmin->getThemes());
 		}elseif($act == 'editar'){
 			//editar tema
 			if(!empty($_POST['save'])){
@@ -221,7 +221,7 @@ if($psContinue){
 						'method' => filter_input(INPUT_POST, 'method'), 
 						'type' => filter_input(INPUT_POST, 'type'), 
 						'reason' => filter_input(INPUT_POST, 'reason')
-					);
+					));
 				}
 			}
 		}

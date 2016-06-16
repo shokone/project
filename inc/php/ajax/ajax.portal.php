@@ -51,7 +51,7 @@ switch($action){
     $smarty->assign("psType",'favs');
   break;
   case 'portal-activity_pages':
-    $actividad = $psActividad->obtenerActividadSeguida();
+    $actividad = $psActividad->obtenerActividadSeguida();print_r($actividad);exit;
     if(!is_array($actividad)){
       die('<div class="emptyData">'.$actividad.'</div>');
     }

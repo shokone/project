@@ -44,10 +44,10 @@ if($psLevelVer != 1){
 }
 
 if($psContinue){
-	$seccion = $_GET['action'];
+	$action = $_GET['action'];
 	switch($action){
 		case 'ayuda': break;
-        case 'contact': break;
+        case 'contacto': break;
         case 'protocolo': break;
         case 'terminos-y-condiciones': break;
         case 'privacidad': break;
@@ -60,5 +60,5 @@ if($psContinue){
 //ahora agregamos los datos generados a smarty
 if(empty($psAjax)){
     $smarty->assign("psTitle", $psTitle);
-    include (PS_ROOT.'footer.php');
+    include ('../../footer.php');
 }

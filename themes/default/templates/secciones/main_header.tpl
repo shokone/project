@@ -9,8 +9,9 @@
 
 		<!-- AGREGAMOS UN ESTILO EXTRA SI EXISTE -->
 		<link href="{$psConfig.css}/{$psPage}.css" rel="stylesheet" type="text/css" />
-		<link href="{$psConfig.css}/bootstrap.min.css" rel="stylesheet" type="text/css" />
-		<link href="{$psConfig.css}/bootstrap-theme.css" rel="stylesheet" type="text/css" />
+		<link href="{$psConfig.css}/bootstrap.min.css" media="all" rel="stylesheet" type="text/css" />
+		<link href="{$psConfig.css}/bootstrap-theme.css" media="all" rel="stylesheet" type="text/css" />
+		<link href="{$psConfig.css}/bootstrap-responsive.css" media="all" rel="stylesheet" type="text/css" />
 
 		<link rel="shortcut icon" href="{$psConfig.images}/favicon.ico" type="image/x-icon" />
 
@@ -19,8 +20,13 @@
 		<script type="text/javascript" src="{$psConfig.js}/npm.js"></script>
 		<script type="text/javascript" src="{$psConfig.js}/acciones.js"></script>
 		<script type="text/javascript" src="{$psConfig.js}/ckeditor/ckeditor.js"></script>
+		<script type="text/javascript" src="{$psConfig.js}/jlinq.js"></script>
+		<script type="text/javascript" src="{$psConfig.js}/jlinq.jquery.js"></script>
 		{if $psUser->member == 0}
 			<script type="text/javascript" src="{$psConfig.js}/registro.js"></script>
+		{/if}
+		{if $psUser->admod || $psUser->permisos.moacp}
+			<script type="text/javascript" src="{$psConfig.js}/moderacion.js"></script>
 		{/if}
 		<script type="text/javascript">
 		// {literal}

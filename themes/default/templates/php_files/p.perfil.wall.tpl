@@ -1,5 +1,5 @@
 1:
-{if $tsPrivacidad.m.v == true}
+{if $psPrivacidad.m.v == true}
 	{include file='modulos/m.perfil_muro.tpl'}
 	<script type="text/javascript">
 	/* {literal} */

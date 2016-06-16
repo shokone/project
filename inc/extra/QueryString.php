@@ -7,10 +7,10 @@
 function cleanRequest()
 {
 	//global $board, $topic, $boardurl, $scripturl, $modSettings, $smcFunc;
-    global $tsCore, $tsPage;;
+    global $psCore, $psPage;;
 
 	// Makes it easier to refer to things this way.
-	$scripturl = $tsCore->settings['url'] . '/index.php';
+	$scripturl = $psCore->settings['url'] . '/index.php';
 
 	// What function to use to reverse magic quotes - if sybase is on we assume that the database sensibly has the right unescape function!
 	$removeMagicQuoteFunction = @ini_get('magic_quotes_sybase') || strtolower(@ini_get('magic_quotes_sybase')) == 'on' ? 'unescapestring__recursive' : 'stripslashes__recursive';
@@ -65,7 +65,7 @@ function cleanRequest()
 
     // Check if the request comes from this site
     $IsMySite = strpos(preg_replace("/https?:\/\/|www\./", "", $_SERVER["HTTP_REFERER"]), preg_replace("/https?:\/\/|www\./", "", $_SERVER["HTTP_HOST"])) === 0;
-    if((!empty($_SERVER["HTTP_REFERER"]) && (in_array($tsPage, array('admin', 'moderacion', 'cuenta')) || $_SERVER['QUERY_STRING'] == 'action=login-salir') && !$IsMySite) || $_SERVER["REQUEST_METHOD"] === "POST" && !$IsMySite) { die("Invalid request"); }
+    if((!empty($_SERVER["HTTP_REFERER"]) && (in_array($psPage, array('admin', 'moderacion', 'cuenta')) || $_SERVER['QUERY_STRING'] == 'action=login-salir') && !$IsMySite) || $_SERVER["REQUEST_METHOD"] === "POST" && !$IsMySite) { die("Invalid request"); }
 }
 
 

@@ -1,0 +1,29 @@
+body{
+  margin: 0;
+  padding: 0;
+  margin: 0 auto !important;
+  max-width: 900px;
+}
+
+header{
+  max-width: 300px;
+  margin: 0 auto !important;
+}
+
+.container{
+  max-width: 1000px !important;
+}
+
+.contenedor{
+  border-radius: 10px !important;
+  border: 3px #009900 solid !important;
+  box-shadow: 5px !important;
+}
+
+.ok{
+  color: #009900 !important;
+}
+
+.no{
+  color: red !important;
+}

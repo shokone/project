@@ -76,25 +76,25 @@ class psTops{
     public function getTopUsers($fecha, $cat){
         global $psDb;
         //obtenemos la categoria de post escogida
-        echo $fecha;
         $datos = $this->setTime($fecha);
-        $categoria = empty($cat) ? '' : 'AND post_category = '.$cat;
-        echo 'hola';
+        $categoria = empty($cat) ? '' : ' AND post_category = '.$cat;
         //top de usuarios por puntos
-        $valores = ['status' => 0 , 'start' => $datos['start'],'ende' => $datos['end'],'categoria' => $categoria];
-        $consulta1 = $psDb->db_execute("SELECT SUM(p.post_puntos) AS total, u.user_id, u.user_name FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE p.post_status = :status AND p.post_date BETWEEN :start AND :ende :categoria GROUP BY p.post_user ORDER BY total DESC", $valores);
-        $top['puntos'] = $psDb->resultadoArray($consulta1);
-        echo '2 holas';
+        $valores = ['status' => 0 , 'start' => $datos['start'],'ende' => $datos['end']];
+        $consulta = "SELECT SUM(p.post_puntos) AS total, u.user_id, u.user_name FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE p.post_status = :status AND p.post_date BETWEEN :start AND :ende";
+        if(!empty($cat)){
+            $consulta .= ' AND post_category = :categoria';
+            $valores['categoria'] = $categoria;
+        }
+        $consulta .= " GROUP BY p.post_user ORDER BY total DESC";
+        $top['puntos'] = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
         //top de usuarios por seguidores
-        $valores2 = ['start' => $datos['start'],'end' => $datos['end']];
-        $consulta2 = $psDb->db_execute("SELECT COUNT(f.follow_id) AS total, u.user_id, u.user_name FROM u_follows AS f LEFT JOIN u_miembros AS u ON f.f_id = u.user_id WHERE f.f_type = 1 AND f.f_date BEWEEN :start AND :end GROUP BY f.f_id ORDER BY total DESC", $valores2);
+        $valores2 = ['type' => 1,'start' => $datos['start'],'end' => $datos['end']];
+        $consulta2 = $psDb->db_execute("SELECT COUNT(f.follow_id) AS total, u.user_id, u.user_name FROM u_follows AS f LEFT JOIN u_miembros AS u ON f.f_id = u.user_id WHERE f.f_type = :type AND f.f_date BEtWEEN :start AND :end GROUP BY f.f_id ORDER BY total DESC", $valores2);
         $top['seguidores'] = $psDb->resultadoArray($consulta2);
-        echo ' 3 holas ';
         //top de usuarios por medallas
-        $valores3 = ['start' => $datos['start'],'end' => $datos['end']];
-        $consulta3 = $psDb->db_execute("SELECT COUNT(m.medal_for) AS total, u.user_id, u.user_name, wm.medal_id FROM w_medallas_assign AS m LEFT JOIN u_miembros AS u ON m.medal_for = u.user_id LEFT JOIN w_medallas AS wm ON wm.medal_id = m.medal_id WHERE wm.m_type = \'1\' AND m.medal_date BETWEEN :start AND :end GROUP BY m.medal_for ORDER BY total DESC", $valores3);
+        $valores3 = ['type' => 1, 'start' => $datos['start'],'end' => $datos['end']];
+        $consulta3 = $psDb->db_execute("SELECT COUNT(m.medal_for) AS total, u.user_id, u.user_name, wm.medal_id FROM w_medallas_assign AS m LEFT JOIN u_miembros AS u ON m.medal_for = u.user_id LEFT JOIN w_medallas AS wm ON wm.medal_id = m.medal_id WHERE wm.m_type = :type AND m.medal_date BETWEEN :start AND :end GROUP BY m.medal_for ORDER BY total DESC", $valores3);
         $top['medallas'] = $psDb->resultadoArray($consulta3);
-        echo 'final holas';
         return $top;
     }
     

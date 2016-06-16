@@ -131,18 +131,19 @@ class psMonitor{
      * @param  [type] $avid obtenemos el id del aviso
      * @return [type]  devolvemos un array con los datos obtenidos
      */
-    function leerAviso($avid){
+    function leerAviso($aid){
         global $psDb, $psUser;
-        $consulta = "SELECT * FROM u_avisos WHERE av_id = :avid";
-        $valores = array('avid' => $avid);
+        $consulta = "SELECT * FROM u_avisos WHERE av_id = :aid";
+        $valores = array('aid' => $aid);
         $datos = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
         //comprobamos los datos del aviso
         if(empty($datos['av_id']) || $datos['user_id'] != $psUser->user_id && !$psUser->admod == 1){
             return 'Este aviso no existe, sentimos el fallo.';
         }else{
             //si todo ok actualizamos el aviso a leido y lo restamos del contador de avisos
-            $consulta2 = "UPDATE u_avisos SET av_id = :avid";
-            $psDb->db_execute($consulta2, $valores);
+            $consulta2 = "UPDATE u_avisos SET av_read = :read WHERE av_id = :aid";
+            $valores = array('read' => 1, 'aid' => $aid);
+            $psDb->db_execute($consulta2, $valores2);
             $this->avisos -= 1;
             return $datos;
         }
@@ -178,13 +179,20 @@ class psMonitor{
         global $psDb, $psCore, $psUser;
         //si hay más de 5 notificaciones mostramos todas las que no se hayan leído
         if($this->mostrarTipo == 1){
-            $nview = ($sinleer == true) ? '= 2' : '> 0';
             $ndel = ($sinleer == true) ? 1 : 0;
             if($this->notificaciones > 5 || $sinleer == true){
-                $con_process = "SELECT m.*, u.user_name AS usuario FROM u_monitor AS m LEFT JOIN u_miembros AS u ON m.obj_user = u.user_id WHERE m.user_id = :uid AND m.not_menubar :nview ORDER BY m.not_id DESC";
+                $con_process = "SELECT m.*, u.user_name AS usuario FROM u_monitor AS m LEFT JOIN u_miembros AS u ON m.obj_user = u.user_id WHERE m.user_id = :uid AND m.not_menubar ";
+                if ($sinleer == true) {
+                    $con_process .= ' = :nview';
+                    $nview = 2;
+                }else{
+                    $con_process .= ' > :nview';
+                    $nview = 0;
+                }
+                $con_process .= " ORDER BY m.not_id DESC";
                 $val_process = array('uid' => $psUser->user_id, 'nview' => $nview);
             }else{
-                $con_process = "SELECT m.*, u.user_name AS usuario FROM u_monitor AS m LEFT JOIN u_miembros AS u ON m.obj_user = u.user_id WHERE m.user_id = :uid ORDER BY m.not_id DESC LIMIT 5";
+                $con_process = "SELECT m.*, u.user_name AS usuario FROM u_monitor AS m LEFT JOIN u_miembros AS u ON m.obj_user = u.user_id WHERE m.user_id = :uid ORDER BY m.not_id DESC";
                 $val_process = array('uid' => $psUser->user_id);
             }
         }else if($this->mostrarTipo == 2){//si por el contrario va al monitor actualizamos para que ya no se vea en el menu
@@ -344,11 +352,12 @@ class psMonitor{
      * @return [type] devolvemos un array con los datos obtenidos
      */
     function montarNotificaciones($datos){
+        global $psDb;
         $this->crearTextoMonitor();
         foreach($datos as $key => $valor){
             //creamos la consulta
             $query = $this->crearConsulta($valor);
-            if(empty($query['consulta'])){
+            if(is_array($query) && $query['consulta'] == null){
                 $dat = $query;
             }else{
                 $dat = $psDb->db_execute($query['consulta'], $query['valores'], 'fetch_assoc');
@@ -463,9 +472,10 @@ class psMonitor{
         global $psDb, $psCore, $psUser;
         //variables locales a esta función
         $url = $psCore->settings['url'];
-        $text = $this->monitor[$no_type]['ln_text'];
-        $text = is_array($text) ? $text[$datos['obj_dos']-1] : $text;
         $type = $datos['not_type'];
+        $text = $this->monitor[$type]['ln_text'];
+        $text = is_array($text) ? $text[$datos['obj_dos']-1] : $text;
+        
         $text_extra = ($this->mostrarTipo == 1) ? '' : ' '.$this->monitor[$type]['ln_text'];
         //creamos el array para la frase
         $frase = array(
@@ -652,12 +662,12 @@ class psMonitor{
                 //ahora mandamos la actividad
                 $act_type = ($all['type'] == 1) ? 8 : 7;
                 $psActividad->setActividad($act_type, $all['obj']);
-                return '0-'.$all['obj'].'-'.$total['total'];
+                return '0: '.$all['obj'].'-'.$total['total'];
             }else{
-                return '1-'.$all['obj'].'-0-No se pudo completar la acci&oacute;n de seguir al usuario.';
+                return '1: '.$all['obj'].'0: No se pudo completar la acci&oacute;n de seguir al usuario.';
             }
         }else{
-            return '2-'.$all['obj'].'-0';
+            return '2: '.$all['obj'].'-0';
         }
     }
 
@@ -666,7 +676,7 @@ class psMonitor{
      * @return [type] devolvemos un string con el resultado obtenido 
      */
     function setDejarSeguir(){
-        global $psDb, $psUser, $psDb;
+        global $psDb, $psUser, $psCore;
         $type = 4;//notificación
         $all = $this->getAllFollow();
         //antiflood
@@ -680,7 +690,7 @@ class psMonitor{
         $valores = array('user' => $psUser->user_id, 'fid' => $all['obj'], 'type' => $all['type']);
         if($psDb->db_execute($consulta, $valores)){
             //obtenemos el total
-            $consulta2 = "SELECT follow_id, FROM u_follows WHERE f_id = :fid AND f_type = :type";
+            $consulta2 = "SELECT follow_id FROM u_follows WHERE f_id = :fid AND f_type = :type";
             $valores2 = array('fid' => $all['obj'], 'type' => $all['type']);
             $total = $psDb->db_execute($consulta2, $valores2, 'rowCount');
             return '0-'.$all['obj'].' - '.$total;

@@ -15,7 +15,7 @@ if (!defined('PS_HEADER')) {
 $niveles = array(
 	'comentario-preview' => array('n' => 2, 'p' => 'preview'),
 	'comentario-agregar' => array('n' => 2, 'p' => 'preview'),
-  'comentario-editar' => array('n' => 2, 'p' => ''),
+  	'comentario-editar' => array('n' => 2, 'p' => ''),
 	'comentario-borrar' => array('n' => 2, 'p' => ''),
 	'comentario-ocultar' => array('n' => 2, 'p' => ''),
 	'comentario-votar' => array('n' => 2, 'p' => ''),
@@ -59,11 +59,11 @@ switch($action){
       if(empty($do)){
         $psComentario = $psPosts->nuevoComentario();
         $smarty->assign("psType", 'new');
-  			if(is_array($psComentario)){
-  				$smarty->assign("psComentario", $psComentario);
-  			}else{
-  				die($psComentario);
-  			}
+		if(is_array($psComentario)){
+			$smarty->assign("psComentario", $psComentario);
+		}else{
+			//die($psComentario);
+		}
       } elseif($do == 'fotos'){
           $psComentario = $tpFotos->nuevoComentario();
     			if(is_array($psComentario)){

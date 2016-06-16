@@ -10,9 +10,10 @@
             <div class="boxy">
                 <div class="boxy-title">
                     <h3>Posts</h3>
-                    <label class="floatR" for="borradores-search">Buscar</label>
-                    <input class="floatR" type="text" id="borradores-search" value="" onKeyUp="borradores.search(this.value, event)" onFocus="borradores.search_focus()" onBlur="borradores.search_blur()" autocomplete="off" />
+                    <!--<label class="floatR" for="borradores-search">Buscar</label>
+                    <input class="floatR" type="text" id="borradores-search" value="" onKeyUp="borradores.search(this.value, event)" autocomplete="off" />-->
                 </div>
+                <div class="both"></div>
                 <div id="res" class="boxy-content">
                     {if $psBorradores}
                         <ul id="resultados-borradores"></ul>
@@ -50,7 +51,7 @@
                             <span class="count"></span>
                         </li>
                     </ul>
-                    <h4>Ordenar por</h4>
+                    <!--<h4>Ordenar por</h4>
     
                     <ul id="borradores-orden" class="cat-list">
                         <li class="active">
@@ -78,7 +79,7 @@
                             </span> 
                             <span class="count"></span>
                         </li>
-                    </ul>
+                    </ul>-->
                 </div>
             </div>
         </div>
@@ -86,7 +87,7 @@
     </div>
     <div id="template-result-borrador" class="nodisplay">
         <li id="borrador_id___id__">
-            <a title="__categoria_name__" class="categoriaPost __categoria__ __tipo__" href="__url__" onclick="__onclick__" style="background-image:url({$psConfig.tema.t_url}/images/icons/cat/__imagen__)">__titulo__</a>
+            <a title="__categoria_name__" class="categoriaPost __categoria__ __tipo__" href="__url__" onclick="__onclick__">__titulo__</a>
             <span class="causa">Causa: __causa__</span>
             <span class="gray">&Uacute;ltima vez guardado el __fecha_guardado__</span> 
             <a href="" onclick="borradores.eliminar(__borrador_id__, true); return false;">

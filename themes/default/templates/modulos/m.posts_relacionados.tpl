@@ -3,7 +3,7 @@
     <ul>
     	{if $psRelacionados}
         {foreach from=$psRelacionados item=p}
-    	<li class="categoriaPost" style="background-image:url({$psConfig.tema.t_url}/images/icons/cat/{$p.c_img})">
+    	<li class="categoriaPost">
 			<a class="{if $p.post_private}categoria privado{/if}" title="{$p.post_title}" href="{$psConfig.url}/posts/{$p.c_seo}/{$p.post_id}/{$p.post_title|seo}.html" rel="dc:relation">{$p.post_title}</a>
 		</li>
         {/foreach}

@@ -156,7 +156,7 @@ class psModeracion{
                 $update = "UPDATE p_posts SET post_status = :status WHERE post_id = :pid";
                 $valores2 = array('status' => 3, 'pid' => $pid);
                 if($psDb->db_execute($update, $valores2)){
-                    $insert = "INSERT INTO w_historial (pofid, action, type, mod, reason, date, mod_ip) VALUES (:id, :action, :type, :mod, :reason, :dat, :ip)";
+                    $insert = "INSERT INTO w_historial (pofid, action, type, mod, reason, `date`, mod_ip) VALUES (:id, :action, :type, :mod, :reason, :dat, :ip)";
                     $valores3 = array(
                         'id' => $pid,
                         'action' => 3,
@@ -213,7 +213,7 @@ class psModeracion{
             }
             //restauramos el post
             $update = "UPDATE p_posts SET post_status = :status WHERE post_id = :pid";
-            $valores3 = array('pid' => $pid);
+            $valores3 = array('status' => 0, 'pid' => $pid);
             if($psDb->db_execute($update, $consulta3)){
                 $update2 = "UPDATE w_stats SET stats_posts = stats_posts + :stat WHERE stats_no = :no";
                 $valores4 = array('stat' => 1, 'no' => 1);
@@ -660,13 +660,13 @@ class psModeracion{
                     if (!filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP)){
                         return '0: Su ip no pudo validarse correctamente';
                     }
-                    $consulta = "INSERT INTO w_historial (pofid, action, type, mod, reason, date, mod_ip) VALUES (:id, :action, :type, :mod, :reason, :dat, :ip)";
+                    $consulta = "INSERT INTO w_historial (`pofid`, `action`, `type`, `mod`, `reason`, `date`, `mod_ip`) VALUES (:id, :action, :type, :mod, :reason, :dat, :ip)";
                     $valores = array(
                         'id' => $datos['post_id'],
                         'action' => 1,
                         'type' => 1,
                         'mod' => $psUser->user_id,
-                        'reason' => $datos['razon'],
+                        'reason' => empty($datos['razon']) ? '' : $datos['razon'],
                         'dat' => time(),
                         'ip' => $_SERVER['REMOTE_ADDR']
                     );
@@ -681,7 +681,7 @@ class psModeracion{
                     $borrar = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
                     //comprobamos e insertamos los datos
                     if($borrar['post_user'] != $psUser->user_id){
-                        $insert = "INSERT INTO w_historial (pofid, action, type, mod, reason, date, mod_ip) VALUES (:id, :action, :type, :mod, :reason, :dat, :ip)";
+                        $insert = "INSERT INTO w_historial (pofid, action, type, mod, reason, `date`, mod_ip) VALUES (:id, :action, :type, :mod, :reason, :dat, :ip)";
                         $valores2 = array(
                             'id' => $borrar['post_id'],
                             'action' => 2,
@@ -705,7 +705,7 @@ class psModeracion{
                     //obtenemos la razón de borrar la foto
                     $razon = $_POST['razon'] != 8 ? filter_input(INPUT_POST, 'razon') : filter_input(INPUT_POST, 'razon_desc');
                     //insertamos los  datos en el historial
-                    $insert = "INSERT INTO w_historial (pofid, action, type, mod, reason, date, mod_ip) VALUES (:id, :action, :type, :mod, :reason, :dat, :ip)";
+                    $insert = "INSERT INTO w_historial (pofid, action, type, mod, reason, `date`, mod_ip) VALUES (:id, :action, :type, :mod, :reason, :dat, :ip)";
                     $valores2 = array(
                         'id' => $foto['foto_id'],
                         'action' => 2,
@@ -764,12 +764,12 @@ class psModeracion{
             $datos = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
             //comprobamos el estado del sticky
             if($datos['post_block_comments'] == 1){
-                $update = "UPDATE p_posts SET post_block_comments == :block WHERE post_id = :pid";
+                $update = "UPDATE p_posts SET post_block_comments = :block WHERE post_id = :pid";
                 $valores2 = array('block' => 0, 'pid' => $pid);
                 $psDb->db_execute($update, $valores2);
                 return '1: El post fue abierto de nuevo';
             }else{
-                $update = "UPDATE p_posts SET post_block_comments == :block WHERE post_id = :pid";
+                $update = "UPDATE p_posts SET post_block_comments = :block WHERE post_id = :pid";
                 $valores2 = array('block' => 1, 'pid' => $pid);
                 $psDb->db_execute($update, $valores2);
                 return '1: El post fue cerrado de nuevo';

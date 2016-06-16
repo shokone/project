@@ -49,7 +49,7 @@ if($psContinue){
 	$action = filter_input(INPUT_GET, 'action');
 	//comprobamos
 	if(is_numeric($action)){
-		include '../class/c.borradores.php';
+		include '../class/c.boradores.php';
 		$psBorradores =& psBorradores::getInstance();
 		$psBorrador = $psBorradores->getBorrador();
 		$smarty->assign("psBorrador", $psBorrador);
@@ -60,7 +60,7 @@ if($psContinue){
 		if(!empty($_POST['titulo'])){
 		  	$post_save = $psPosts->guardarPost();
 			if($post_save == 1) {
-				$post = filter_input(INPUT_GET, 'pid');exit('hola '.$pid);
+				$post = filter_input(INPUT_GET, 'pid');
 				$cat = filter_input(INPUT_POST, 'categoria');
 				$consulta = "SELECT c_seo FROM p_categorias WHERE cid = :cat";
 				$valores = array('cat' => $cat);
@@ -84,7 +84,7 @@ if($psContinue){
             }
 		}
 		$smarty->assign("psAction", filter_input(INPUT_GET, 'action'));
-		$smarty->assign("psPostId", filter_input(INPUT_GET, 'pid'));
+		$smarty->assign("psPid", filter_input(INPUT_GET, 'pid'));
 
 	}elseif($_POST['titulo']){
 		include '../class/c.posts.php';

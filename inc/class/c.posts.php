@@ -282,7 +282,7 @@ class psPosts{
             }else{
                 $consulta2 .= 'u.user_activo = :activo ';
                 $valores2['activo'] = 1;
-                $consulta2 .= ' AND u.user_baneado > :ban';
+                $consulta2 .= ' AND u.user_baneado = :ban';
                 $valores2['ban'] = 0;
                 $consulta2 .= ' AND p.post_status = :status';
                 $valores2['status'] = 0;
@@ -321,10 +321,10 @@ class psPosts{
         $consulta3 .= $stic1;
         $valores3['stic2'] = $stic2;
         $consulta3 .= ' GROUP BY p.post_id ORDER BY ';
-        $consulta3 .= $order.' DESC';
-        //$consulta3 .= ' DESC LIMIT :start, :fin';
-        //$valores3['start'] = (int)$start;echo $start.' '.$fin;
-        //$valores3['fin'] = (int)$fin;
+        //$consulta3 .= $order.' DESC';
+        $consulta3 .= $order.' DESC LIMIT :start, :fin';
+        $valores3['start'] = (int)$start;
+        $valores3['fin'] = (int)$fin;
         //$lastPosts['data'] = $psDb->resultadoArray($psDb->db_execute($consulta3, $valores3));echo 'jajaja';
         $lastPosts['data'] = $psDb->db_execute($consulta3, $valores3);
         return $lastPosts;
@@ -513,7 +513,7 @@ class psPosts{
             if($psDb->db_execute($consulta2, $valores2)){
                 //ahora guardamos los datos en el historial de moderación
                 if($psUser->admod || ($psUser->permisos['moedpo'] && $psUser->user_id != $datos['post_user'] && $_POST['razon'])){
-                    include 'c.c.moderacion.php';
+                    include 'c.moderacion.php';
                     $psModeracion =& psModeracion::getInstance();
                     return $psModeracion->setHistorial('editar', 'post', array(
                         'post_id' => $pid,
@@ -728,17 +728,24 @@ class psPosts{
     public function setModePost(){
         global $psUser, $psCore, $psDb;
         $action = filter_input(INPUT_GET,'action');
-        if($action == 'randPost'){
-            $consulta = "SELECT p.post_id, p.post_user, p.post_category, p.post_title, u.user_name, c.c_nombre, c.c_seo FROM p_posts AS p LEFT JOIN u_mmiembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = :status :var ORDER BY :rand DESC";
-            $valores['status'] = 0;
-            if($psUser->is_admod && $psCore->settings['c_see_mod'] == 1){
-                $valores['var'] = "";
+        if($action == 'fortuitae'){
+            // TOTAL DE POSTS
+            $consulta2 = "SELECT COUNT(p.post_id) AS total FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id WHERE ";
+            if($psUser->admod && $psCore->settings['c_see_mod'] == 1){
+                $consulta2 .= 'p.post_id > :id';
+                $valores2['id'] = 0;
             }else{
-                $valores['var'] = "AND u.user_activo = :activo && u.user_baneado = :ban";
-                $valores['activo'] = 1;
-                $valores['ban'] = 0;
+                $consulta2 .= 'u.user_activo = :activo ';
+                $valores2['activo'] = 1;
+                $consulta2 .= ' AND u.user_baneado = :ban';
+                $valores2['ban'] = 0;
+                $consulta2 .= ' AND p.post_status = :status';
+                $valores2['status'] = 0;
             }
-            $valores['rand'] = rand();
+            $q1 = $psDb->db_execute($consulta2, $valores2, 'fetch_num');
+            $total = $q1[0];
+            $consulta = "SELECT p.post_id, p.post_user, p.post_category, p.post_title, u.user_name, c.c_nombre, c.c_seo FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_id = ";
+            $consulta .= ''.rand(0, $total).'';
             if(!$psDb->db_execute($consulta,$valores,'rowCount')){
                 $psCore->redirectTo($psCore->settings['url']."/posts/");
             }
@@ -746,28 +753,27 @@ class psPosts{
         }else {
             $action = $action == 'prev' ? '<' : '>';
             $postid = (isset($_GET['id'])) ? filter_input(INPUT_GET,'id') : 1;
-            $consulta = "SELECT p.post_id, p.post_user, p.post_category, p.post_title, u.user_name, c.c_nombre, c.c_seo FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = \'0\' :var1 AND p.post_id :action :postid ORDER BY p.post_id :var2";
-            if($psUser->is_admod && $psCore->settings['c_see_mod'] == 1){
-                $valores['var1'] = "";
-            }else{
-                $valores['var1'] = "AND u.user_activo = :activo && u.user_baneado = :ban";
+            $consulta = "SELECT p.post_id, p.post_user, p.post_category, p.post_title, u.user_name, c.c_nombre, c.c_seo FROM p_posts AS p LEFT JOIN u_miembros AS u ON p.post_user = u.user_id LEFT JOIN p_categorias AS c ON c.cid = p.post_category WHERE p.post_status = :status";
+            $valores['status'] = 0;
+            if(!$psUser->admod && $psCore->settings['c_see_mod'] != 1){
+                $consulta .= " AND u.user_activo = :activo";
                 $valores['activo'] = 1;
+                $consulta .= " AND u.user_baneado = :ban";
                 $valores['ban'] = 0;
             }
+            $consulta .= " AND p.post_id ".$action.' '.$postid;
+            $consulta .= " ORDER BY p.post_id";
             if($action == '<'){
-                $com2 = "DESC";
+                $consulta .= " DESC";
             }else{
-                $com2 = "ASC";
+                $consulta .= " ASC";
             }
-            $valores['action'] = $action;
-            $valores['postid'] = $postid;
-            $valores['var2'] = $com2;
             if(!$psDb->db_execute($consulta, $valores, 'rowCount')){
                 $psCore->redirectTo($psCore->settings['url']."/posts/");
             }
             $resultado = $psDb->db_execute($consulta,$valores,"fetch_assoc");
         }
-        $psCore->redirectoTo($psCore->settings['url']."/posts/".$resultado['c_seo']."/".$resultado['post_id']."/".$psCore->setSeo($resultado['post_title']).".html");
+        $psCore->redirectTo($psCore->settings['url']."/posts/".$resultado['c_seo']."/".$resultado['post_id']."/".$psCore->setSeo($resultado['post_title']).".html");
     }
 
     /**
@@ -794,15 +800,15 @@ class psPosts{
                 return 'Para votar debes introducir caracteres num&eacute;ricos.';
             }
             //validamos la ip y comprobamos si el post ha sido votado desde la misma ip
-            if(!filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_URL)){
+            /*if(!filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_URL)){
                 return 'Lo sentimos su ip no pudo validarse.';
-            }
+            }*/
             if($psUser->admod != 1){
                 $consulta = "SELECT user_id FROM u_miembros WHERE user_last_ip = :ip AND user_id != :uid";
                 $valores = array('ip' => $_SERVER['REMOTE_ADDR'], 'uid' => $psUser->user_id);
                 $consulta2 = "SELECT session_id FROM u_sessions WHERE session_ip = :ip AND session_user_id != :uid";
                 if($psDb->db_execute($consulta, $valores, 'rowCount') || $psDb->db_execute($consulta2, $valores, 'rowCount')){
-                    return 'Has votado con otra cuenta desde esta misma ip. Por favor contacta con tu administrador para solucionar el problema.';
+                    return '0: Has votado con otra cuenta desde esta misma ip. Por favor contacta con tu administrador para solucionar el problema.';
                 }
             }
             //obtenemos datos de algunos campos
@@ -818,9 +824,9 @@ class psPosts{
                 //comprobamos si ya hemos votado el post con esta cuenta
                 $consulta4 = "SELECT tid FROM p_votos WHERE tid = :tid AND tuser = :user AND type = :type";
                 $valores4 = array('tid' => $pid, 'user' => $psUser->user_id, 'type' => 1);
-                if($psDb->db_execute($consulta4, $valores4, 'rowCount')){
+                if(!$psDb->db_execute($consulta4, $valores4, 'fetch_num')){
                     //comprobamos cuantos puntos nos quedan para dar
-                    if($psCore->settings['c_allow_points'] > 0){
+                    if($psCore->settings['c_allow_points'] == 1){
                         $max = $psCore->settings['c_allow_points'];
                     }else if($psCore->settings['c_allow_points'] == '-1'){//podemos dar todos los puntos disponibles
                         $max = $psUser->info['user_puntosxdar'];
@@ -835,31 +841,29 @@ class psPosts{
                             if($puntos <= $max){
                                 //ahora realizamos las consultas
                                 //sumamos al post
-                                $consulta5 = "UPDATE p_posts SET post_puntos = :puntos WHERE post_id = :id";
+                                $consulta5 = "UPDATE p_posts SET post_puntos = post_puntos + :puntos WHERE post_id = :id";
                                 $valores5 = array(
-                                    'puntos' => 'post_puntos'+':puntos2',
-                                    'puntos2' => $puntos,
+                                    'puntos' => $puntos,
                                     'id' => $pid
                                 );
                                 $psDb->db_execute($consulta5, $valores5);
                                 //sumamos al dueño del post
-                                $consulta6 = "UPDATE u_miembros SET user_puntos = :puntos WHERE user_id = :id";
+                                $consulta6 = "UPDATE u_miembros SET user_puntos = user_puntos + :puntos WHERE user_id = :id";
                                 $valores6 = array(
-                                    'puntos' => 'user_puntos'+':puntos2',
-                                    'puntos2' => $puntos,
+                                    'puntos' => $puntos,
                                     'id' => $datos['post_user']
                                 );
                                 $psDb->db_execute($consulta6, $valores6);
                                 //restamos los puntos del usuario que vota
-                                $consulta7 = "UPDATE u_miembros SET user_puntosxdar = :puntos WHERE user_id = :id";
+                                $consulta7 = "UPDATE u_miembros SET user_puntosxdar = user_puntosxdar - :puntos WHERE user_id = :id";
                                 $valores7 = array(
-                                    'puntos' => 'user_puntosxdar'-':puntos2',
-                                    'puntos2' => $puntos,
+                                    'puntos' => $puntos,
                                     'id' => $datos['post_user']
                                 );
+                                exit('son '.$puntos);
                                 $psDb->db_execute($consulta7, $valores7);
                                 //insertamos en la tabla de votos
-                                $consulta8 = "INSERT INTO p_votos (tid, tuser, cant, type, date) VALUES (:tid, :user, :cant, :type, :dates)";
+                                $consulta8 = "INSERT INTO p_votos (tid, tuser, cant, type, `date`) VALUES (:tid, :user, :cant, :type, :dates)";
                                 $valores8 = array(
                                     'tid' => $pid,
                                     'user' => $psUser->user_id,
@@ -874,24 +878,24 @@ class psPosts{
                                 $psActividad->setActividad(3, $pid, $puntos);
                                 //comprobamos si el usuario sube de rango
                                 $this->subirRango($datos['post_user'], $pid);
-                                return 'Los puntos han sido agregados correctamente.';
+                                return '1: Los puntos han sido agregados correctamente.';
                             }else{
-                                return 'Error. No puedes dar '.$puntos.' puntos, el m&aacute;ximo es '.$max;
+                                return '0: Error. No puedes dar '.$puntos.' puntos, el m&aacute;ximo es '.$max;
                             }
                         }else{
-                            return 'Tienes que marcar algún punto.';
+                            return '0: Tienes que marcar algún punto.';
                         }
                     }else{
-                        return 'Error. No puedes dar '.$puntos.' puntos, s&oacute; tienes '.$psUser->info['user_puntosxdar'];
+                        return '0: Error. No puedes dar '.$puntos.' puntos, s&oacute; tienes '.$psUser->info['user_puntosxdar'];
                     }
                 }else{
-                    return 'Ya has votado este post.';
+                    return '0: Ya has votado este post.';
                 }
             }else{
-                return 'No puedes votar un post tuyo.';
+                return '0: No puedes votar un post tuyo.';
             }
         }else{
-            return 'No tienes permiso para hacer lo que intentas.';
+            return '0: No tienes permiso para hacer lo que intentas.';
         }
     }
 
@@ -1139,16 +1143,16 @@ class psPosts{
                             '',
                             $_SERVER['REMOTE_ADDR']);
                     }else{
-                        return 'Tu comentario fue agregado correctamente.';
+                        return '1: Tu comentario fue agregado correctamente.';
                     }
                 }else{
-                    return 'Ocurri&oacute; un error al añadir el comentario, por favor int&eacute;ntelo de nuevo m&aacute;s tarde.';
+                    return '0: Ocurri&oacute; un error al añadir el comentario, por favor int&eacute;ntelo de nuevo m&aacute;s tarde.';
                 }
             }else{
-                return 'El post se encuentra cerrado y no est&aacute; permitido realizar comentarios.';
+                return '0: El post se encuentra cerrado y no est&aacute; permitido realizar comentarios.';
             }
         }else{
-            return 'El post no existe';
+            return '0: El post no existe';
         }
     }
 
@@ -1169,12 +1173,12 @@ class psPosts{
             $consulta2 = "UPDATE p_comentarios SET c_body = :body WHERE cid = :cid";
             $valores2 = array('body' => $comentario, 'cid' => $cid);
             if($psDb->db_execute($consulta2, $valores2)){
-                return 'El comentario fu&eacute; editado correctamente.';
+                return '1: El comentario fu&eacute; editado correctamente.';
             }else{
-                return 'Ocurri&oacute; un error al editar el comentario. Por favor int&eacute;ntelo de nuevo m&aacute;s tarde.';
+                return '0: Ocurri&oacute; un error al editar el comentario. Por favor int&eacute;ntelo de nuevo m&aacute;s tarde.';
             }
         }else{
-            return 'No puedes editar un comentario que no has hecho t&uacute;.';
+            return '0: No puedes editar un comentario que no has hecho t&uacute;.';
         }
     }
 
@@ -1184,11 +1188,11 @@ class psPosts{
      */
     function borrarComentario(){
         global $psDb, $psCore, $psUser;
-        $id_comen = filter_input(INPUT_POST, 'comid');
+        $comid = filter_input(INPUT_POST, 'comid');
         $autor = filter_input(INPUT_POST, 'autor');
         $pid = filter_input(INPUT_POST, 'postid');
         $consulta = "SELECT cid FROM p_comentarios WHERE cid = :cid";
-        $valores = array('cid' => $cid);
+        $valores = array('cid' => $comid);
         //comprobamos si el comentario existe en la db
         if(!$psDb->db_execute($consulta, $valores, 'rowCount')){
             return 'El comentario seleccionado no existe. Por favor, recargue la p&aacute;gina e int&eacute;ntelo de nuevo.';
@@ -1198,36 +1202,36 @@ class psPosts{
         $valores2 = array('pid' => $pid, 'user' => $psUser->user_id);
         $mipost = $psDb->db_execute($consulta2, $valores2, 'rowCount');
         //realizamos la consulta para comprobar si el comentario es mío
-        $consulta3 = "SELECT cid FROM p_comentarios WHERE cid = :pid AND c_user = :user";
-        $valores3 = array('cid' => $cid, 'user' => $psUser->user_id);
+        $consulta3 = "SELECT cid FROM p_comentarios WHERE cid = :cid AND c_user = :user";
+        $valores3 = array('cid' => $comid, 'user' => $psUser->user_id);
         $micomentario = $psDb->db_execute($consulta3, $valores3, 'rowCount');
         //ahora realizamos las comprobaciones
         if(!empty($mipost) || (!empty($micomentario) && !empty($psUser->permisos['godpc'])) || !empty($psUser->admod) || !empty($psUser->permisos['moecp'])){
             $consulta4 = "DELETE FROM p_comentarios WHERE cid = :cid AND c_user = :user AND c_post_id = :pid";
-            $valores4 = array('cid' => $cid, 'user' => $psUser->user_id, 'pid' => $pid);
+            $valores4 = array('cid' => $comid, 'user' => $psUser->user_id, 'pid' => $pid);
             if($psDb->db_execute($consulta4, $valores4)){
                 //borramos los votos
                 $consulta5 = "DELETE FROM p_votos WHERE tid = :tid";
-                $valores5 = array('tid' => $id_comen);
+                $valores5 = array('tid' => $comid);
                 $psDb->db_execute($consulta5, $valores5);
                 //reducimos en 1 las estadísticas de comentarios
-                $update = "UPDATE w_stats SET stats_comments = :stats WHERE stats_no = :no";
-                $vupdate = array('stats' => 'stats_comments'-1, 'no' => 1);
+                $update = "UPDATE w_stats SET stats_comments = stats_comments - :stats WHERE stats_no = :no";
+                $vupdate = array('stats' => 1, 'no' => 1);
                 $psDb->db_execute($update, $vupdate);
                 //reducimos en 1 los comentarios en el post
-                $update2 = "UPDATE p_posts SET post_comments = :pc WHERE post_id = :pid";
-                $vupdate2 = array('pc' => 'post_comments'-1,'pid' => $pid);
+                $update2 = "UPDATE p_posts SET post_comments = post_comments - :pc WHERE post_id = :pid";
+                $vupdate2 = array('pc' => 1,'pid' => $pid);
                 $psDb->db_execute($update2, $vupdate2);
                 //reducimos en 1 los comentarios realizados por el usuario
-                $update3 = "UPDATE u_miembros SET user_comentarios = :uc WHERE user_id = :uid";
-                $vupdate3 = array('uc' => 'user_comentarios'-1, 'uid' => $autor);
+                $update3 = "UPDATE u_miembros SET user_comentarios = user_comentarios - :uc WHERE user_id = :uid";
+                $vupdate3 = array('uc' => 1, 'uid' => $autor);
                 $psDb->db_execute($update3, $vupdate3);
-                return 'Comentario borrado correctamente.';
+                return '1: Comentario borrado correctamente.';
             }else{
-                return 'Ocurri&oacute; un error al realizar la consulta. Por favor int&eacute;ntelo de nuevo m&aacute;s tarde.';
+                return '0: Ocurri&oacute; un error al realizar la consulta. Por favor int&eacute;ntelo de nuevo m&aacute;s tarde.';
             }
         }else{
-            return 'No tienes permisos para hacer esto.';
+            return '0: No tienes permisos para hacer esto.';
         }
     }
 
@@ -1240,7 +1244,7 @@ class psPosts{
         global $psDb, $psCore, $psUser;
         if($psUser->admod || $psUser->permisos['moaydcp']){
             //obtenemos los datos
-            $consulta = "SELECT cid, c_user, c_pos_id, c_status FROM p_comentarios WHERE cid = :cid";
+            $consulta = "SELECT cid, c_user, c_post_id, c_status FROM p_comentarios WHERE cid = :cid";
             $valores = array('cid' => filter_input(INPUT_POST, 'comid'));
             $datos = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
             //actualizamos las tablas en la db
@@ -1262,15 +1266,15 @@ class psPosts{
             $valores5 = array('status' => (($datos['c_status'] == 1) ? 0 : 1), 'cid' => filter_input(INPUT_POST, 'comid'));
             if($psDb->db_execute($consulta5, $valores5)){
                 if($datos['c_status'] == 1){
-                    return 'El comentario fue habilitado';
+                    return '2: El comentario fue habilitado';
                 }else{
-                    return 'El comentario fue deshabilitado';
+                    return '1: El comentario fue deshabilitado';
                 }
             }else{
-                return 'Ocurri&oacute; un error al realizar la consulta. Por favor int&eacute;ntelo de nuevo m&aacute;s tarde.';
+                return '0: Ocurri&oacute; un error al realizar la consulta. Por favor int&eacute;ntelo de nuevo m&aacute;s tarde.';
             }
         }else{
-            return 'No tienes permisos para hacer esto.';
+            return '0: No tienes permisos para hacer esto.';
         }
     }
 
@@ -1539,10 +1543,10 @@ class psPosts{
         $datos = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
         //creamos un string con los datos
         $favoritos = '';
-        foreach($datos as $favorito){
+        foreach($datos as $key => $favorito){
             $favoritos .= '{"fav_id":"'.$favorito['fav_id']
-            .',"post_id":"'.$favorito['post_id']
-            .',"titulo":"'.$favorito['post_id']
+            .'","post_id":"'.$favorito['post_id']
+            .'","titulo":"'.$favorito['post_title']
             .'","categoria":"'.$favorito['c_seo']
             .'","categoria_name":"'.$favorito['c_nombre']
             .'","imagen":"'.$favorito['c_img']
@@ -1552,7 +1556,7 @@ class psPosts{
             .'/'.$psCore->setSEO($favorito['post_title'])
             .'.html","fecha_creado":'.$favorito['post_date']
             .',"fecha_creado_formato":"'.strftime("%d\/%m\/%Y a las %H:%M:%S hs", $favorito['post_date'])
-            .'.","fecha_creado_palabras":"'.$psCore->setHaceTiempo($fav['post_date'], true)
+            .'.","fecha_creado_palabras":"'.$psCore->setHaceTiempo($favorito['post_date'], true)
             .'","fecha_guardado":'.$favorito['fav_date']
             .',"fecha_guardado_formato":"'.strftime("%d\/%m\/%Y a las %H:%M:%S hs", $favorito['fav_date'])
             .'.","fecha_guardado_palabras":"'.$psCore->setHaceTiempo($favorito['fav_date'], true)
@@ -1680,11 +1684,13 @@ class psPosts{
         }
         //obtenemos las páginas
         $consulta .= " ORDER BY p.post_date DESC";
-        $consulta2 .= " ORDER BY p.post_date DESC";
+        $consulta2 .= " ORDER BY p.post_date DESC LIMIT :limite, :limite2";
         $total = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
         $total = $total['total'];
         $datos['pages'] = $psCore->getPagination($total, 15);
-        //$valores['limite'] = $datos['pages']['limit'];
+        $aux = explode(', ',$datos['pages']['limit']);
+        $valores['limite'] = (int)$aux[0];
+        $valores['limite2'] = (int)$aux[1];
         //obtenemos los datos de la búsqueda
         $datos['data'] = $psDb->resultadoArray($psDb->db_execute($consulta2, $valores));
         //obtenemos los actuales

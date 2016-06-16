@@ -564,7 +564,7 @@ var registro = {
 				$('#registroForm .pasoDos').show();
 				if(this.myAccion){
 					myActions.buttons(true, true, 'Terminar', 'registro.submit()', true, false, false);
-					$('#myActions #buttons .btn.btnOk').removeClass('btnCancel').addClass('btnGreen');
+					$('#myActions #buttons .btn.btnOk').removeClass('btnCancel').addClass('btn-success');
 				}else{
 					$('.reg-login .registro #buttons #sig').hide();
 					$('.reg-login .registro #buttons #term').css('display', 'inline-block');
@@ -689,7 +689,7 @@ var registro = {
 	}
 }
 
-function checkDate(month, day, year){
-  var d = new Date(year, month, day);
-  return (d.getFullYear() == year && d.getMonth() == month && d.getDate() == day);
+//función para comprobar la fecha
+function checkDate(month,year,day){
+	return month > 0 && month < 13 && year > 0 && year < 32768 && day > 0 && day <= (new Date(year, month, 0)).getDate();
 }

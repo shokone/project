@@ -52,15 +52,15 @@ if($psContinue){
     include(PS_CLASS."c.tops.php");
     $psTops =& psTops::getInstance();
     //comprobamos la fecha
-    $fecha = empty(filter_input(INPUT_GET['fecha'])) || filter_input(INPUT_GET['fecha']) > 5 ? 5: (int)filter_input(INPUT_GET['fecha']);
+    $fecha = empty(filter_input(INPUT_GET, 'fecha')) || filter_input(INPUT_GET, 'fecha') > 5 ? 5: (int)filter_input(INPUT_GET, 'fecha');
     //agregamos a smarty
     $smarty->assign("psFecha", $fecha);
     //categoria
-    $cat = empty(filter_input(INPUT_GET['cat'])) ? 0 : (int)filter_input(INPUT_GET['cat']);
+    $cat = empty(filter_input(INPUT_GET, 'cat')) ? 0 : (int)filter_input(INPUT_GET, 'cat');
     //agregamos a smarty
     $smarty->assign("psCat",$cat);
     //obtenemos la accion a realizar
-    $action = empty(filter_input(INPUT_GET['action'])) ? 'posts' : (string)filter_input(INPUT_GET['action']);
+    $action = empty(filter_input(INPUT_GET, 'action')) ? 'posts' : (string)filter_input(INPUT_GET, 'action');
     //asignamos a smarty
     $smarty->assign("psAction",$action);
     

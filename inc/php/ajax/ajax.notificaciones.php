@@ -36,10 +36,10 @@ switch($action){
 		$psAjax = 1;//activamos ajax
 		//ahora obtenemos la acción específica
 		switch($action2){
-			case 'seguir':
+			case 'follow':
 				echo $psMonitor->setSeguir();
 				break;
-			case 'dejarseguir':
+			case 'unfollow':
 				echo $psMonitor->setDejarSeguir();
 				break;
 			case 'last':

@@ -14,26 +14,26 @@
     </script>
     {/literal}
     <div>
-    	<div class="floatL">
-            <ul class="menu-cuenta">
-                <li class="active"><a onclick="cuenta.chgtab(this)">Cuenta</a></li>
-                <li><a onclick="cuenta.chgtab(this)">Perfil</a></li>    
-                <li><a onclick="cuenta.chgtab(this)">Bloqueados</a></li>
-                <li><a onclick="cuenta.chgtab(this)">Cambiar Clave</a></li>
-				<li><a onclick="cuenta.chgtab(this)">Cambiar Nick</a></li>
-                <li class="privacy"><a onclick="cuenta.chgtab(this)">Privacidad</a></li>
+    	<div class="col-md-8 col-xs-12 menuc">
+            <ul class="menu-cuenta nav nav-tabs">
+                <li class="active"><a href="#" onclick="cuenta.chgtab(this)">Cuenta</a></li>
+                <li><a href="#" onclick="cuenta.chgtab(this)">Perfil</a></li>    
+                <li><a href="#" onclick="cuenta.chgtab(this)">Bloqueados</a></li>
+                <li><a href="#" onclick="cuenta.chgtab(this)">Cambiar Clave</a></li>
+				<li><a href="#" onclick="cuenta.chgtab(this)">Cambiar Nick</a></li>
+                <li class="privacy" href="#"><a onclick="cuenta.chgtab(this)">Privacidad</a></li>
             </ul>
             <a name="alerta-cuenta"></a>
             <form class="horizontal" method="post" action="" name="editarcuenta">
             	{include file='modulos/m.cuenta_cuenta.tpl'}
                 {include file='modulos/m.cuenta_perfil.tpl'}
                 {include file='modulos/m.cuenta_block.tpl'}
-                {include file='modulos/m.cuenta_clave.tpl'}
+                {include file='modulos/m.cuenta_pass.tpl'}
 				{include file='modulos/m.cuenta_nick.tpl'}
-                {include file='modulos/m.cuenta_config.tpl'}
+                {include file='modulos/m.cuenta_privacidad.tpl'}
             </form>
         </div>
-        <div class="floatR">
+        <div class="col-md-4 col-xs-8">
             {include file='modulos/m.cuenta_sidebar.tpl'}
         </div>
     </div>

@@ -55,12 +55,12 @@
             <div class="wrap">
                 <textarea class="status" id="attaDesc" onfocus="onfocus_input(this)" onblur="onblur_input(this)" title="Escribe un comentario sobre esta foto..."></textarea>
             </div>
-            <input type="button" class="btn btnOk shareBtn" value="Compartir" onclick="muro.stream.compartir();" />
+            <input type="button" class="btn btn-success shareBtn" value="Compartir" onclick="muro.stream.compartir();" />
             <div class="clearBoth"></div>
         </div>
     </div>
     <div class="btnStatus">
-        <input type="button" class="btn btnOk shareBtn" value="Compartir" onclick="muro.stream.compartir();" />
+        <input type="button" class="btn btn-success shareBtn" value="Compartir" onclick="muro.stream.compartir();" />
         <div class="clearBoth"></div>
     </div>
 </div>

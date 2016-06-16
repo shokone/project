@@ -1,14 +1,14 @@
 <div class="post-autor">
     	<div class="">
         	<div class=" ">Autor del post:</div>
-            <div class="">
+            <!--<div class="">
             	<a href="{$psConfig.url}/rss/posts-usuario/{$psAutor.user_name}">
                 	<span>
                     <img title="RSS con posts de {$psAutor.user_name}" alt="RSS con posts de Usuario" src="{$psConfig.images}/big1v12.png"/>
                     <img src="{$psConfig.images}/space.gif"/>
                     </span>
                  </a>
-            </div>
+            </div>-->
         </div>
         <div class="">
         	<div class="">
@@ -24,7 +24,12 @@
             <img src="{$psConfig.default}/images/icons/ran/{$psAutor.rango.r_image}" title="{$psAutor.rango.r_name}" />
             <img src="{$psConfig.default}/images/icons/{if $psAutor.user_sexo == 0}female{else}male{/if}.png" title="{if $psAutor.user_sexo == 0}Mujer{else}Hombre{/if}" />
             <img src="{$psConfig.default}/images/flags/{$psAutor.pais.icon}.png" title="{$psAutor.pais.name}" />
-            {if $psAutor.user_id != $psUser->user_id}<a href="#" onclick="{if !$psUser->member}registro_load_form();{else}mensaje.nuevo('{$psAutor.user_name}','','','');{/if}return false"><img title="Enviar mensaje privado" src="{$psConfig.images}/icon-mensajes-recibidos.gif"/></a>{/if}
+            {if $psAutor.user_id != $psUser->user_id}
+                <button class="btn btn-warning" onclick="{if !$psUser->member}registro_load_form();{else}mensaje.nuevo('{$psAutor.user_name}','','','');{/if}return false" title="Enviar mensaje privado">
+                    <span classs="glyphicon glyphicon-envelope"></span>
+                    Enviar mensaje
+                </button>
+            {/if}
             {if !$psUser->member}
             <hr class="divider"/>
             <a class="btn_g follow_user_post" href="#" onclick="registro_load_form(); return false"><span class="icons follow">Seguir Usuario</span></a>

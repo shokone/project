@@ -29,10 +29,7 @@
                       {if $psUser->admod || $psUser->permisos.gopp}
                           <li><a title="Crear post" href="{$psConfig.url}/agregar/">Crear post</a></li>
                       {/if}
-                      <li><a title="Historial" href="{$psConfig.url}/mod-history">Historial</a></li>
-                      {if $psUser->admod || $psUser->permisos.moacp}
-                          <li><a title="Panel de moderador" href="{$psConfig.url}/moderacion/">Panel de moderador</a></li>
-                      {/if}
+                      <li><a title="Historial" href="{$psConfig.url}/mod-historial/">Historial</a></li>
                   {/if}
               </ul>
           </li>
@@ -60,9 +57,14 @@
               </ul>
           </li>
           {if $psUser->member == 1}
+            {if $psUser->admod || $psUser->permisos.moacp}
+                <li><a title="Panel de moderador" href="{$psConfig.url}/moderacion/">Moderaci&oacute;n</a></li>
+            {/if}
+          {/if}
+          {if $psUser->member == 1}
               {if $psUser->admod == 1}
                   <li class="{if $psPage == 'admin'}active{else}{/if}">
-                      <a title="Ir a administraci&oacute;n" href="{$psConfig.url}/admin/">Admin </a>
+                      <a title="Ir a administraci&oacute;n" href="{$psConfig.url}/admin/">Administraci&oacute;n</a>
                   </li>
               {/if}
           {/if}
@@ -78,7 +80,7 @@
                       <div>
                           <strong onclick="location.href='{$psConfig.url}/monitor/'">Notificaciones</strong>
                       </div>
-                  <ul></ul>
+                  <ul class="list-group"></ul>
                   <a href="{$psConfig.url}/monitor/" class="ver-mas">Ver m&aacute;s notificaciones</a>
                   </div>
               </li>
@@ -90,7 +92,7 @@
                       <div>
                           <strong onclick="location.href='{$psConfig.url}/mensajes/'">Mensajes</strong>
                       </div>
-                      <ul id="mensaje_box"></ul>
+                      <ul id="mensaje_box" class="list-group"></ul>
                       <a href="{$psConfig.url}/mensajes/">Ver todos los mensajes</a>
                   </div>
               </li>

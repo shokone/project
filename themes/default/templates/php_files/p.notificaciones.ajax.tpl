@@ -1,6 +1,6 @@
-{if $psData}
+{if $psDatos}
   {foreach from=$psDatos item=noti}
-    <li{if $noti.unread > 0}  class="unread"{/if}>
+    <li class="{if $noti.unread > 0} unread{/if}">
       <span class="monac_icons ma_{$noti.style}"></span>
       {if $noti.total == 1}
         <a href="{$psConfig.url}/perfil/{$noti.user}" title="{$noti.user}">{$noti.user}</a>

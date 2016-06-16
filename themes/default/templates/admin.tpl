@@ -1,7 +1,7 @@
 {include file='secciones/main_header.tpl'}
     <script type="text/javascript" src="{$psConfig.js}/admin.js"></script>
     <div id="administracion" class="row">
-        <div class="col-md-8">
+        <!--<div class="col-md-8">
             <div class="box" id="admin_panel">
             	{if $psAction == ''}
             	   {include file='admin/m.admin_welcome.tpl'}
@@ -54,6 +54,10 @@
                     {include file='admin/m.admin_sidemenu.tpl'}
                 </div>
             </div>
+        </div>-->
+        <div class="text-center">
+            <h3>La administraci&oacute;n se encuentra en mantenimiento, por favor vuelva m&aacute;s tarde</h3>
+            <img class="image-responsive" title="La administraci&oacute;n se encuentra en mantenimiento" src="{$psConfig.tema.t_url}/images/mantenimiento.jpg"/>
         </div>
     </div>
 {include file='secciones/main_footer.tpl'}

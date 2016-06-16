@@ -53,86 +53,89 @@ class psMensajes{
 		//monitor de mensajes
 		if($type == 1){
 			$consulta = "SELECT m.mp_id, m.mp_to, m.mp_from, m.mp_read_to, m.mp_read_mon_to, m.mp_subject, m.mp_preview, m.mp_date, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_from = u.user_id WHERE m.mp_to = :uid AND m.mp_del_to = :del";
-			$valores['uid'] =$psUser->user_id;
+			$valores['uid'] = $psUser->user_id;
 			$valores['del'] = 0;
 			if($this->mensajes > 0 || $unread = false){
 				if($modo != 'live'){
-					$consulta .= ' AND mp_read_mon_to < :toun UNION (SELECT m.mp_id, m.mp_to, m.mp_from, m.mp_read_from, m.mp_read_mon_from, m.mp_subject, m.mp_preview, m.mp_date, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_from = u.user_id WHERE m.mp_to = :uid2 AND m.mp_del_from = :del2 AND m.mp_answer = :ans';
+					$consulta .= ' AND m.mp_read_mon_to < :toun UNION (SELECT m.mp_id, m.mp_to, m.mp_from, m.mp_read_from, m.mp_read_mon_from, m.mp_subject, m.mp_preview, m.mp_date, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_from = u.user_id WHERE m.mp_to = :uid2 AND m.mp_del_from = :del2 AND m.mp_answer = :ans';
 					$valores['toun'] = 2;
 					$valores['uid2'] = $psUser->user_id;
 					$valores['del2'] = 0;
 					$valores['ans'] = 1;
-					$consulta .= ' AND mp_read_mon_from < :fromun)';
+					$consulta .= ' AND m.mp_read_mon_from < :fromun)';
 					$valores['fromun'] = 2;
 				}else{
-					$consulta .= 'AND mp_read_mon_to = :toun UNION (SELECT m.mp_id, m.mp_to, m.mp_from, m.mp_read_from, m.mp_read_mon_from, m.mp_subject, m.mp_preview, m.mp_date, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_from = u.user_id WHERE m.mp_to = :uid2 AND m.mp_del_from = :del2 AND m.mp_answer = :ans';
+					$consulta .= 'AND m.mp_read_mon_to = :toun UNION (SELECT m.mp_id, m.mp_to, m.mp_from, m.mp_read_from, m.mp_read_mon_from, m.mp_subject, m.mp_preview, m.mp_date, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_from = u.user_id WHERE m.mp_to = :uid2 AND m.mp_del_from = :del2 AND m.mp_answer = :ans';
 					$valores['toun'] = 0;
 					$valores['uid2'] = $psUser->user_id;
 					$valores['del2'] = 0;
 					$valores['ans'] = 1;
-					$consulta .= ' AND mp_read_mon_from = :fromun)';
+					$consulta .= ' AND m.mp_read_mon_from = :fromun)';
 					$valores['fromun'] = 0;
 				}
 			}
-			$consulta .= " ORDER BY m.mp_id DESC";
+			$consulta .= " ORDER BY mp_id DESC";
 			//realizamos la consulta
 			$datos['total'] = 0;
 			$rows = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
 			foreach($rows as $row){
 				$row['mp_from'] = ($row['mp_from'] == $psUser->user_id) ? $row['mp_to'] : $row['mp_from'];
-        $datos['data'][$row['mp_date']] = $row;
-        //actualizamos los datos en la db
-        $consulta2 = "UPDATE u_mensajes SET :updates";
-        if($psUser->user_id == $row['mp_to']){
-        	if($modo == 'live'){
-        		$consulta2 .= 'mp_read_mon_to = :update';
-        		$updates = 1;
-        	}else{
-        		$consulta2 .= 'mp_read_mon_to = :update';
-        		$updates = 2;
-        	}
-        }else{
-        	if($modo == 'live'){
-        		$consulta2 .= 'mp_read_mon_from = :update';
-        		$updates = 1;
-        	}else{
-        		$consulta2 .= 'mp_read_mon_from = :update';
-        		$updates = 2;
-        	}
-        }
-        $consulta2 .= " WHERE mp_id = :mid";
-        $valores2 = array('updates' => $updates,'mid' => $row['mp_id']);
+		        $datos['data'][$row['mp_date']] = $row;
+		        //actualizamos los datos en la db
+		        $consulta2 = "UPDATE u_mensajes SET ";
+		        if($psUser->user_id == $row['mp_to']){
+		        	if($modo == 'live'){
+		        		$consulta2 .= ' mp_read_mon_to = :update';
+		        		$updates = 1;
+		        	}else{
+		        		$consulta2 .= ' mp_read_mon_to = :update';
+		        		$updates = 2;
+		        	}
+		        }else{
+		        	if($modo == 'live'){
+		        		$consulta2 .= ' mp_read_mon_from = :update';
+		        		$updates = 1;
+		        	}else{
+		        		$consulta2 .= ' mp_read_mon_from = :update';
+		        		$updates = 2;
+		        	}
+		        }
+		        $consulta2 .= " WHERE mp_id = :mid";
+		        $valores2 = array('update' => $updates,'mid' => $row['mp_id']);
 				$psDb->db_execute($consulta2, $valores2);
-        $datos['total']++;
+		        $datos['total']++;
 			}
-		}else if($type == 2){//mensajes y respuestas recibidas
+		}elseif($type == 2){//mensajes y respuestas recibidas
 			//mostramos los mensajes no leídos
+			$consulta = "SELECT m.mp_id, m.mp_to, m.mp_from, m.mp_read_to, m.mp_subject, m.mp_preview, m.mp_date, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_from = u.user_id WHERE m.mp_to = :uid AND m.mp_del_to = :del ";
+			$valores['uid'] = $psUser->user_id;
+			$valores['del'] = 0;
 			if($unread == true){
-				$v['toun'] = 'AND mp_read_to = :toun1';
-				$v['toun1'] = 0;
-				$v['fromun'] = 'AND mp_read_from = :fromun1';
-				$v['fromun1'] = 0;
+				$consulta .= ' AND m.mp_read_to = :toun';
+				$toun = 0;
+				$valores['toun'] = $toun;
 			}
+			$consulta .= " UNION (SELECT m.mp_id, m.mp_to, m.mp_from, m.mp_read_from, m.mp_subject, m.mp_preview, m.mp_date, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_from = u.user_id WHERE m.mp_to = :uid2 AND m.mp_del_from = :del2 AND m.mp_answer = :ans ";
+			$valores['uid2'] = $psUser->user_id;
+			$valores['del2'] = 0;
+			$valores['ans'] = 1;
 			//consulta
-			$consulta = "SELECT m.mp_id, m.mp_to, m.mp_from, m.mp_read_to, m.mp_subject, m.mp_preview, m.mp_date, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_from = u.user_id WHERE m.mp_to = :uid AND m.mp_del_to = :del :toun UNION (SELECT m.mp_id, m.mp_to, m.mp_from, m.mp_read_from, m.mp_subject, m.mp_preview, m.mp_date, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_from = u.user_id WHERE m.mp_to = :uid2 AND m.mp_del_from = :del2 AND m.mp_answer = :ans :fromun) ORDER BY m.mp_id DESC";
-			$valores = array(
-				'uid' => $psUser->user_id,
-				'del' => 0,
-				'toun' => $v['toun'],
-				'toun1' => $v['toun1'],
-				'uid2' => $psUser->user_id,
-				'del2' => 0,
-				'ans' => 1,
-				'fromun' => $v['fromun'],
-				'fromun1' => $v['fromun1'],
-			);
+			if($unread == true){
+				$consulta .= ' AND m.mp_read_from = :fromun';
+				$fromun = 0;
+				$valores['fromun'] = $fromun;
+			}
+			$consulta .= ") ORDER BY mp_id DESC";
 			$total = $psDb->db_execute($consulta, $valores, 'rowCount');
 			//obtenemos la paginación
 			$pages = $psCore->getPagination($total, 15);
 			$datos['pages'] = $pages;
-			$consulta .= ' LIMIT :limite';
-			$valores['limite'] = $pages['limit'];
-			while($row = $psDb->db_execute($consulta, $valores, 'fetch_assoc')){
+			$consulta .= ' LIMIT :limite, :limite2';
+			$aux = explode(', ', $pages['limit']);
+			$valores['limite'] = (int)$aux[0];
+			$valores['limite2'] = (int)$aux[1];
+			$rows = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
+			foreach($rows as $row){
 				$row['mp_type'] = ($row['mp_from'] != $psUser->user_id) ? 1 : 2;
                 $row['mp_from'] = ($row['mp_from'] == $psUser->user_id) ? $row['mp_to'] : $row['mp_from'];
                 $datos['data'][$row['mp_date']] = $row;
@@ -144,9 +147,12 @@ class psMensajes{
 			$total = $psDb->db_execute($consulta, $valores, 'rowCount');
 			$pages = $psCore->getPagination($total, 15);
 			$datos['pages'] = $total;
-			$consulta .= ' LIMIT :limite';
-			$valores['limite'] = $pages['limit'];
-			while($row = $psDb->db_execute($consulta, $valores, 'fetch_assoc')){
+			$consulta .= ' LIMIT :limite, :limite2';
+			$aux = explode(', ', $pages['limit']);
+			$valores['limite'] = $aux[0];
+			$valores['limite2'] = $aux[1];
+			$rows = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
+			foreach($rows as $row){
 				$row['mp_type'] = 2;
                 $row['mp_from'] = $row['mp_to'];
                 $row['mp_read_to'] = 1;
@@ -159,19 +165,22 @@ class psMensajes{
 			$total = $psDb->db_execute($consulta, $valores, 'rowCount');
 			$pages = $psCore->getPagination($total, 15);
 			$datos['pages'] = $total;
-			$consulta .= ' LIMIT :limite';
-			$valores['limite'] = $pages['limit'];
-			while($row = $psDb->db_execute($consulta, $valores, 'fetch_assoc')){
+			$consulta .= ' LIMIT :limite, :limite2';
+			$aux = explode(', ', $pages['limit']);
+			$valores['limite'] = $aux[0];
+			$valores['limite2'] = $aux[1];
+			$rows = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
+			foreach($rows as $row){
 				$row['mp_type'] = 1;
                 $row['mp_read_to'] = 1;
                 $datos['data'][$row['mp_date']] = $row;
 			}
 		}else if($type == 5){//buscador de mensajes
-			$consulta = "SELECT m.mp_id, m.mp_to, m.mp_from, m.mp_read_to, m.mp_subject, m.mp_preview, m.mp_date, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_from = u.user_id WHERE m.mp_to = :uid AND m.mp_del_to = :mpto AND mp_subject LIKE '%:qm%' UNION (SELECT m.mp_id, m.mp_to, m.mp_from, m.mp_read_from, m.mp_subject, m.mp_preview, m.mp_date, u.user_name user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_to = u.user_id WHERE m.mp_from = :uid2 AND m.mp_del_from = :mpfr AND m.mp_answer = :ans) ORDER BY m.mp_id DESC";
+			$consulta = "SELECT m.mp_id, m.mp_to, m.mp_from, m.mp_read_to, m.mp_subject, m.mp_preview, m.mp_date, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_from = u.user_id WHERE m.mp_to = :uid AND m.mp_del_to = :mpto AND mp_subject LIKE :qm UNION (SELECT m.mp_id, m.mp_to, m.mp_from, m.mp_read_from, m.mp_subject, m.mp_preview, m.mp_date, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_to = u.user_id WHERE m.mp_from = :uid2 AND m.mp_del_from = :mpfr AND m.mp_answer = :ans) ORDER BY mp_id DESC";
 			$valores = array(
 				'uid' => $psUser->user_id,
 				'mpto' => 0,
-				'qm' => filter_input(INPUT_GET, 'qm'),
+				'qm' => '%'.filter_input(INPUT_GET, 'qm').'%',
 				'uid2' => $psUser->user_id,
 				'mpfr' => 0,
 				'ans' => 1
@@ -180,9 +189,12 @@ class psMensajes{
 			$total = $psDb->db_execute($consulta, $valores, 'rowCount');
 			$pages = $psCore->getPagination($total, 15);
 			$datos['pages'] = $total;
-			$consulta .= ' LIMIT :limite';
-			$valores['limite'] = $pages['limit'];
-			while($row = $psDb->db_execute($consulta, $valores, 'fetch_assoc')){
+			$consulta .= ' LIMIT :limite, :limite2';
+			$aux = explode(', ', $pages['limit']);
+			$valores['limite'] = $aux[0];
+			$valores['limite2'] = $aux[1];
+			$rows = $psDb->resultadoArray($psDb->db_execute($consulta, $valores));
+			foreach($rows as $row){
 				$row['mp_type'] = ($row['mp_from'] != $psUser->user_id) ? 1 : 2;
                 $row['mp_from'] = ($row['mp_from'] == $psUser->user_id) ? $row['mp_to'] : $row['mp_from'];
                 $datos['data'][$row['mp_date']] = $row;
@@ -215,15 +227,15 @@ class psMensajes{
 				'subject' => filter_input(INPUT_POST, 'asunto')
 			);
 			if($psDb->db_execute($consulta, $valores, 'rowCount')){
-				return 'Ha intentado realizar demasiadas acciones en poco tiempo. Por favor int&eacute;ntelo de nuevo en '.$antiflood.' segundos.';
+				return '0: Ha intentado realizar demasiadas acciones en poco tiempo. Por favor int&eacute;ntelo de nuevo en '.$antiflood.' segundos.';
 			}
 			$psCore->antiFlood(true, 'mps');
 			//obtenemos los datos del mensaje
-			$from = filter_input(INPUT_POST, 'para');
-			$subject = empty($_POST['asunto']) ? 'sin asunto' : $psCore->badWords(filter_input(INPUT_POST, 'asunto'));
-			$body = substr(filter_input(INPUT_POST, 'mensaje'), 0, 1000);
+			$from = $_POST['para'];
+			$subject = empty($_POST['asunto']) ? 'sin asunto' : $psCore->badWords($_POST['asunto']);
+			$body = substr($_POST['mensaje'], 0, 1000);
 			//comprobamos si el mensaje está vacío
-			if(str_replace(array('\n', '\t', ' '), '', $body)){
+			if(str_replace(array("\n","\t",' '), '', $body) == ''){
 				return 'Debes ingresar el contenido de tu mensaje para poder enviarlo.';
 			}
 			//obtenemos el id del usuario
@@ -240,7 +252,7 @@ class psMensajes{
 						'auser2' => $uid
 					);
 					if($psDb->db_execute($consulta2, $valores2, 'rowCount')){
-						return 'El usuario '.$from.' est&aacute; bloqueado. No puedes enviar mensajes a un usuario bloqueado.';
+						return '0: El usuario '.$from.' est&aacute; bloqueado. No puedes enviar mensajes a un usuario bloqueado.';
 					}
 				}
 				//obtenemos la vista previa
@@ -329,13 +341,13 @@ class psMensajes{
 						$mid = $psDb->getLastInsertId();
 						//hacemos comprobaciones
 						if(empty($mid)){
-							return 'Ocurri&oacute; un error al enviar el mensaje. Por favor int&eacute;ntelo de nuevo m&aacute;s tarde.';
+							return '0: Ocurri&oacute; un error al enviar el mensaje. Por favor int&eacute;ntelo de nuevo m&aacute;s tarde.';
 						}
-						if(!filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_URL)){
-							return 'Ocurri&oacute; un error al intentar validar su ip.';
-						}
+						/*if(!filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_URL) || !filter_var($_SERVER['HTTP_X_FORWARDED_FOR'], FILTER_VALIDATE_URL)){
+							return '0: Ocurri&oacute; un error al intentar validar su ip.';
+						}*/
 						//si todo ok realizamos la consulta
-						$consulta8 = "INSERT INTO u_respuestas (mp_id, mr_from, mr_body, mr_ip, mp_date) VALUES (:id, :fro, :body, :ip, :dat)";
+						$consulta8 = "INSERT INTO u_respuestas (mp_id, mr_from, mr_body, mr_ip, mr_date) VALUES (:id, :fro, :body, :ip, :dat)";
 						$valores8 = array(
 							'id' => $mid,
 							'fro' => $psUser->user_id,
@@ -346,19 +358,19 @@ class psMensajes{
 						if($psDb->db_execute($consulta8, $valores8)){
 							return 'El mensaje a sido enviado con &eacute;xisto a <a href="'.$psCore->settings['url'].'/perfil/'.$from.'">'.$from.'</a>.<br><br><a href="'.$psCore->settings['url'].'/mensajes/leer/'.$mid.'">Ver el mensaje</a>';
 						}else{
-							return 'Ocurri&oacute; un error al guardar los datos del mensaje.';
+							return '0: Ocurri&oacute; un error al guardar los datos del mensaje.';
 						}
 					}else{
-						return 'Ocurri&oacute; un error al guardar el mensaje. Por favor int&eacute;ntelo de nuevo m&aacute;s tarde.';
+						return '0: Ocurri&oacute; un error al guardar el mensaje. Por favor int&eacute;ntelo de nuevo m&aacute;s tarde.';
 					}
 				}else{
-					return 'El usuario '.$from.' est&aacute; bloqueado y no puede recibir mensajes.';
+					return '0: El usuario '.$from.' est&aacute; bloqueado y no puede recibir mensajes.';
 				}
 			}else{
-				return 'El usuario al que intentas enviar el mensaje no existe.';
+				return '0: El usuario al que intentas enviar el mensaje no existe.';
 			}
 		}else{
-			return 'Debe tener una cuenta activa para poder enviar un nuevo mensaje.';
+			return '0: Debe tener una cuenta activa para poder enviar un nuevo mensaje.';
 		}
 	}
 
@@ -375,12 +387,10 @@ class psMensajes{
 			return '0: Debes ingresar una respuesta para enviar el mensaje';
 		}
 		//realizamos la consulta
-		$consulta = "SELECT mp_to, mp_from, mp_answer FROM u_mensajes WHERE mp_id = :mid :admin";
+		$consulta = "SELECT mp_to, mp_from, mp_answer FROM u_mensajes WHERE mp_id = :mid";
 		$valores['mid'] = $mid;
-		if($psUser->admod){
-			$valores['admin'] = '';
-		}else{
-			$valores['admin'] = 'AND mp_del_to = :to AND mp_del_from = :dfrom';
+		if(!$psUser->admod){
+			$consulta .= ' AND mp_del_to = :to AND mp_del_from = :dfrom';
 			$valores['to'] = 0;
 			$valores['dfrom'] = 0;
 		}
@@ -417,8 +427,9 @@ class psMensajes{
 				//obtenemos los datos
 				$valores4['preview'] = $preview;
 				$valores4['dates'] = time();
+				$consulta4 = "UPDATE u_mensajes SET mp_preview = :preview, mp_date = :dates";
 				if($respuesta['mp_from'] != $psUser->user_id){
-					$valores['u1'] = ', mp_answer = :ans, mp_read_to = :to, mp_read_mon_to = :to2 , mp_read_from = :mpf, mp_read_mon_from = :mpf2, mp_del_from = :del';
+					$consulta4 .= ', mp_answer = :ans, mp_read_to = :to, mp_read_mon_to = :to2 , mp_read_from = :mpf, mp_read_mon_from = :mpf2, mp_del_from = :del';
                     $valores4['ans'] = 1;
                     $valores4['to'] = 1;
                     $valores4['to2'] = 2;
@@ -426,16 +437,16 @@ class psMensajes{
                     $valores4['mpf2'] = 0;
                     $valores4['del'] = 0;
 				}else{
-                    $valores4['u1'] = ', mp_read_to = :to, mp_read_mon_to = :to2 , mp_read_from = :mpf, mp_read_mon_from = :mpf2, mp_del_to = :del';
+                    $consulta4 .= ', mp_read_to = :to, mp_read_mon_to = :to2 , mp_read_from = :mpf, mp_read_mon_from = :mpf2, mp_del_to = :del';
                     $valores4['to'] = 0;
                     $valores4['to2'] = 0;
                     $valores4['mpf'] = 1;
                     $valores4['mpf2'] = 2;
                     $valores4['del'] = 0;
 				}
-				$valores['mid'] = $mid;
+				$valores4['mid'] = $mid;
 				//actualizamos el mensaje
-				$consulta4 = "UPDATE u_mensajes SET mp_preview = :preview, mp_date = :dates :u1 WHERE mp_id = :mid";
+				$consulta4 .= " WHERE mp_id = :mid";
 				$psDb->db_execute($consulta4, $valores4);
 				$datos['mp_date'] = time();
 				$datos['mp_ip'] = $_SERVER['REMOTE_ADDR'];
@@ -455,17 +466,18 @@ class psMensajes{
 		global $psDb, $psCore, $psUser;
 		$mid = filter_input(INPUT_GET, 'id');
 		//realizamos la consulta
-		$consulta = "SELECT m.*, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_from = u.user_id WHERE m.mp_id = :mid :mod";
+		$consulta = "SELECT m.*, u.user_name FROM u_mensajes AS m LEFT JOIN u_miembros AS u ON m.mp_from = u.user_id WHERE m.mp_id = :mid";
 		$valores['mid'] = $mid;
-		if($psUser->admod){
-			$valores['mod'] = '';
-		}else{
-			$valores['mod'] = 'AND ((m.mp_to = :uid AND m.mp_del_to = :del) || m.mp_from = :uid AND m.mp_del_from = :del))';
+		if(!$psUser->admod){
+			$consulta .= ' AND ((m.mp_to = :uid AND m.mp_del_to = :del) OR (m.mp_from = :uid2 AND m.mp_del_from = :del2))';
 			$valores['uid'] = $psUser->user_id;
 			$valores['del'] = 0;
+			$valores['uid2'] = $psUser->user_id;
+			$valores['del2'] = 0;
 		}
 		//si existe obtenemos los mensajes en un array
-		if($psDb->db_execute($consulta, $valores, 'rowCount')){
+		$query = $psDb->db_execute($consulta, $valores, 'rowCount');
+		if(!empty($query)){
 			$datos = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
 		}else{//si no redireccionamos
 			$psCore->redirectTo($psCore->settings['url'].'/mensajes/');
@@ -488,7 +500,8 @@ class psMensajes{
 		//y las respuestas
 		$consulta3 = "SELECT r.*, u.user_name FROM u_respuestas AS r LEFT JOIN u_miembros AS u ON r.mr_from = u.user_id WHERE r.mp_id = :mid ORDER BY r.mr_id";
 		$valores3 = array('mid' => $mid);
-		while($row = $psDb->db_execute($consulta3, $valores3, 'fetch_assoc')){
+		$rows = $psDb->resultadoArray($psDb->db_execute($consulta3, $valores3));
+		foreach($rows as $row){
 			$row['mr_body'] = $psCore->badWords($row['mr_body'], true);
 			$historial['res'][] = $row;
 		}
@@ -498,27 +511,29 @@ class psMensajes{
 		$from = $historial['res'][$respuesas-1]['mr_from'];
 		//yo lo mando
 		if($psUser->user_id == $datos['mp_to']) {
-            $valores5['updates'] = 'mp_read_to = :m1, mp_read_mon_to = :m2';
+            $updates = ' mp_read_to = :m1, mp_read_mon_to = :m2';
             $valores5['m1'] = 1;
             $valores5['m2'] = 2;
-            $historial['msg']['mp_type'] = 1;
+            $historial['msg']['type'] = 1;
         }//el mensaje es para mi
         elseif($from == $datos['mp_to'] && $datos['mp_from'] == $psUser->user_id) {
-            $valores5['updates'] = 'mp_read_from = :m1, mp_read_mon_from = :m2';
+            $updates = ' mp_read_from = :m1, mp_read_mon_from = :m2';
             $valores5['m1'] = 1;
             $valores5['m2'] = 2;
-            $historial['msg']['mp_type'] = 2;
+            $historial['msg']['type'] = 2;
         }//respondieron a mi mensaje
         elseif($from == $datos['mp_from']) {
-            $valores5['updates'] = 'mp_read_from = :m1, mp_read_mon_from = :m2';
+            $updates = ' mp_read_from = :m1, mp_read_mon_from = :m2';
             $valores5['m1'] = 1;
             $valores5['m2'] = 2;
-            $historial['msg']['mp_type'] = 2;
+            $historial['msg']['type'] = 2;
         }
         //mensaje leido
-        $consulta5 = "UPDATE u_mensajes SET :updates WHERE mp_id = :mid";
+        $consulta5 = "UPDATE u_mensajes SET ".$updates." WHERE mp_id = :mid";
         $valores5['mid'] = $mid;
-        $psDb->db_execute($consulta5, $valores5);
+        if(isset($updates)){
+	        $psDb->db_execute($consulta5, $valores5);
+	    }
         //comprobamos si puedo responder o estoy bloqueado
         $uid = ($datos['mp_from'] != $psUser->user_id) ? $datos['mp_from'] : $datos['mp_to'];
         $consulta6 = "SELECT bid FROM u_bloqueos WHERE b_user = :buser AND b_auser = :bauser";
@@ -632,7 +647,7 @@ class psMensajes{
      */
 	function getValidUser(){
 		global $psDb, $psCore, $psUser;
-		$to = strtolower(filter_input(INPUT_POST, 'para'));
+		$to = strtolower($_POST['para']);
 		if($to == strtolower($psUser->nick)){
 			return '1';
 		}

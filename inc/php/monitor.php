@@ -49,10 +49,10 @@ if($psContinue){
 	$action = htmlspecialchars($_GET['action']);
 
 	if(empty($action)){
-    $psMonitor->mostrarTipo = 2;
+	    $psMonitor->mostrarTipo = 2;
 		$notificaciones = $psMonitor->getNotificaciones();
 		$smarty->assign("psDatos", $notificaciones);
-    $smarty->assign("psStatus", $_COOKIE);
+	    $smarty->assign("psStatus", $_COOKIE);
 	} else {
 		$smarty->assign("psDatos", $psMonitor->getFollows($action));
 	}

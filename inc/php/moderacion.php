@@ -25,7 +25,7 @@ $psAjax = empty($_GET['ajax']) ? 0 : 1;
 //creamos el booleano para comprobar si debemos continuar con el script
 $psContinue = true;
 //damos un nombre al titulo de la pagina
-$psTitle = $psCore->settings['titulo'].' - '.$psCore->settings['slogan'];
+$psTitle = 'Panel de moderador de '.$psCore->settings['titulo'].' - '.$psCore->settings['slogan'];
 
 include '../../header.php';
 

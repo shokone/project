@@ -58,7 +58,7 @@ if($psContinue){
         $psAfiliados->urlInterna();
     }
     //post anterior, post siguiente y post aleatorio
-    if($_GET['action'] == 'next' || $_GET['action'] == 'prev' || $_GET['action'] == 'randPost'){
+    if($_GET['action'] == 'next' || $_GET['action'] == 'prev' || $_GET['action'] == 'fortuitae'){
         $psPosts->setModePost();
     }
     //realizamos las tareas principales

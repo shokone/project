@@ -8,7 +8,7 @@
  * añadimos las instrucciones de codigo necesarias
  * agregamos los datos generados a smarty
  * 
- * @name top.php
+ * @name fotos.php
  * @author Iván Martínez Tutor
  */
 
@@ -60,7 +60,6 @@ if($psContinue){
         //ver foto
         case 'ver':
             $psFoto = $psFotos->getFoto();
-            // TITULO
             $psTitle = $psFoto['foto']['f_title'].' - '.$psFoto['foto']['user_name'].' - '.$psCore->settings['titulo'];
 			
 			if($psFoto['foto']['f_status'] == 1 && (!$psUser->admod && $psUser->permisos['moacp'] == false)){
@@ -114,6 +113,27 @@ if($psContinue){
                 $smarty->assign("psFotoUser", array($user_id, $username));
             }
         	break;
+        case 'agregar':
+            if(!empty($_POST['titulo'])){
+                $result = $psFotos->nuevaFoto();
+                $psPage = 'aviso';
+                if(!is_array($result) && $result > 0){
+                    $titulo = $_POST['titulo'];
+                    $smarty->assign("psAviso", array(
+                        'titulo' => 'Foto Agregada',
+                        'mensaje' => "La imagen <b>".$titulo."</b> fue agregada.",
+                        'but' => 'Ver imagen',
+                        'link' => "{$psCore->settings['url']}/fotos/{$psUser->nick}/{$result}/".$psCore->setSEO($titulo).".html"
+                    ));
+                } else {
+                    $smarty->assign("psAviso", array(
+                        'titulo' => 'Ouch',
+                        'mensaje' => $result, 'but' => 'Volver',
+                        'link' => "{$psCore->settings['url']}/fotos/agregar.php"
+                    ));
+                }
+            }
+            break;
 	}
 	$smarty->assign("psAction",$action);
 }

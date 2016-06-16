@@ -1,9 +1,10 @@
 {include file='secciones/main_header.tpl'}
+<!-- cargamos un archivo js específico para los favoritos -->
 <script type="text/javascript" src="{$psConfig.js}/favoritos.js"></script>
 <script type="text/javascript">
     var favoritos_data = [{$psFavoritos}];
 </script>
-<div class="comunidades">
+<div class="favoritos">
     {if !$psFavoritos}
         <div class="emptyData">No agregaste ning&uacute;n post a favoritos todav&iacute;a</div>
     {else}
@@ -19,8 +20,8 @@
             </div>
         </div>
         <div id="centroDerecha">
-            <div id="resultados">
-                <table class="linksList">
+            <div id="resultados" class="table-responsive">
+                <table class="table">
                     <thead>
                         <tr>
                             <th></th>

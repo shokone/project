@@ -1,4 +1,4 @@
-<div class="floatL col-md-4">
+<div class="col-md-4">
 	<div class="boxy">
     	<div class="boxy-title">
         	<h3>Filtrar</h3>

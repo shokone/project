@@ -30,6 +30,8 @@ class psDb extends PDOStatement{
         try{
             $this->conexion = new PDO($dsn, $this->db['user'], $this->db['pass'], $opc);
             $this->conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            //con este atributo evitamos el error con pdo al darle un limite LIMIT a la consulta
+            $this->conexion->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
         }catch(PDOException $e){
             exit("No se pudo establecer la conexion con la base de datos, error: ".$e->getMessage());
         }

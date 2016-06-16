@@ -36,10 +36,10 @@ class psFotos{
 
     //obtenemos los datos de la foto
     if($psUser->admod || $psUser->permisos['moacp']){
-      $consulta = "SELECT f.*, u.user_name, u.user_activo, p.user_pais, p.user_sexo, p.user_rango, r.r_name, r.r_color, r.r_image FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user LEFT JOIN u_perfil AS p ON p.user_id = u.user_id LEFT JOIN u_rangos AS r ON u.user_rango = r.rango_id WHERE f.foto_id = :fid";
+      $consulta = "SELECT f.*, u.user_name, u.user_activo, p.user_pais, p.user_sexo, u.user_rango, r.r_name, r.r_color, r.r_image FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user LEFT JOIN u_perfil AS p ON p.user_id = u.user_id LEFT JOIN u_rangos AS r ON u.user_rango = r.rango_id WHERE f.foto_id = :fid";
       $valores = array('fid' => $fid);
     }else{
-      $consulta = "SELECT f.*, u.user_name, u.user_activo, p.user_pais, p.user_sexo, p.user_rango, r.r_name, r.r_color, r.r_image FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user LEFT JOIN u_perfil AS p ON p.user_id = u.user_id LEFT JOIN u_rangos AS r ON u.user_rango = r.rango_id WHERE f.foto_id = :fid AND f.f_status = :status AND u.user_activo = :activo";
+      $consulta = "SELECT f.*, u.user_name, u.user_activo, p.user_pais, p.user_sexo, u.user_rango, r.r_name, r.r_color, r.r_image FROM f_fotos AS f LEFT JOIN u_miembros AS u ON u.user_id = f.f_user LEFT JOIN u_perfil AS p ON p.user_id = u.user_id LEFT JOIN u_rangos AS r ON u.user_rango = r.rango_id WHERE f.foto_id = :fid AND f.f_status = :status AND u.user_activo = :activo";
       $valores = array('fid' => $fid, 'status' => 0, 'activo' => 1);
     }
     $datos['foto'] = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
@@ -113,23 +113,23 @@ class psFotos{
     //actualizamos la base de datos
 
     if($psUser->member){
-      $consulta10 = "SELECT id FROM w_visitas WHERE for = :for AND type = :type AND (user = :user OR ip LIKE :ip) LIMIT :li,:lim";
+      $consulta10 = "SELECT id FROM w_visitas WHERE `for` = :for AND type = :type AND (user = :user OR ip LIKE :ip) LIMIT :li, :lim";
       $valores10 = array('for' => $fid, 'type' => 3, 'user' => $psUser->user_id, 'ip' => $_SERVER['REMOTE_ADDR'], 'li' => 0, 'lim' => 100);
     }else{
-      $consulta10 = "SELECT id FROM w_visitas WHERE for = :for AND type = :type AND  ip LIKE :ip LIMIT :li,:lim";
+      $consulta10 = "SELECT id FROM w_visitas WHERE `for` = :for AND type = :type AND  ip LIKE :ip LIMIT :li,:lim";
       $valores10 = array('for' => $fid, 'type' => 3, 'ip' => $_SERVER['REMOTE_ADDR'], 'li' => 0, 'lim' => 100);
     }
     $visitado = $psDb->db_execute($consulta10, $valores10, 'rowCount');
     //si el usuario es miembro y no ha sido visitada su foto insertamos y actualizamos datos
     if($psUser->member && $visitado == 0){
-      $consulta11 = "INSERT INTO w_visitas (user, for, type, date, ip) VALUES (:user, :for, :type, :dat, :ip)";
+      $consulta11 = "INSERT INTO w_visitas (user, `for`, type, `date`, ip) VALUES (:user, :for, :type, :dat, :ip)";
       $valores11 = array('user' => $psUser->user_id, 'for' => $fid, 'type' => 3, 'dat' => time(), 'ip' => $_SERVER['REMOTE_ADDR']);
       $psDb->db_execute($consulta11, $valores11);
       $consulta12 = "UPDATE f_fotos SET f_hits = f_hits + :hits WHERE foto_id = :fid AND f_user != :user";
       $valores12 = array('hits' => 1, 'fid' => $fid, 'user' => $psUser->user_id);
       $psDb->db_execute($consulta12, $valores12);
     }else{//si ya ha sido visitada solo actualizamos
-      $consulta11 = "UPDATE w_visitas SET date = :dat, ip = :ip WHERE for = :for AND type = :type";
+      $consulta11 = "UPDATE w_visitas SET `date` = :dat, ip = :ip WHERE for = :for AND type = :type";
       $valores11 = array('dat' => time(), 'ip' => $_SERVER['REMOTE_ADDR'], 'for' => $fid, 'type' => 3);
     }
     //comprobamos si tenemos que darle una medalla
@@ -234,13 +234,13 @@ class psFotos{
       $psUpload->iscale = true;
       if($psCore->settings['c_allow_upload'] == 1){
         //comprobamos si está vacío
-        if(empty($datos['foto']['url']) && empty($datos['foto']['file']['name'])){
+        if(empty($foto['foto']['url']) && empty($foto['foto']['file']['name'])){
           return '0: No has seleccioando ninguna foto.';
         }else{
           $upload_foto = $psUpload->newUpload(1);//tipo 1 de subida
         }
       }else{
-        if(empty($datos['foto']['url'])){
+        if(empty($foto['foto']['url'])){
           return '0: No has ingresado ninguna url.';
         }else{
           $psUpload->furl = $foto['foto']['url'];
@@ -260,9 +260,9 @@ class psFotos{
         $valores = array('last' => 0, 'user' => $psUser->user_id, 'last2' => 1);
         $psDb->db_execute($update, $valores);
         //comprobamos la ip del usuario
-        if(!filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_URL)){
+        /*if(!filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_URL)){
           return '0: Ocurri&oacute; un error al intentar validar tu ip.';
-        }
+        }*/
         //si todo ok hasta ahora insertamos los datos de la nueva foto
         $insert = "INSERT INTO f_fotos (f_title, f_date, f_description, f_url, f_user, f_closed, f_visitas, f_last, f_ip) VALUES (:title, :dates, :descr, :url, :user, :closed, :visitas, :last, :ip)";
         $valores2 = array(
@@ -286,7 +286,7 @@ class psFotos{
           //actualizamos las fotos del usuario
           $update3 = "UPDATE u_miembros SET user_fotos = user_fotos + :us WHERE user_id = :uid";
           $valores4 = array('us' => 1, 'uid' => $psUser->user_id);
-          $psDb->db_execute($update3, $valores4);
+          //$psDb->db_execute($update3, $valores4);
           //notificamos a los usuarios que me siguen
           $psMonitor->setFollowNotificaciones(10, 1, $psUser->user_id, $fid);
           //creamos la actividad

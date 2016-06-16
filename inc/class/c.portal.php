@@ -100,9 +100,9 @@ class psPortal{
         $consulta = "UPDATE u_portal SET last_posts_cats = :cat WHERE user_id = :uid";
         $valores = array('cat' => $cat, 'uid' => $psUser->user_id);
         if($psDb->db_execute($consulta, $valores)){
-            return 'Tus cambios se han guardado correctamente.';
+            return '1: Tus cambios se han guardado correctamente.';
         }else{
-            return 'Ocurri&oacute; un error al intentar guardar los cambios. Por favor int&eacute;ntelo de nuevo m&aacute;s tarde.';
+            return '0: Ocurri&oacute; un error al intentar guardar los cambios. Por favor int&eacute;ntelo de nuevo m&aacute;s tarde.';
         }
     }
 
@@ -226,7 +226,7 @@ class psPortal{
         }
         $datos['stats_online'] = $query[0];
         if($datos['stats_online'] > $datos['stats_max_online']){
-            $consulta3 = "UPDATE w_stats SET stats_time = :stats_time, stats_time_cache = :stats_time_cache, stats_miembros = :stats_miembros, stats_posts = :stats_posts, stats_fotos = :stats_fotos, stats_comments = :stats_comments, stats_foto_comments = :stats_foto_comments, stats_max_online = :stats_max_online, stats_max_time = :stats_max_time, stats_max_online = :stats_max_online, stats_max_time = :stats_max_time";
+            $consulta3 = "UPDATE w_stats SET stats_time = :stats_time, stats_time_cache = :stats_time_cache, stats_miembros = :stats_miembros, stats_posts = :stats_posts, stats_fotos = :stats_fotos, stats_comments = :stats_comments, stats_foto_comments = :stats_foto_comments, stats_max_online = :stats_max_online, stats_max_time = :stats_max_time";
             $new_valores['stats_max_online'] = $datos['stats_online'];
             $new_valores['stats_max_time'] = time();
         }else{

@@ -20,7 +20,7 @@
 	                <a name="post"></a>
 	                <label>Contenido del Post</label>
 	                <span class="errormsg nodisplay"></span><br>
-	                <textarea id="editorPost" name="cuerpo" tabindex="2" class="required2">{$psBorrador.b_body}</textarea>
+	                <textarea id="cuerpo" name="cuerpo" tabindex="2" class="required2">{$psBorrador.b_body}</textarea>
                 </div>
                 <div class="col-md-4">
 	                <div class="special-left clearbeta">
@@ -89,7 +89,7 @@
             </div>
             <div class="end-form clearbeta both">
             	<input type="hidden" value="{if $psBorrador}Aplicar Cambios{else}Agregar post{/if}" id="botonPreview"/>
-                <input type="button" tabindex="15" title="Guardar en borradores" value="Guardar en borradores" onclick="save_borrador()" class="btn btnOk floatL" id="borrador-save"/>
+                <input type="button" tabindex="15" title="Guardar en borradores" value="Guardar en borradores" class="btn btnOk floatL" id="borrador-save" name="borrador_buton_save"/>
             	<input type="button" title="Previsualizar" value="Continuar" name="preview" class="btn btnGreen"/>
         		<div id="borrador-guardado"></div>
             </div>

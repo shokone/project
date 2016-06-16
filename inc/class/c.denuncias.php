@@ -45,16 +45,16 @@ class psDenuncias{
             $valores = array('pid' => $did);
             $post = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
             if(empty($post['post_id'])){
-               return 'El post seleccionado no existe.';
+               return '0: El post seleccionado no existe.';
             }
             if($post['post_user'] == $psUser->user_id){
-               return 'No puedes denunciar tus propios post.';
+               return '0: No puedes denunciar tus propios post.';
             }
             if($post['post_sticky'] == 1){
-               return 'No puedes denunciar un post patrocinado.';
+               return '0: No puedes denunciar un post patrocinado.';
             }
             if($psUser->admod == 1){
-               return 'No puedes denunciar siendo moderador, pero puedes atender las denuncias de los dem&aacute;s usuarios.';
+               return '0: No puedes denunciar siendo moderador, pero puedes atender las denuncias de los dem&aacute;s usuarios.';
             }
             //comprobamos si ya ha sido denunciado por el mismo usuario
             $consulta2 = "SELECT did FROM w_denuncias WHERE obj_id = :did AND d_user = :uid AND d_type = :type";
@@ -65,7 +65,7 @@ class psDenuncias{
             );
             $denuncia = $psDb->db_execute($consulta2, $valores2, 'rowCount');
             if(!empty($denuncia)){
-               return 'Ya has denunciado este post.';
+               return '0: Ya has denunciado este post.';
             }
             //obtenemos el total de denuncias que lleva el post
             $consulta3 = "SELECT did FROM w_denuncias WHERE obj_id = :did AND d_type = :type";
@@ -101,9 +101,9 @@ class psDenuncias{
                   'dates' => $date,
             );
             if($psDb->db_execute($consulta6, $valores6)){
-               return 'La denuncia del post fue enviada correctamente.';
+               return '1: La denuncia del post fue enviada correctamente.';
             }else{
-               return 'Error al realizar la denuncia. Por favor, int&eacute;ntelo de nuevo m&aacute;s tarde.';
+               return '0: Error al realizar la denuncia. Por favor, int&eacute;ntelo de nuevo m&aacute;s tarde.';
             }
             break;
          case 'mensajes':
@@ -116,13 +116,13 @@ class psDenuncias{
             );
             $denuncia = $psDb->db_execute($consulta, $valores, 'rowCount');
             if(!empty($denuncia)){
-               return 'Ya has denunciado este mensaje. Deber&aacute;s esperar a que un admin o moderador lo compruebe para poder realizar otra denuncia.';
+               return '0: Ya has denunciado este mensaje. Deber&aacute;s esperar a que un admin o moderador lo compruebe para poder realizar otra denuncia.';
             }
             $consulta2 = "SELECT mp_id, mp_to, mp_from FROM u_mensajes WHERE mp_id = :mid";
             $valores2 = array('mid' => $did);
             $denuncia2 = $psDb->db_execute($consulta2, $valores2, 'fetch_assoc');
             if(empty($denuncia2['mp_id'])){
-               return 'Lo sentimos el mensaje seleccionado no existe.';
+               return '0: Lo sentimos el mensaje seleccionado no existe.';
             }
             //comprobamos si el usuario era el emisor o el receptor del mensaje
             if($denuncia2['mp_to'] == $psUser->user_id){
@@ -148,9 +148,9 @@ class psDenuncias{
                   'mid' => $did
                );
                $psDb->db_execute($consulta4, $valores4);
-               return 'La denuncia del mensaje ha sido realizada correctamente.';
+               return '1: La denuncia del mensaje ha sido realizada correctamente.';
             }else{
-               return 'Error al realizar la denuncia. Por favor, int&eacute;ntelo de nuevo m&aacute;s tarde.';
+               return '0: Error al realizar la denuncia. Por favor, int&eacute;ntelo de nuevo m&aacute;s tarde.';
             }
             break;
          case 'usuarios':
@@ -164,10 +164,10 @@ class psDenuncias{
             $denuncia = $psDb->db_execute($consulta, $valores, 'rowCount');
             $name = $psUser->getUserName($did);
             if(!empty($denuncia)){
-               return 'Ya has denunciado a este usuario. Deber&aacute;s esperar a que un admin o moderador lo compruebe para poder realizar otra denuncia.';
+               return '0: Ya has denunciado a este usuario. Deber&aacute;s esperar a que un admin o moderador lo compruebe para poder realizar otra denuncia.';
             }
             if(empty($name)){
-               return 'Lo sentimos el usuario seleccionado no existe.';
+               return '0: Lo sentimos el usuario seleccionado no existe.';
             }
             //si todo ha salido bien insertamos la denuncia en la db
             $consulta2 = "INSERT INTO w_denuncias (obj_id, d_user, d_razon, d_extra, d_type, d_date) VALUES (:did, :user, :razon, :extra, :type, :dates)";
@@ -187,9 +187,9 @@ class psDenuncias{
                   'uid' => $did
                );
                $psDb->db_execute($consulta3, $valores3);
-               return 'La denuncia al usuario se ha realizado correctamente.':
+               return '1: La denuncia al usuario se ha realizado correctamente.';
             }else {
-               return 'Error al realizar la denuncia. Por favor, int&eacute;ntelo de nuevo m&aacute;s tarde.';
+               return '0: Error al realizar la denuncia. Por favor, int&eacute;ntelo de nuevo m&aacute;s tarde.';
             }
             break;
          case 'fotos':
@@ -199,13 +199,13 @@ class psDenuncias{
             $foto = $psDb->db_execute($consulta, $valores, 'fetch_assoc');
             //realizamos las comprobaciones
             if(empty($foto['foto_id'])){
-               return 'La foto seleccionada no existe.';
+               return '0: La foto seleccionada no existe.';
             }
             if($foto['f_user']){
-               return 'No puedes denunciar tus propias fotos.';
+               return '0: No puedes denunciar tus propias fotos.';
             }
             if($foto['f_status']){
-               return 'No puedes denunciar una foto que se encuentra oculta.';
+               return '0: No puedes denunciar una foto que se encuentra oculta.';
             }
             //comprobamos si la foto ha sido ya denunciada
             $consulta2 = "SELECT did FROM w_denuncias WHERE obj_id = :did AND d_user = :uid AND d_type = :type";
@@ -216,7 +216,7 @@ class psDenuncias{
             );
             $denuncia = $psDb->db_execute($consulta2, $valores2, 'rowCount');
             if(!empty($denuncia)){
-               return 'Ya has denunciado esta foto. Deber&aacute;s esperar a que un admin o moderador lo compruebe para poder realizar otra denuncia.';
+               return '0: Ya has denunciado esta foto. Deber&aacute;s esperar a que un admin o moderador lo compruebe para poder realizar otra denuncia.';
             }
             //comprobamos si ya lleva más de 2 denuncias
             $consulta3 = "SELECT did FROM w_denuncias WHERE obj_id = :did";
@@ -248,9 +248,9 @@ class psDenuncias{
                   'dates' => $date,
             );
             if($psDb->db_execute($consulta6, $valores6)){
-               return 'La denuncia de la foto fue enviada correctamente.';
+               return '1: La denuncia de la foto fue enviada correctamente.';
             }else{
-               return 'Error al realizar la denuncia. Por favor, int&eacute;ntelo de nuevo m&aacute;s tarde.';
+               return '0: Error al realizar la denuncia. Por favor, int&eacute;ntelo de nuevo m&aacute;s tarde.';
             }
             break;
       }

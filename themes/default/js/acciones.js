@@ -232,32 +232,32 @@ var myActions = {
 
 		var html = '';
 		if(display1){
-			html += '<input type="button" class="btn btnOk'+(enabled1?'':' disabled')+'" style="display:'+(display1?'inline-block':'none')+'"'+(display1?' value="'+val1+'"':'')+(display1?' onclick="'+action1+'"':'')+(enabled1?'':' disabled')+' />';
+			html += '<input type="button" class="btn btn-success'+(enabled1?'':' disabled')+'" style="display:'+(display1?'inline-block':'none')+'"'+(display1?' value="'+val1+'"':'')+(display1?' onclick="'+action1+'"':'')+(enabled1?'':' disabled')+' />';
 		}
 		if(display2){
-			html += ' <input type="button" class="btn btnCancel'+(enabled1?'':' disabled')+'" style="display:'+(display2?'inline-block':'none')+'"'+(display2?' value="'+val2+'"':'')+(display2?' onclick="'+action2+'"':'')+(enabled2?'':' disabled')+' />';
+			html += ' <input type="button" class="btn btn-danger'+(enabled1?'':' disabled')+'" style="display:'+(display2?'inline-block':'none')+'"'+(display2?' value="'+val2+'"':'')+(display2?' onclick="'+action2+'"':'')+(enabled2?'':' disabled')+' />';
 		}
 		$('#myActions #buttons').html(html).css('display', 'inline-block');
 
 		if(focus1){
-			$('#myActions #buttons .btn.btnOk').focus();
+			$('#myActions #buttons .btn.btn-success').focus();
 		}else if(focus2){
-			$('#myActions #buttons .btn.btnCancel').focus();
+			$('#myActions #buttons .btn.btn-danger').focus();
 		}
 	},
 	buttons_enabled: function(boton1, boton2){//activamos o desactivamos los botones
-		if($('#myActions #buttons .btn.btnOk')){
+		if($('#myActions #buttons .btn.btn-success')){
 			if(boton1){
-				$('#myActions #buttons .btn.btnOk').removeClass('disabled').removeAttr('disabled');
+				$('#myActions #buttons .btn.btn-success').removeClass('disabled').removeAttr('disabled');
 			}else{
-				$('#myActions #buttons .btn.btnOk').addClass('disabled').attr('disabled', 'disabled');
+				$('#myActions #buttons .btn.btn-success').addClass('disabled').attr('disabled', 'disabled');
 			}
 		}
-		if($('#myActions #buttons .btn.btnCancel')){
+		if($('#myActions #buttons .btn.btn-danger')){
 			if(boton2){
-				$('#myActions #buttons .btn.btnCancel').removeClass('disabled').removeAttr('disabled');
+				$('#myActions #buttons .btn.btn-danger').removeClass('disabled').removeAttr('disabled');
 			}else{
-				$('#myActions #buttons .btn.btnCancel').addClass('disabled').attr('disabled', 'disabled');
+				$('#myActions #buttons .btn.btn-danger').addClass('disabled').attr('disabled', 'disabled');
 			}
 		}
 	},
@@ -958,53 +958,53 @@ var timelib = {
  * @type {Object}
  */
 var comentario = {
-  cache: new Array(),
-  cargado: false,
-  //cargar los comentarios
-  cargar: function(postid, page, autor){
-    $('#com_gif').show();
-    $('div#comentarios').css('opacity', 0.4);
-    //comprobamos la cache
-    if(typeof comentario.cache['c_' + page] == 'undefined'){
-      $('#loading').fadeIn(250);
-      //realizamos la petición ajax para cargar los comentarios
-      $.ajax({
-        type: 'POST',
-        url: global_data.url + '/comentario-ajax.php?page=' + page,
-        data: 'postid=' + postid + '&autor=' + autor,
-        success: function(valor){
-          comentario.cache['c_' + page] = valor;
-          $('#comentarios').html(valor);
-          comentario.set_pages(postid, page, autor);
-          $('#loading').fadeOut(350);
-        }
-      });
-    } else {
-      $('#comentarios').html(comentario.cache['c_' + page]);
-      $('.paginadorCom').html(comentario.cache['p_' + page]);
-      $('#com_gif').hide();
-      $('div#comentarios').css('opacity', 1);
-    }
-  },
-  //obtenener el total de páginas de comentarios
-  set_pages: function(postid, page, autor){
-    //obtenemos el total de páginas
-    var total = parseInt($('#ncomments').text());
-    $('#loading').fadeIn(250);
-    //realizamos la petición ajax
-    $.ajax({
-      type: 'POST',
-      url: global_data.url + '/comentario-pages.php?page=' + page,
-      data: 'postid=' + postid + '&autor=' + autor + '&total=' + total,
-      success: function(valor){
-        comentario.cache['p_' + page] = valor;
-        $('.paginadorCom').html(valor);
-        $('#com_gif').hide();
-        $('div#comentarios').css('opacity', 1);
-        $('#loading').fadeOut(350);
-      }
-    });
-  },
+	cache: new Array(),
+	cargado: false,
+	//cargar los comentarios
+  	cargar: function(postid, page, autor){
+    	$('#com_gif').show();
+    	$('div#comentarios').css('opacity', 0.4);
+		//comprobamos la cache
+		if(typeof comentario.cache['c_' + page] == 'undefined'){
+			$('#loading').fadeIn(250);
+			//realizamos la petición ajax para cargar los comentarios
+			$.ajax({
+			type: 'POST',
+			url: global_data.url + '/comentario-ajax.php?page=' + page,
+			data: 'postid=' + postid + '&autor=' + autor,
+			success: function(valor){
+			comentario.cache['c_' + page] = valor;
+			$('#comentarios').html(valor);
+			comentario.set_pages(postid, page, autor);
+			$('#loading').fadeOut(350);
+			}
+			});
+    	} else {
+			$('#comentarios').html(comentario.cache['c_' + page]);
+			$('.paginadorCom').html(comentario.cache['p_' + page]);
+			$('#com_gif').hide();
+			$('div#comentarios').css('opacity', 1);
+    	}
+  	},
+	//obtenener el total de páginas de comentarios
+	set_pages: function(postid, page, autor){
+		//obtenemos el total de páginas
+		var total = parseInt($('#ncomments').text());
+		$('#loading').fadeIn(250);
+		//realizamos la petición ajax
+		$.ajax({
+			type: 'POST',
+			url: global_data.url + '/comentario-pages.php?page=' + page,
+			data: 'postid=' + postid + '&autor=' + autor + '&total=' + total,
+			success: function(valor){
+				comentario.cache['p_' + page] = valor;
+				$('.paginadorCom').html(valor);
+				$('#com_gif').hide();
+				$('div#comentarios').css('opacity', 1);
+				$('#loading').fadeOut(350);
+			}
+		});
+	},
   //creamos un nuevo comentario
   nuevo: function(mostrar_resp, comentarionum){
     //evitamos el antiflood
@@ -1042,8 +1042,8 @@ var comentario = {
             $("#nuevos").slideUp(1);
             $('#preview').remove();
             $('#nuevos').html(valor.substring(4)).slideDown('slow', function () {
-              $('#no-comments').hide('slow');
-              $('.miComentario').html('<div class="emptyData">'+text+'</div>');
+              //$('#no-comments').hide('slow');
+              //$('.miComentario').html('<div class="emptyData">'+text+'</div>');
             });
             //aumentamos en 1 el total de comentarios
             var ncomments = parseInt($('#ncomments').text());
@@ -1076,7 +1076,7 @@ var comentario = {
     //
     myActions.class_aux = 'preview';
     myActions.show(true);
-    myActions.title('...');
+    myActions.title('Vista previa ');
     myActions.body('Cargando vista previa....<br><br><img src="' + global_data.url + '/themes/default/images/loading_bar.gif">');
     myActions.style();
     //
@@ -1097,7 +1097,7 @@ var comentario = {
             $('.miComentario #gif_cargando').hide();
             break;
           case '1': //si ha salido todo bien
-            myActions.body(valor.substring(4));
+            myActions.body(text);
             myActions.buttons(true, true, btn_text, btn_fn, true, true, true, 'Cancelar', 'close', true, false);
             myActions.style();
             $('.miComentario #gif_cargando').hide();
@@ -1111,7 +1111,7 @@ var comentario = {
   },
   //votamos el comentario seleccionado
   votar: function(cid, voto){
-    var voto_com = $('#votos_total_' + cid)
+    var voto_com = $('#votos_total_' + cid);
     var total_votos = parseInt(voto_com.text());
     total_votos = (isNaN(total_votos)) ? 0 : total_votos;
     voto = (voto == 1) ? 1 : -1;
@@ -1146,19 +1146,19 @@ var comentario = {
   citar: function(id, nick){
     var textarea = $('#editor_comentarios');
     textarea.focus();
-    textarea.val(((textarea.val()!='') ? textarea.val() + '\n' : '') + '[quote=' + nick + ']' + htmlspecialchars_decode($('#citar_comm_'+id).html(), 'ENT_NOQUOTES') + '[/quote]\n');
+    textarea.val(((textarea.val()!='') ? textarea.val() + '\n' : '') + nick + ':\n' + $('#citar_comm_'+id).html() + '\n');
   },
   //editamos el comentario seleccionado (solo si es nuestro o soy moderador o administrador)
   editar: function(id, step){
     switch(step){
       case 'show'://mostrar los datos
-        var data_coment = htmlspecialchars_decode($('#citar_comm_'+id).html(), 'ENT_NOQUOTES');
-        var html = '<textarea id="edit-comment-' + id + '" class="textarea-edit" title="Escribir un comentario..." onfocus="onfocus_input(this)" onblur="onblur_input(this)">' + data_coment + '</textarea><br/><input type="button" class="btn btnGreen btnEdit" onclick="comentario.preview(\'' + id + '\', \'edit\')" value="Continuar &raquo;"/> <strong id="edit-error-' + id + '"></strong>';
+        var data_coment = $('#citar_comm_'+id).html();
+        var html = '<textarea id="edit-comment-' + id + '" class="textarea-edit" title="Escribir un comentario..." onfocus="onfocus_input(this)" onblur="onblur_input(this)">' + data_coment + '</textarea><br/><input type="button" class="btn btn-success btnEdit" onclick="comentario.preview(\'' + id + '\', \'edit\')" value="Continuar &raquo;"/> <strong id="edit-error-' + id + '"></strong>';
         $('#comment-body-' + id).html(html);
         $('#edit-comment-' + id).css('max-height', '300px');
         break;
       case 'send'://enviar los datos actualizados
-        var cid = $('#edit-cid-' + id).val()
+        var cid = $('#edit-cid-' + id).val();
         var comment = $('#edit-comment-' + id).val();
         $('#loading').fadeIn(250);
         $.ajax({
@@ -1172,14 +1172,15 @@ var comentario = {
                 break;
               case '1': //si ha salido todo bien
                 $('#comment-body-' + id).html($('#new-com-html').html());
-                var data_coment = htmlspecialchars_decode($('#new-com').html(), 'ENT_NOQUOTES');
-                $('#citar_comm_'+id).html(data_coment)
+                var data_coment = $('#new-com').html();
+                $('#citar_comm_'+id).html(data_coment);
                 break;
             }
             $('#loading').fadeOut(350);
             myActions.default();
           }
         });
+        location.reload();
         break;
     }
   }
@@ -1193,7 +1194,7 @@ var comentario = {
 function citar_comment(id, nick){
   var textarea = $('#editor_comentarios');
   textarea.focus();
-  textarea.val(((textarea.val()!='') ? textarea.val() + '\n' : '') + '[quote=' + nick + ']' + htmlspecialchars_decode($('#citar_comm_'+id).html(), 'ENT_NOQUOTES') + '[/quote]\n');
+  textarea.val(((textarea.val()!='') ? textarea.val() + '\n' : '') + nick + ':\n' + $('#citar_comm_'+id).html() + '\n');
 }
 
 /**
@@ -1212,11 +1213,11 @@ function actualizar_comentarios(cat, nov){
     success: function(valor){
       $('#ult_comm').html(valor);
       $('#ult_comm > ol').hide();
-      $('#ult_comm, #ult_comm > ol:first').slideDown( 1500, 'easeInOutElastic');
+      $('#ult_comm, #ult_comm > ol:first').slideDown( 500, 'easeInOutElastic');
       $('#loading').fadeOut(350);
     },
     error: function(){
-      $('#ult_comm, #ult_comm > ol:first').slideDown({duration: 1000, easing: 'easeOutBounce'});
+      $('#ult_comm, #ult_comm > ol:first').slideDown({duration: 500, easing: 'easeOutBounce'});
       $('#loading').fadeOut(350);
     }
   });
@@ -1241,11 +1242,11 @@ function ocultar_com(comid, autor, postid){
         case '0': //si ha ocurrido algún error
           myActions.alert('Error', valor.substring(4));
           break;
-        case '1'://si ha salido todo bien
+        case '1'://si ha salido todo bien mostramos
           $('#comentario_' +comid).css('opacity', 1);
           $('#pp_' +comid).css('opacity', 0.5);
           break;
-        case '2'://si ha salido todo bien y es admin
+        case '2'://si ha salido todo bien ocultamos
           $('#comentario_' +comid).css('opacity', 0.5);
           $('#pp_' +comid).css('opacity', 1);
           break;
@@ -1268,7 +1269,9 @@ function ocultar_com(comid, autor, postid){
  */
 function borrar_com(comid, autor, postid, gew){
   myActions.default();
-  if(!postid) var postid = globalget('postid');
+  if(!postid){ 
+  	var postid = globalget('postid');
+  }
   if(!gew){
     myActions.show();
     myActions.title('Borrar Comentarios');
@@ -1289,9 +1292,8 @@ function borrar_com(comid, autor, postid, gew){
           case '1'://si ha salido todo bien
             var ncomments = parseInt($('#ncomments').text());
             $('#ncomments').text(ncomments - 1);
-            $('#div_cmnt_'+comid).slideUp( 1500, 'easeInOutElastic');
-            $('#div_cmnt_'+comid).slideUp('normal', function(){ $(this).remove(); });
-            $('#loading').fadeOut(350);
+            $('#div_cmnt_'+comid).slideUp(500).remove();
+            $('#loading').fadeOut(400);
             break;
         }
       },
@@ -1351,7 +1353,7 @@ function votar_post(puntos){
           break;
         case '1': //si todo ha salido bien
           $('.post-metadata .mensajes').addClass('ok').html(valor.substring(4)).slideDown();
-          $('#puntos_post').html(number_format(parseInt($('#puntos_post').html().replace(".", "")) + parseInt(puntos), 0, ',', '.'));
+          $('#puntos_post').html(my_number_format(parseInt($('#puntos_post').html().replace(".", "")) + parseInt(puntos), 0, ',', '.'));
           break;
       }
       $('#loading').fadeOut(350);
@@ -1390,7 +1392,7 @@ function add_favoritos(){
           break;
         case '1': //si ha salido todo bien
           $('.post-metadata .mensajes').addClass('ok').html(valor.substring(4)).slideDown();
-          $('.favoritos_post').html(number_format(parseInt($('.favoritos_post').html().replace(".", "")) + 1, 0, ',', '.'));
+          $('.favoritos_post').html(my_number_format(parseInt($('.favoritos_post').html().replace(".", "")) + 1, 0, ',', '.'));
           break;
       }
       $('#loading').fadeOut(350);
@@ -1399,6 +1401,10 @@ function add_favoritos(){
       add_favoritos_agregado = false;
       myActions.error("add_favoritos()");
       $('#loading').fadeOut(250);
+    },
+    complete: function(){
+    	myActions.alert('Favoritos', 'El post fue agregado a favoritos correctamente');
+    	$('#loading').fadeOut(350);
     }
   });
 }
@@ -1666,8 +1672,8 @@ var notifica = {
   inPostHandle: function (value) {
     var val = value.split('-');
     if (val.length == 3 && val[0] == 0) {
-      $('a.follow_post, a.unfollow_post').parent('li').toggle();
-      $('ul.post-estadisticas > li > span.icons.monitor').html(number_format(parseInt(val[2])));
+      $('button.follow_post, button.unfollow_post').parent('li').toggle();
+      $('ul.post-estadisticas > li > span.monitor').html(my_number_format(parseInt(val[2])));
     }else if(val.length == 4){
       myActions.alert('Notificaciones', val[3]);
     }
@@ -1677,7 +1683,7 @@ var notifica = {
     var val = value.split('-');
     if (val.length == 3 && val[0] == 0) {
       $('a.follow_user_post, a.unfollow_user_post').toggle();
-      $('div.metadata-usuario > span.nData.user_follow_count').html(number_format(parseInt(val[2])));
+      $('div.metadata-usuario > span.nData.user_follow_count').html(my_number_format(parseInt(val[2])));
       notifica.userMenuHandle(value);
     }else if(val.length == 4){
       myActions.alert('Notificaciones', val[3]);
@@ -1702,7 +1708,7 @@ var notifica = {
       $('a.mf_' + fid +', a.mf_' + fid).each(function(){
         $(this).toggle();
       });
-      $('.mft_' + fid).html(number_format(parseInt(val[2])));
+      $('.mft_' + fid).html(my_number_format(parseInt(val[2])));
     }else if(val.length == 4){
       myActions.alert('Notificaciones', val[3]);
     }
@@ -1750,11 +1756,11 @@ var notifica = {
   },
   //notificación cuando se sigue
   follow: function (type, id, val, obj) {
-    this.ajax(Array('action=follow', 'type='+type, 'obj='+id), val, obj);
+    this.ajax(new Array('action=follow', 'type='+type, 'obj='+id), val, obj);
   },
   //notificación cuando se ha dejado de seguir
   unfollow: function (type, id, val, obj) {
-    this.ajax(Array('action=unfollow', 'type='+type, 'obj='+id), val, obj);
+    this.ajax(new Array('action=unfollow', 'type='+type, 'obj='+id), val, obj);
   },
   //función para cerrar la caja de notificaciones
   close: function(){
@@ -1769,287 +1775,426 @@ var notifica = {
  * @type {Object}
  */
 var mensaje = {
-  cache: new Array(),
-  vars: new Array(),
-  //mostrar los mensajes
-  show: function(){
-    if(typeof mensaje.cache.last != 'undefined') {
-      $('#alerta_mps').remove();
-      $('a[name=Mensajes]').parent('li').addClass('monitor-notificaciones');
-      $('a[name=Mensajes]').children('span').removeClass('spinner');
-      $('#mensajes_lista').show().children('ul').html(mensaje.cache.last);
-    }
-  },
-  //realizará todas las peticiones por ajax
-  ajax: function(action, params, funcion){
-    $('#loading').fadeIn(200);
-    $.ajax({
-      type: 'POST',
-      url: global_data.url + '/mensajes-' + action + '.php',
-      data: params,
-      success: function(valor){
-        funcion(valor);
-        $('#loading').fadeOut(400);
-      }
+	cache: new Array(),
+	vars: new Array(),
+	//mostrar los mensajes
+	show: function(){
+		if(typeof mensaje.cache.last != 'undefined') {
+			$('#alerta_mps').remove();
+			$('a[name=Mensajes]').parent('li').addClass('monitor-notificaciones');
+			$('a[name=Mensajes]').children('span').removeClass('spinner');
+			$('#mensajes_lista').show().children('ul').html(mensaje.cache.last);
+		}
+	},
+	//realizará todas las peticiones por ajax
+	ajax: function(action, params, fun){
+		$('#loading').fadeIn(200);
+		$.ajax({
+			type: 'POST',
+			url: global_data.url + '/mensajes-' + action + '.php',
+			data: params,
+			success: function(valor){
+				fun(valor);
+				$('#loading').fadeOut(400);
+				myActions.final_cargando();
+			}
+		});
+	},
+	//obtenemos el formulario de mensajes
+	form: function (){
+		var html = '';
+		if(this.vars['error']){
+		 	html += '<div class="emptyData">' + this.vars['error'] + '</div><div class="both"></div>';
+		}
+		html += '<div class="m-col1">Para:</div>';
+		html += '<div class="m-col2"><input type="text" value="' + this.vars['to'] + '" maxlength="16" tabindex="0" size="20" id="msg_to" name="msg_to"/>';
+		html += '<span>(Ingrese el nombre de usuario)</span></div><div class="both"></div>';
+		html += '<div class="m-col1">Asunto:</div>';
+		html += '<div class="m-col2"><input type="text" value="' + this.vars['sub'] + '" maxlength="100" tabindex="0" size="50" id="msg_subject" name="msg_subject"/></div><br /><div class="both"></div>';
+		html += '<div class="m-col1">Mensaje:</div>';
+		html += '<div class="m-col2"><textarea tabindex="0" rows="10" id="msg_body" name="msg_body" style="height:100px; width:350px">' + this.vars['msg'] + '</textarea></div><div class="both"></div>';
+		return html;
+	},
+	//comprobamos el formulario
+	checkform: function (valor){
+		if(parseInt(valor) == 0){
+			mensaje.enviar(1);
+		}else if(parseInt(valor) == 1){
+			mensaje.nuevo(mensaje.vars['to'], mensaje.vars['sub'], mensaje.vars['msg'], 'No es posible enviarse mensajes a s&iacute; mismo.');
+		}else if(parseInt(valor) == 2){
+			mensaje.nuevo(mensaje.vars['to'], mensaje.vars['sub'], mensaje.vars['msg'], 'Este usuario no existe. Por favor, verif&iacute;calo.');
+		}
+	},
+	//creamos un nuevo mensaje
+	nuevo: function (para, asunto, body, error){
+		//guardamos los datos
+		this.vars['to'] = para;
+		this.vars['sub'] = asunto;
+		this.vars['msg'] = body;
+		this.vars['error'] = error;
+		//creamos la caja para mostrarlos
+		myActions.final_cargando();
+		myActions.show(true);
+		myActions.title('Nuevo mensaje');
+		myActions.body(this.form());
+		myActions.buttons(true, true, 'Enviar', 'mensaje.enviar(0)', true, true, true, 'Cancelar', 'close', true, false);
+		myActions.style();
+	},
+	//mostramos el mensaje
+	mostrar: function(show, obj){
+		$('.tabset a').removeClass('here');
+		if(show == 'all'){
+			$('#mensajes div').show();
+			$(obj).addClass('here');
+		}else if(show == 'unread'){
+			$('#mensajes div.threadRow').hide();
+			$('#mensajes table.unread').parent().show();
+			$(obj).addClass('here');
+		}
+	},
+	//comprobamos el campo seleccionado
+	select: function(act){
+		var inputs = $('#mensajes .threadRow :input');
+		inputs.each(function(){
+		if(act == 'all'){
+			$(this).attr({checked: 'checked'});
+		}else if(act == 'read'){
+			if($(this).attr('class') != 'inread'){
+				$(this).attr({checked: 'checked'});
+			}else{
+				$(this).attr({checked: ''});
+			}
+		}else if(act == 'unread'){
+			if($(this).attr('class') == 'inread'){
+				$(this).attr({checked: 'checked'});
+			}else{
+				$(this).attr({checked: ''});
+			}
+		}else if(act == 'none'){
+			$(this).attr({checked: ''});
+		}
+		});
+	},
+	//modificamos el mensaje seleccionado
+	modificar: function(act){
+		var inputs = $('#mensajes .threadRow :input');
+		var ids = new Array();
+		var cont = 0;
+		inputs.each(function(){
+			var este = $(this).attr('checked');
+			if(este != false){
+				//agregamos el id
+				ids[cont] = $(this).val();
+				cont++;
+				//obtenemos el cid para los estilos
+				var cid = $(this).val().split(':');
+				//comprobamos
+				//marcar como leído
+				if(act == 'read'){
+					$('#' + cid[0]).removeClass('unread');
+					$(this).removeClass('inread');
+				}else if(act == 'unread'){
+					//marcar como no leído
+					$('#' + cid[0]).addClass('unread');
+					$(this).addClass('inread');
+				}else if(act == 'delete'){
+					//eliminar el mensaje
+					$('#' + cid[0]).parent().remove();
+				}
+			}
+		});
+		//enviamos por ajax los cambios realizados
+		if(ids.length > 0){
+			var params = ids.join(',');
+			mensaje.ajax(
+				'editar',
+				'ids=' + params + '&act=' + act,
+				function(valor){}
+			);
+		}
+	},
+	//eliminamos el mensaje seleccionado
+	eliminar: function(id,type){
+		mensaje.ajax('editar','ids=' + id + '&act=delete',function(valor){
+			if(type == 1){
+				var cid = id.split(':');
+				$('#mp_' + cid[0]).remove();
+			}else if(type == 2){
+				location.href = global_data.url + '/mensajes/';
+			}
+		});
+	},
+	//cambiamos el estado del mensaje de leído a no leído y viceversa
+	marcar: function(id, val, type, obj){
+		var act = (val == 0) ? 'read' : 'unread';
+		var show = (act == 'read') ? 'unread' : 'read';
+		mensaje.ajax(
+			'editar',
+			'ids=' + id + '&act=' + act,
+			function(valor){
+				//cambiamos si ha sido leído o no
+				if(type == 1){
+					var cid = id.split(':');
+					if(act == 'read'){
+						$('#mp_' + cid[0]).removeClass('unread');
+					}else{
+						$('#mp_' + cid[0]).addClass('unread');
+					}
+					$(obj).parent().find('a').hide();
+					$(obj).parent().find('.' + show).show();
+				}else{
+					location.href = global_data.url + '/mensajes/';
+				}
+			}
+		);
+	},
+	//mostramos un alert
+	alert: function(valor){
+		myActions.final_cargando();
+		myActions.alert('Aviso','<div class="emptyData">' + valor + '</div>');
+	},
+	//enviamos los datos obtenidos
+	enviar: function (enviar){
+		//obtenemos los datos
+		this.vars['to'] = $('#msg_to').val();
+		this.vars['sub'] = encodeURIComponent($('#msg_subject').val());
+		this.vars['msg'] = encodeURIComponent($('#msg_body').val());
+		//comprobamos si todo esta bien
+		if(enviar == 0){
+			if(this.vars['to'] == ''){
+				mensaje.nuevo(mensaje.vars['to'], mensaje.vars['sub'], mensaje.vars['msg'], 'Por favor, especific&aacute; el destinatario.');
+			}
+			if(this.vars['msg'] == ''){
+				mensaje.nuevo(mensaje.vars['to'], mensaje.vars['sub'], mensaje.vars['msg'], 'El mensaje no puede estar vac&iacute;o.');
+			}
+			myActions.inicio_cargando('Comprobando...', 'Nuevo Mensaje');
+			this.ajax('validar', 'para=' + this.vars['to'], mensaje.checkform);
+		}else if(enviar == 1){
+			myActions.inicio_cargando('Enviando...', 'Nuevo Mensaje');
+			this.ajax('enviar',
+				'para=' + mensaje.vars['to'] + '&asunto=' + mensaje.vars['sub'] + '&mensaje=' + mensaje.vars['msg'],
+				mensaje.alert
+			);
+		}
+	},
+	//responder a un mensaje
+	responder: function(mp_id){
+		//obtenemos los datos del mensaje a responder
+		this.vars['mp_id'] = $('#mp_id').val();
+		this.vars['mp_body'] = encodeURIComponent($('#respuesta').val());
+		//comprobamos el cuerpo
+		if(this.vars['mp_body'] == ''){
+			$('#respuesta').focus();
+			return;
+		}
+		//enviamos la petición ajax
+		this.ajax(
+			'respuesta',
+			'id=' + this.vars['mp_id'] + '&body=' + this.vars['mp_body'],
+			function(valor){
+				$('#respuesta').val('');
+				switch(valor.charAt(1)){
+					case '0'://si ha ocurrido algún error
+					myActions.alert("Error", valor.substring(4));
+					break;
+				case '1'://si ha salido todo bien
+					$('#historial').append($(valor.substring(4)).fadeIn('slow'));
+					break;
+				}
+				$('#respuesta').focus();
+			}
+		);
+	},
+	//creamos la ventana para desplegar los mensajes
+	popup: function (mps) {
+		var val = parseInt($('#alerta_mps > a > span').html());
+		if (mps != val && mps > 0) {
+			if(mps != 1){
+				var total = ' mensajes';
+			}else{
+				var total = ' mensaje';
+			}
+			if(!$('#alerta_mps').length){
+				$('div.userInfoLogin > ul > li.mensajes').append('<div class="alertas" id="alerta_mps"><a title="' + mps + total + '"><span></span></a></div>');
+			}
+			$('#alerta_mps > a > span').html(mps);
+			$('#alerta_mps').animate({
+				top: '-=5px'
+			}, 100, null, function(){
+				$('#alerta_mps').animate({ top: '+=5px' }, 100)
+			});
+		}else if(mps == 0){
+			$('#alerta_mps').remove();
+		}
+	},
+	//obtenemos los últimos mensajes
+	last: function () {
+		var val = parseInt($('#alerta_mps > a > span').html());
+		notifica.close();
+		if($('#mensajes_lista').css('display') != 'none'){
+			$('#mensajes_lista').hide();
+			$('a[name=Mensajes]').parent('li').removeClass('monitor-notificaciones');
+		}else{
+			if(($('#mensajes_lista').css('display') == 'none' && val > 0) || typeof mensaje.cache.last == 'undefined') {
+				$('a[name=Mensajes]').children('span').addClass('spinner');
+				$('a[name=Mensajes]').parent('li').addClass('monitor-notificaciones');
+				$('#mensajes_lista').show();
+				mensaje.ajax('lista', '', function (value) {
+					mensaje.cache['last'] = value;
+					mensaje.show();
+				});
+			}else{
+				mensaje.show();
+			}
+		}
+	},
+	//cerramos la ventana de mensajes
+	close: function(){
+		$('#mensajes_lista').slideUp();
+		$('a[name=Mensajes]').parent('li').removeClass('monitor-notificaciones');
+	}
+}
+
+/************************ buscador ****************************/
+
+//función para cambiar los datos de búsqueda
+function search_set(obj, q) { 
+    $('div.search-in > a').removeClass('search_active'); 
+    $(obj).addClass('search_active');
+    $('input[name="e"]').val(q);  
+    //id de google
+    var gid = $('form[name=top_search_box]').attr('gid');
+    //mostramos u ocultamos los input google
+	if(q == 'google'){ 
+        //Ahora es google {/literal}
+		$('form[name=top_search_box]').append('<input type="hidden" name="cx" value="' + gid + '" /><input type="hidden" name="cof" value="FORID:10" /><input type="hidden" name="ie" value="ISO-8859-1" />');
+        // {literal}
+	}else { //El anterior fue google
+		$('input[name="cx"]').remove();
+		$('input[name="cof"]').remove();
+		$('input[name="ie"]').remove();
+	}
+    $('#ibuscadorq').focus();
+}
+
+//cargamos diferentes funciones al cargar la página
+$(document).ready(function(){
+	$('.avatar-box').mouseout(function(){
+		$('.lista-avatar-com').css('display', 'none');
+	});
+	$('.avatar-box').mouseover(function(){
+		$('.lista-avatar-com').css('display', 'block');
+	});
+    var location_box_more = false;
+    $('.location-box-more').click(function(){
+        if (location_box_more) {
+            $('.location-box ul').css('height', '170px');
+            $(this).html("Ver más");
+            location_box_more = false;
+        }
+        else {
+            $('.location-box ul').css('height', '170%');
+            $(this).html("Ver menos");
+            location_box_more = true;
+        }
     });
-  },
-  //obtenemos el formulario de mensajes
-  form: function (){
-    var html = '';
-    if(this.vars['error']){
-      html += '<div class="emptyData">' + this.vars['error'] + '</div><div class="both"></div>';
-    }
-    html += '<div class="m-col1">Para:</div>';
-    html += '<div class="m-col2"><input type="text" value="' + this.vars['to'] + '" maxlength="16" tabindex="0" size="20" id="msg_to" name="msg_to"/>';
-    html += '<span>(Ingrese el nombre de usuario)</span></div><div class="both"></div>';
-    html += '<div class="m-col1">Asunto:</div>';
-    html += '<div class="m-col2"><input type="text" value="' + this.vars['sub'] + '" maxlength="100" tabindex="0" size="50" id="msg_subject" name="msg_subject"/></div><br /><div class="both"></div>';
-    html += '<div class="m-col1">Mensaje:</div>';
-    html += '<div class="m-col2"><textarea tabindex="0" rows="10" id="msg_body" name="msg_body" style="height:100px; width:350px">' + this.vars['msg'] + '</textarea></div><div class="both"></div>';
-    return html;
-  },
-  //comprobamos el formulario
-  checkform: function (valor){
-    if(parseInt(valor) == 0){
-      mensaje.enviar(1);
-    }else if(parseInt(valor) == 1){
-      mensaje.nuevo(mensaje.vars['to'], mensaje.vars['sub'], mensaje.vars['msg'], 'No es posible enviarse mensajes a s&iacute; mismo.');
-    }else if(parseInt(valor) == 2){
-      mensaje.nuevo(mensaje.vars['to'], mensaje.vars['sub'], mensaje.vars['msg'], 'Este usuario no existe. Por favor, verif&iacute;calo.');
-    }
-  },
-  //creamos un nuevo mensaje
-  nuevo: function (para, asunto, body, error){
-    //guardamos los datos
-    this.vars['to'] = para;
-    this.vars['sub'] = asunto;
-    this.vars['msg'] = body;
-    this.vars['error'] = error;
-    //creamos la caja para mostrarlos
-    mydialog.inicio_cargando();
-    mydialog.show(true);
-    mydialog.title('Nuevo mensaje');
-    mydialog.body(this.form());
-    mydialog.buttons(true, true, 'Enviar', 'mensaje.enviar(0)', true, true, true, 'Cancelar', 'close', true, false);
-    mydialog.style();
-  },
-  //mostramos el mensaje
-  mostrar: function(show, obj){
-    $('.tabset a').removeClass('here');
-    if(show == 'all'){
-      $('#mensajes div').show();
-      $(obj).addClass('here');
-    }else if(show == 'unread'){
-      $('#mensajes div.threadRow').hide();
-      $('#mensajes table.unread').parent().show();
-      $(obj).addClass('here');
-    }
-  },
-  //comprobamos el campo seleccionado
-  select: function(act){
-    var inputs = $('#mensajes .threadRow :input');
-    inputs.each(function(){
-      if(act == 'all'){
-        $(this).attr({checked: 'checked'});
-      }else if(act == 'read'){
-        if($(this).attr('class') != 'inread'){
-          $(this).attr({checked: 'checked'});
-        }else{
-          $(this).attr({checked: ''});
-        }
-      }else if(act == 'unread'){
-        if($(this).attr('class') == 'inread'){
-          $(this).attr({checked: 'checked'});
-        }else{
-          $(this).attr({checked: ''});
-        }
-      }else if(act == 'none'){
-        $(this).attr({checked: ''});
-      }
-    });
-  },
-  //modificamos el mensaje seleccionado
-  modificar: function(act){
-    var inputs = $('#mensajes .threadRow :input');
-    var ids = new Array();
-    var cont = 0;
-    inputs.each(function(){
-      var este = $(this).attr('checked');
-      if(este != false){
-        //agregamos el id
-        ids[cont] = $(this).val();
-        cont++;
-        //obtenemos el cid para los estilos
-        var cid = $(this).val().split(':');
-        //comprobamos
-        //marcar como leído
-        if(act == 'read'){
-          $('#' + cid[0]).removeClass('unread');
-          $(this).removeClass('inread');
-        }else if(act == 'unread'){
-          //marcar como no leído
-          $('#' + cid[0]).addClass('unread');
-          $(this).addClass('inread');
-        }else if(act == 'delete'){
-          //eliminar el mensaje
-          $('#' + cid[0]).parent().remove();
-        }
-      }
-    });
-    //enviamos por ajax los cambios realizados
-    if(ids.length > 0){
-      var params = ids.join(',');
-      mensaje.ajax(
-        'editar',
-        'ids=' + params + '&act=' + act,
-        function(valor){}
-      );
-    }
-  },
-  //eliminamos el mensaje seleccionado
-  eliminar: function(id,type){
-    mensaje.ajax('editar','ids=' + id + '&act=delete',function(valor){
-      if(type == 1){
-        var cid = id.split(':');
-        $('#mp_' + cid[0]).remove();
-      }else if(type == 2){
-        location.href = global_data.url + '/mensajes/';
-      }
-    });
-  },
-  //cambiamos el estado del mensaje de leído a no leído y viceversa
-  marcar: function(id, val, type, obj){
-    var act = (val == 0) ? 'read' : 'unread';
-    var show = (act == 'read') ? 'unread' : 'read';
-    mensaje.ajax(
-      'editar',
-      'ids=' + id + '&act=' + act,
-      function(valor){
-        //cambiamos si ha sido leído o no
-        if(type == 1){
-          var cid = id.split(':');
-          if(act == 'read'){
-            $('#mp_' + cid[0]).removeClass('unread');
-          }else{
-            $('#mp_' + cid[0]).addClass('unread');
-          }
-          $(obj).parent().find('a').hide();
-          $(obj).parent().find('.' + show).show();
-        }else{
-          location.href = global_data.url + '/mensajes/';
-        }
-      }
-    );
-  },
-  //mostramos un alert
-  alert: function(valor){
-    myActions.inicio_cargando();
-    myActions.alert('Aviso','<div class="emptyData">' + valor + '</div>');
-  },
-  //enviamos los datos obtenidos
-  enviar: function (enviar){
-    //obtenemos los datos
-    this.vars['to'] = $('#msg_to').val();
-    this.vars['sub'] = encodeURIComponent($('#msg_subject').val());
-    this.vars['msg'] = encodeURIComponent($('#msg_body').val());
-    //comprobamos si todo esta bien
-    if(enviar == 0){
-      if(this.vars['to'] == ''){
-        mensaje.nuevo(mensaje.vars['to'], mensaje.vars['sub'], mensaje.vars['msg'], 'Por favor, especific&aacute; el destinatario.');
-      }
-      if(this.vars['msg'] == ''){
-        mensaje.nuevo(mensaje.vars['to'], mensaje.vars['sub'], mensaje.vars['msg'], 'El mensaje no puede estar vac&iacute;o.');
-      }
-      //
-      myActions.inicio_cargando('Comprobando...', 'Nuevo Mensaje');
-      this.ajax(
-        'validar',
-        'para=' + this.vars['to'],
-        mensaje.checkform
-      );
-    }else if(enviar == 1){
-      myActions.inicio_cargando('Enviando...', 'Nuevo Mensaje');
-      this.ajax(
-        'enviar',
-        'para=' + mensaje.vars['to'] + '&asunto=' + mensaje.vars['sub'] + '&mensaje=' + mensaje.vars['msg'],
-        mensaje.alert('Enviando mensaje')
-      );
-    }
-  },
-  //responder a un mensaje
-  responder: function(mp_id){
-    //obtenemos los datos del mensaje a responder
-    this.vars['mp_id'] = $('#mp_id').val();
-    this.vars['mp_body'] = encodeURIComponent($('#respuesta').val());
-    //comprobamos el cuerpo
-    if(this.vars['mp_body'] == ''){
-      $('#respuesta').focus();
-      return;
-    }
-    //enviamos la petición ajax
-    this.ajax(
-      'respuesta',
-      'id=' + this.vars['mp_id'] + '&body=' + this.vars['mp_body'],
-      function(valor){
-        $('#respuesta').val('');
-        switch(valor.charAt(1)){
-          case '0'://si ha ocurrido algún error
-            myActions.alert("Error", valor.substring(4));
-            break;
-          case '1'://si ha salido todo bien
-            $('#historial').append($(valor.substring(4)).fadeIn('slow'));
-            break;
-        }
-        $('#respuesta').focus();
-      }
-    );
-  },
-  //creamos la ventana para desplegar los mensajes
-  popup: function (mps) {
-    var val = parseInt($('#alerta_mps > a > span').html());
-    if (mps != val && mps > 0) {
-      if(mps != 1){
-        var total = ' mensajes';
-      }else{
-        var total = ' mensaje';
-      }
-      if(!$('#alerta_mps').length){
-        $('div.userInfoLogin > ul > li.mensajes').append('<div class="alertas" id="alerta_mps"><a title="' + mps + total + '"><span></span></a></div>');
-      }
-      $('#alerta_mps > a > span').html(mps);
-      $('#alerta_mps').animate({
-        top: '-=5px'
-      }, 100, null, function(){
-        $('#alerta_mps').animate({ top: '+=5px' }, 100)
-      });
-    }else if(mps == 0){
-      $('#alerta_mps').remove();
-    }
-  },
-  //obtenemos los últimos mensajes
-  last: function () {
-    var val = parseInt($('#alerta_mps > a > span').html());
-    notifica.close();
-    if($('#mensajes_lista').css('display') != 'none'){
-      $('#mensajes_lista').hide();
-      $('a[name=Mensajes]').parent('li').removeClass('monitor-notificaciones');
-    }else{
-      if(($('#mensajes_lista').css('display') == 'none' && val > 0) || typeof mensaje.cache.last == 'undefined') {
-        $('a[name=Mensajes]').children('span').addClass('spinner');
-        $('a[name=Mensajes]').parent('li').addClass('monitor-notificaciones');
-        $('#mensajes_lista').show();
-        mensaje.ajax('lista', '', function (value) {
-          mensaje.cache['last'] = value;
-          mensaje.show();
-        });
-      }else{
-        mensaje.show();
-      }
-    }
-  },
-  //cerramos la ventana de mensajes
-  close: function(){
-    $('#mensajes_lista').slideUp();
-    $('a[name=Mensajes]').parent('li').removeClass('monitor-notificaciones');
-  }
+	/*$('body').click(function(e){ 
+	   if ($('#mon_list').css('display') != 'none' && $(e.target).closest('#mon_list').length == 0 && $(e.target).closest('a[name=Monitor]').length == 0) notifica.last();
+       if ($('#mp_list').css('display') != 'none' && $(e.target).closest('#mp_list').length == 0 && $(e.target).closest('a[name=Mensajes]').length == 0) mensaje.last(); 
+    });*/
+	$('.userInfoLogin a[class!=ver-mas], .comOfi, .post-compartir img, div.action > div.btn_follow > a[title], .dot-online-offline, .qtip');
+	/*$('div.avatar-box').live("mouseenter",function(){ 
+		$(this).children('ul').show(); }).live("mouseleave",function(){ 
+			$(this).children('ul').hide();
+		});*/
+	var zIndex = 99;
+	$('div.avatar-box').each(function(){
+		$(this).css('zIndex', zIndex);
+		zIndex -= 1;
+	});
+	$('div.new-search > div.bar-options > ul > li > a').bind('click', function(){
+		var at = $(this).parent('li').attr('class').split('-')[0];
+		$('div.new-search > div.bar-options > ul > li.active').removeClass('active');
+		$(this).parent('li').addClass('active');
+		$('div.new-search').attr('class', 'new-search '+at);
+        at = (at == 'web') ? 'google' : 'web';
+        $('input[name="e"]').val(at);
+        //id de google
+        var gid = $('form[name="search"]').attr('gid');
+        //mostramos u ocultamos los input google
+		if(at == 'google'){ 
+            //Ahora es google {/literal}
+			$('form[name="search"]').append('<input type="hidden" name="cx" value="' + gid + '" /><input type="hidden" name="cof" value="FORID:10" /><input type="hidden" name="ie" value="ISO-8859-1" />');
+            $('#search-home-cat-filter, #sh_options').hide();
+            // {literal}
+		}else { //El anterior fue google
+			$('input[name="cx"]').remove();
+			$('input[name="cof"]').remove();
+			$('input[name="ie"]').remove();
+            $('#search-home-cat-filter, #sh_options').css('display','');
+		}
+	});
+	$('div.new-search > div.search-body > form > input[name=q]').bind('focus', function(){
+		if ($(this).val() == 'Buscar') { $(this).val(''); }
+		$(this).css('color', '#000');
+	}).bind('blur', function(){
+		if ($.trim($(this).val()) == '') { $(this).val('Buscar'); }
+		$(this).css('color', '#999');
+	});
+
+});
+
+/**
+ * var denuncia
+ * contendrá las funciones necesarias para que el usuario pueda realizar una denuncia
+ */
+var denuncia = {
+	//creamos una nueva denuncia
+	nueva: function(type, obj_id, obj_title, obj_user){
+		$('#loading').fadeIn(250); 
+		//realizamos la petición ajax
+		$.ajax({
+			type: 'POST',
+			url: global_data.url + '/denuncia-' + type + '.php',
+			data: 'obj_id=' + obj_id + '&obj_title=' + obj_title + '&obj_user=' + obj_user,
+			success: function(valor){
+				denuncia.set_actions(valor, obj_id, type);
+				$('#loading').fadeOut(350);                                 
+			}
+		});
+	},
+	//creamos la caja que contendrá los datos para enviar la denuncia
+	set_actions: function(html, obj_id, type){
+		var title = 'Denunciar ' + type;
+		myActions.box_close = false;
+		myActions.close_button = true;		                                        
+		myActions.show();
+		myActions.title(title);
+		myActions.body(html);
+		myActions.buttons(true, true, 'Enviar', "denuncia.enviar(" + obj_id + ", '" + type + "')", true, true, true, 'Cancelar', 'close', true, false);
+		myActions.style();
+	},
+	//enviamos la denuncia
+	enviar: function(obj_id, type){
+		var razon = $('select[name=razon]').val();
+		var extras = $('textarea[name=extras]').val();
+		$('#loading').fadeIn(200);    
+		//realizamos la petición ajax                     
+		$.ajax({
+			type: 'POST',
+			url: global_data.url + '/denuncia-' + type + '.php',
+			data: 'obj_id=' + obj_id + '&razon=' + razon + '&extras=' + extras,
+			success: function(valor){
+				switch(valor.charAt(1)){
+					case '0'://si ha ocurrido algún error
+						myActions.alert("Error",'<div class="emptyData">' + valor.substring(4) +  '</div>');
+						break;
+					case '1'://si ha salido todo bien
+						myActions.alert("Bien", '<div class="emptyData">' + valor.substring(4) + '</div>');
+						break;
+				}
+				$('#loading').fadeOut(400);                                                 
+			}
+		});
+	}
 }

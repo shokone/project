@@ -30,8 +30,9 @@ class psAdmin{
      */
     public function getAdmins(){
         global $psDb;
-        $consulta = $psDb->db_execute("SELECT user_id, user_name FROM u_miembros WHERE user_rango = \'1\' ORDER BY user_id");
-        $datos = $psDb->resultadoArray($consulta);
+        $consulta = $psDb->db_execute("SELECT user_id, user_name FROM u_miembros WHERE user_rango = :rango ORDER BY user_id");
+        $valores = array('rango' => 1);
+        $datos = $psDb->resultadoArray($consulta, $valores);
         return $datos;
     }
 
@@ -41,8 +42,9 @@ class psAdmin{
      */
     public function getStatsIns(){
         global $psDb;
-        $consulta = $psDb->db_execute("SELECT stats_time_foundation, stats_time_upgrade FROM w_stats WHERE stats_no = \'1\'", null, 'rowCount');
-        return $consulta;
+        $consulta = "SELECT stats_time_foundation, stats_time_upgrade FROM w_stats WHERE stats_no = :no";
+        $valores = array('no' => 1);
+        return $psDb->db_execute($consulta, $valores, 'rowCount');
     }
 
     /**
@@ -99,10 +101,11 @@ class psAdmin{
             'max_com' => filter_input(INPUT_POST,'max_com'),
             'sump' => empty($_POST['sump']),
             'newr' => empty($_POST['newr']),
+            'script' => 1,
         );
 
         //una vez cargados todos los datos actualizamos la base de datos
-        $consulta = "UPDATE w_configuracion SET titulo = :titulo, slogan = :slogan, url = :url, c_last_active = :active, c_allow_sess_ip = :sess_ip, c_count_guests = :count_guests, c_reg_active = :reg_active, c_reg_activate = :reg_activate, c_met_welcome = :met_welcome, c_message_welcome = :message_welcome, c_fotos_private = :fotos_private, c_hits_guest = :hits_guest, c_keep_points = :keep_points, c_allow_points = :allow_points, c_see_mod = :see_mod, c_stats_cache = :stats_cache, c_desapprove_post = :desapprove_post, c_allow_edad = :edad, c_max_posts = :max_posts, c_max_com = :max_com, c_mas_nots = :max_nots, c_max_acts = :max_acts, c_allow_sump = :sump, c_newr_type = :newr, c_allow_firma = :firma, c_allow_upload = :upload, c_allow_portal = :portal, c_allow_live = :live, offline = :offline, offline_message = :offline_message WHERE script_id = \'1\'";
+        $consulta = "UPDATE w_configuracion SET titulo = :titulo, slogan = :slogan, url = :url, c_last_active = :active, c_allow_sess_ip = :sess_ip, c_count_guests = :count_guests, c_reg_active = :reg_active, c_reg_activate = :reg_activate, c_met_welcome = :met_welcome, c_message_welcome = :message_welcome, c_fotos_private = :fotos_private, c_hits_guest = :hits_guest, c_keep_points = :keep_points, c_allow_points = :allow_points, c_see_mod = :see_mod, c_stats_cache = :stats_cache, c_desapprove_post = :desapprove_post, c_allow_edad = :edad, c_max_posts = :max_posts, c_max_com = :max_com, c_mas_nots = :max_nots, c_max_acts = :max_acts, c_allow_sump = :sump, c_newr_type = :newr, c_allow_firma = :firma, c_allow_upload = :upload, c_allow_portal = :portal, c_allow_live = :live, offline = :offline, offline_message = :offline_message WHERE script_id = :script";
         if($psDb->db_execute($consulta,$valores)){
             return true;
         }else{
@@ -305,9 +308,10 @@ class psAdmin{
         global $psDb, $psSmarty;
         $theme = $this->getTheme();
         if(!empty($theme['tid'])){
-            $consulta = "UPDATE w_configuracion SET tema_id = :tid WHERE tscript_id = \'1\'";
+            $consulta = "UPDATE w_configuracion SET tema_id = :tid WHERE script_id = :script";
             $valores = array(
                 'tid' => (int)$theme['id'],
+                'script' => 1,
             );
             $psDb->db_execute($consulta, $valores);
             //llamamaos a la función de smarty para que nos compile el fichero
@@ -587,7 +591,7 @@ class psAdmin{
             'type' => $_POST['global-type'] > 4 ? 0 : $_POST['global-type'],
         );
         //comprobamos los campos requeridos
-        if(empty($rango['name']){
+        if(empty($rango['name'])){
             return 'Debes ingresar un nombre para el nuevo rango';
         }
         if($_POST['global-puntos-por-posts'] > $_POST['global-puntos-por-dia']){
@@ -698,7 +702,7 @@ class psAdmin{
             'type' => $_POST['global-type'] > 4 ? 0 : $_POST['global-type'],
         );
         //comprobamos los campos requeridos
-        if(empty($rango['name']){
+        if(empty($rango['name'])){
             return 'Debes ingresar un nombre para el nuevo rango';
         }
         if($_POST['global-puntos-por-posts'] > $_POST['global-puntos-por-dia']){
@@ -810,8 +814,8 @@ class psAdmin{
         $valores = array('r_id' => $r_id,);
         $rango = $psDb->db_execute($consulta, $valores);
         if(!empty($rango['rango_id']) && $rango['r_type'] == 0){
-            $consulta2 = "UPDATE w_configuracion SET c_reg_rango = :r_id WHERE tscript_id = \'1\'";
-            $valores2 = array('r_id' => $r_id);
+            $consulta2 = "UPDATE w_configuracion SET c_reg_rango = :r_id WHERE script_id = :script";
+            $valores2 = array('r_id' => $r_id, 'script' => 1);
             if($psDb->db_execute($consulta2, $valores2)){
                 return true;
             }
@@ -1100,8 +1104,8 @@ class psAdmin{
             return 'El correo electr&oacute;nico introducido es incorrecto.';
         }
         //comprobamos los puntos
-        if(is_numeric($puntos){
-            $u_puntos = ', user_puntos = :puntos'
+        if(is_numeric($puntos)){
+            $u_puntos = ', user_puntos = :puntos';
             $userDatos['puntos'] = (int)$puntos;
         }else{
             $userDatos['puntos'] = '';
@@ -1150,7 +1154,7 @@ class psAdmin{
         if($psDb->db_execute($consulta, $userDatos)){
             if($_POST['sendata']){
                 //si todo es correcto, mandamos un correo al usuario afectado por el cambio
-                mail($email, 'Nuevos datos de acceso a '.$psCore->settings['titulo'], 'Sus nuevos datos de acceso a '.$psCore->settings['titulo'].' han sido cambiados por un administrador.<br> Los nuevos datos de acceso ser&aacute;n los siguientes:<br>Usuario: '.$nick.'<br>Password: '.$pass.'<br>Disculpe las molestias.', 'From: '..$psCore->settings['titulo'].'<br>Este correo es enviado por un servidor de email autom&aacute;tico. Por favor no responda a este correo.<br><no-reply@'..$psCore->settings['domain'].'>'); 
+                mail($email, 'Nuevos datos de acceso a '.$psCore->settings['titulo'], 'Sus nuevos datos de acceso a '.$psCore->settings['titulo'].' han sido cambiados por un administrador.<br> Los nuevos datos de acceso ser&aacute;n los siguientes:<br>Usuario: '.$nick.'<br>Password: '.$pass.'<br>Disculpe las molestias.', 'From: '.$psCore->settings['titulo'].'<br>Este correo es enviado por un servidor de email autom&aacute;tico. Por favor no responda a este correo.<br><no-reply@'.$psCore->settings['domain'].'>'); 
             }
             return true;
         }
@@ -1450,7 +1454,7 @@ class psAdmin{
             'limite' => $psCore->setPagLimite($max, true),
         );
         $query = $psDb->db_execute($consulta, $valores);
-        $datos['data'] => $psDb->resultadoArray($query);
+        $datos['data'] = $psDb->resultadoArray($query);
         //obtenemos las páginas
         $consulta2 = "SELECT COUNT(*) FROM f_fotos WHERE foto_id > :id";
         $valores2 = array('id' => 0);
@@ -1587,7 +1591,7 @@ class psAdmin{
         $consulta = "SELECT u.user_id, u.user_name, b.* FROM w_badwords AS b LEFT JOIN u_miembros AS u ON b.author = u.user_id ORDER BY b.wid DESC LIMIT :limite";
         $valores = array('limite' => $psCore->setPagLimite($max, true),);
         $query = $psDb->db_execute($consulta, $valores);
-        $datos['data'] => $psDb->resultadoArray($query);
+        $datos['data'] = $psDb->resultadoArray($query);
         //obtenemos las páginas
         $consulta2 = "SELECT COUNT(*) FROM w_badwords";
         list($query) = $psDb->db_execute($consulta2, null, 'fetch_num');
@@ -1715,7 +1719,7 @@ class psAdmin{
         $consulta = "SELECT u.user_id, u.user_name, b.* FROM w_blacklist AS b LEFT JOIN u_miembros AS u ON b.author = u.user_id ORDER BY b.date DESC LIMIT :limite";
         $valores = array('limite' => $psCore->setPagLimite($max, true),);
         $query = $psDb->db_execute($consulta, $valores);
-        $datos['data'] => $psDb->resultadoArray($query);
+        $datos['data'] = $psDb->resultadoArray($query);
         //obtenemos las páginas
         $consulta2 = "SELECT COUNT(*) FROM w_blacklist";
         list($query) = $psDb->db_execute($consulta2, null, 'fetch_num');
@@ -1777,7 +1781,7 @@ class psAdmin{
      */ 
     function newBlockUser(){
         global $psDb, $psCore, $psUser;
-        if(empty($_POST['value']) || empty($_POST['type']) empty($_POST['reason'])){
+        if(empty($_POST['value']) || empty($_POST['type']) || empty($_POST['reason'])){
             return 'Por favor debe rellenar todos los campos';
         }else{
             //comprobamos los campos
@@ -1931,4 +1935,4 @@ class psAdmin{
         }
         return $iconos;
     }
-}
+}}

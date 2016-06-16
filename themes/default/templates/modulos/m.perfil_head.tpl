@@ -65,10 +65,11 @@
 			</ul>
 		</div>
 	</div>
-	<div class="menu-perfil clearfix">
-    	<ul id="tabs_menu">
+	</div>
+	<div class="menu-perfil clearfix menuc">
+    	<ul id="tabs_menu" class="nav nav-tabs">
             {if $psType == 'news' || $psType == 'story'}
-            	<li class="selected">
+            	<li class="active">
             		<a href="#" onclick="perfil.load_tab('news', this); return false">{if $psType == 'story'}Publicaci&oacute;n{else}Noticias{/if}</a>
             	</li>
             {/if}
@@ -91,26 +92,26 @@
 	            </li>
             {/if}
             {if $psInfo.p_socials.f}
-	            <li style="float:right!important;" class="floatR">
+	            <li class="floatR">
 					<a target="_blank" href="http://www.facebook.com/{$psInfo.p_socials.f}" title="Facebook">
 						<img height="14" width="14" src="{$psConfig.default}/images/icons/facebook.png"/>
 					</a>
 				</li>
             {/if}
             {if $psInfo.p_socials.t}
-	            <li style="float:right!important;" class="floatR">
+	            <li class="floatR">
 					<a target="_blank" href="http://www.twitter.com/{$psInfo.p_socials.t}" title="Twitter">
 						<img height="14" width="14" src="{$psConfig.default}/images/icons/twitter.png"/>
 					</a>
 				</li>
             {/if}
 			{if $psUser->admod == 1}
-	            <li style="float:right!important;" class="floatR">
+	            <li class="floatR">
 					<a href="#" onclick="location.href = '{$psConfig.url}/admin/users?act=show&amp;uid={$psInfo.uid}'">
-						<img title="Editar a {$psInfo.nick}" src="{$psConfig.url}/themes/default/images/icons/editar.png"  class="vctip"/>
+						<img title="Editar a {$psInfo.nick}" src="{$psConfig.url}/themes/default/images/icons/editar.png" class="vctip"/>
+						Editar a {$psInfo.nick}
 					</a>
 	            </li>
             {/if}
         </ul>
     </div>
-</div>

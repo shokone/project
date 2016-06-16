@@ -45,12 +45,13 @@ if($psLevelVer != 1){
 		//comprobamos la edad del usuario
 		$now = date("Y",time());
 		$max = 100 - $psCore->settings['c_allow_edad'];
-		$min = $now_year - $psCore->settings['c_allow_edad'];
+		$min = $now - $psCore->settings['c_allow_edad'];
 		$smarty->assign("psMaxYear",$max);
-		$smarty->assign("psEndYear",$min);
+		$smarty->assign("psMinYear",$min);
 		//información del perfil
         $psPerfil = $psCuenta->cargarPerfil();
 		$smarty->assign("psPerfil", $psPerfil);
+		
 		//datos del perfil del usuario
 		$smarty->assign("psPerfilData", $psPerfilDatos);
         $smarty->assign("psPrivacidad", $psPrivacidad);
@@ -73,5 +74,5 @@ if($psLevelVer != 1){
 //ahora agregamos los datos generados a smarty
 if(empty($psAjax)){
 	$smarty->assign("psTitle", $psTitle);
-	include (PS_ROOT.'footer.php');
+	include('../../footer.php');
 }

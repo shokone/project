@@ -305,12 +305,14 @@ class psCore{
         $keys = array_keys($datos);
         //obtenemos los valores del array
         $valores = array_values($datos);
-        foreach($dato as $key => $valor){
+        $total = count($valores)-1;
+        foreach($valores as $key => $valor){
+            $coma = $total == ($key) ? '' : ', ';
             //añadimos el prefijo y rellenamos un array con cada dato
-            $values[$key] = $prefijo.$keys[$key] . " = :" . $key . ", ";
-            $values2[$key] = $valor;
+            $values[$key] = $prefijo.$keys[$key] . " = :" . $keys[$key] . $coma;
+            $values2[$keys[$key]] = $valor;
         }
-        return array('values' => $values, 'values2' => $valor);
+        return array('values' => $values, 'values2' => $values2);
     }
 
     /**

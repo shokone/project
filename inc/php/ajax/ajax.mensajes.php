@@ -15,7 +15,7 @@ if (!defined('PS_HEADER')) {
 $niveles = array(
 	'mensajes-validar' => array('n' => 2, 'p' => ''),
     'mensajes-enviar' => array('n' => 2, 'p' => ''),
-    'mensajes-respuesta' => array('n' => 2, 'p' => 'resp'),
+    'mensajes-respuesta' => array('n' => 2, 'p' => 'respuesta'),
     'mensajes-lista' => array('n' => 2, 'p' => 'lista'),
     'mensajes-editar' => array('n' => 2, 'p' => ''),
 );
@@ -40,7 +40,7 @@ switch($action){
         echo $psMensajes->nuevoMensaje();
 		break;
     case 'mensajes-respuesta':
-       $smarty->assign("mp",$psMensajes->nuevaRespuesta());
+       $smarty->assign("mp", $psMensajes->nuevaRespuesta());
 		break;
     case 'mensajes-lista':
         $smarty->assign("psMensajes", $psMensajes->getMensajes(1, false, 'monitor'));

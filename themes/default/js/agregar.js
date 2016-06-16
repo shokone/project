@@ -2,7 +2,7 @@
  * Cargaremos el javascript necesario para guardar el post como publicado o como borrador
  * @name agregar.js
  */
-
+var textcuerpo = '';
 //damos un tiempo máximo para realizar la acción del borrador
 var borrador_setTimeout;
 //variable que guardará los datos del último borrador
@@ -65,7 +65,7 @@ function postSave() {
 }
 
 //función para guardar el post en borradores
-function save_borrador(){
+function save_borrador(textcuerpo){
 	//obtenemos los datos del formulario
 	var params = 'titulo=' + encodeURIComponent($('input[name="titulo"]').val());
 	params += '&cuerpo='+encodeURIComponent(textcuerpo);
@@ -77,16 +77,16 @@ function save_borrador(){
 	params += $('input[name="sticky"]').is(':checked') ? '&sticky=1' : '';
 	$('div#borrador-guardado').html('Guardando...');
 	//deshabilitamos el botón hasta terminar la operación
-	borrador_save_disabled();alert('hola');
+	borrador_save_disabled();
 	
 	//realizamosla petición ajax para guardar el borrador
-	if($('input[name="borrador_id"]').val() != ''){alert('hola');
+	if($('input[name="borrador_id"]').val() != ''){
 		$.ajax({
 			type: 'POST',
 			url: global_data.url + '/borradores-guardar.php',
 			data: params + '&borrador_id=' + encodeURIComponent($('input[name="borrador_id"]').val()),
 			success: function(valor){
-				alert(valor);
+				alert(valor+' valor');
 				switch(valor.charAt(1)){
 					case '0': //si ha ocurrido algún error
 						clearTimeout(borrador_setTimeout);
@@ -101,7 +101,7 @@ function save_borrador(){
 				}
 			},
 			error: function(){
-				myActions.error('save_borrador()');
+				myActions.error('save_borrador(textcuerpo)');
 			},
 			complete: function(){
 				//si se ha completado activamos de nuevo el botón
@@ -132,7 +132,7 @@ function save_borrador(){
 				}
 			},
 			error: function(){
-				myActions.error('save_borrador()');
+				myActions.error('save_borrador(textcuerpo)');
 			}
 		});
 	}
@@ -144,7 +144,7 @@ var tags = false;
 $(document).ready(function(){
 	//llamamos al editor ckeditor
     
-    var editor = CKEDITOR.replace('editorPost');
+    var editor = CKEDITOR.replace('cuerpo');
 	//validamos el título
 	$('input[name=titulo]').bind('keyup',function(){
 		if($(this).val().length >= 5 && countUpperCase($(this).val()) > 90) {
@@ -183,9 +183,13 @@ $(document).ready(function(){
 			}
 		});
     });
+    $('input[name=borrador_buton_save]').bind('click',function(){
+    	this.textcuerpo = editor.getData();
+    	save_borrador(this.textcuerpo);
+    });
 	//obtenemos la vista previa del post
 	$('input[name=preview]').bind('click',function(){
-		var textcuerpo = editor.getData();
+		textcuerpo = editor.getData();
 
 		var error = false;
 		//comprobamos los campos
